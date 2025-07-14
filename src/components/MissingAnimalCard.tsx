@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Calendar, MapPin } from 'lucide-react';
@@ -9,6 +10,8 @@ interface MissingAnimalCardProps {
 }
 
 const MissingAnimalCard = ({ post }: MissingAnimalCardProps) => {
+  const navigate = useNavigate();
+  
   // missingType에 따라 라벨과 색상 결정
   const getMissingTypeLabel = () => {
     return post.missingType === 'MS' ? '실종' : post.missingType === 'WT' ? '목격' : '실종/목격';
@@ -21,7 +24,10 @@ const MissingAnimalCard = ({ post }: MissingAnimalCardProps) => {
   };
 
   return (
-    <Card className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02] cursor-pointer">
+    <Card 
+      className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02] cursor-pointer"
+      onClick={() => navigate(`/missing-animal/${post.id}`)}
+    >
       <div className="aspect-[4/3] overflow-hidden">
         <img 
           src={post.imageUrl}

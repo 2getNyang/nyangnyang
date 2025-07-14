@@ -17,6 +17,7 @@ import MyPage from "./pages/MyPage";
 import MyPosts from "./pages/MyPosts";
 import MyLikedPosts from "./pages/MyLikedPosts";
 import MyFavoriteAdoptions from "./pages/MyFavoriteAdoptions";
+import MissingAnimalDetail from "./pages/MissingAnimalDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/create-missing-post" element={<CreateMissingPost />} />
           <Route path="/sns-post/:id" element={<SNSPostDetail />} />
           <Route path="/adoption-review/:id" element={<AdoptionReviewDetail />} />
+          <Route path="/missing-animal/:id" element={<MissingAnimalDetail />} />
           <Route path="/shelters" element={<Shelters />} />
           <Route path="/shelter/:id" element={<ShelterDetail />} />
           <Route path="/mypage" element={<MyPage />} />
