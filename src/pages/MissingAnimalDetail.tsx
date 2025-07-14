@@ -7,7 +7,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { allPosts, comments } from '@/data/mockPosts';
 import AppHeader from '@/components/AppHeader';
 
-const MissingAnimalDetail = () => {
+const MissingPostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
@@ -28,21 +28,19 @@ const MissingAnimalDetail = () => {
     );
   }
 
-  // 이미지 배열 생성 (5장)
+  // 이미지 배열 생성
   const images = (post as any).images || [post.imageUrl].filter(Boolean);
 
   // 사용자 권한 확인 (현재는 mock 데이터)
   const hasEditPermission = true; // 실제로는 현재 사용자와 게시글 작성자 비교
 
-  // missingType에 따라 라벨과 색상 결정
-  const getMissingTypeLabel = () => {
-    return post.missingType === 'MS' ? '실종' : post.missingType === 'WT' ? '목격' : '실종/목격';
+  // 실종/목격 타입에 따른 배지 색상
+  const getMissingTypeColor = () => {
+    return post.missingType === 'MS' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800';
   };
 
-  const getMissingTypeColor = () => {
-    return post.missingType === 'MS' ? 'bg-red-100 text-red-800 hover:bg-red-100' : 
-           post.missingType === 'WT' ? 'bg-blue-100 text-blue-800 hover:bg-blue-100' : 
-           'bg-red-100 text-red-800 hover:bg-red-100';
+  const getMissingTypeLabel = () => {
+    return post.missingType === 'MS' ? '실종' : '목격';
   };
 
   return (
@@ -63,7 +61,7 @@ const MissingAnimalDetail = () => {
           <div className="p-8">
             {/* 카테고리 배지 */}
             <div className="flex justify-between items-start mb-4">
-              <Badge className={`${getMissingTypeColor()} text-sm`}>
+              <Badge className={`${getMissingTypeColor()} hover:${getMissingTypeColor()} text-sm`}>
                 {getMissingTypeLabel()}
               </Badge>
               
@@ -84,7 +82,7 @@ const MissingAnimalDetail = () => {
 
             {/* 품종 (제목 위치) */}
             <h1 className="text-3xl font-bold text-gray-800 mb-6 leading-tight">
-              {post.breed || '품종 미상'}
+              {post.breed || '반려동물'}
             </h1>
 
             {/* 작성자 정보 */}
@@ -112,26 +110,26 @@ const MissingAnimalDetail = () => {
                   <div className="rounded-xl overflow-hidden shadow-md">
                     <img
                       src={images[0]}
-                      alt="실종/목격 동물 사진"
+                      alt="실종/목격 사진"
                       className="w-full h-96 object-cover"
                     />
                   </div>
                 ) : (
                   <Carousel className="w-full">
                     <CarouselContent className="-ml-2 md:-ml-4">
-                      {images.slice(0, 5).map((image, index) => (
+                      {images.map((image, index) => (
                         <CarouselItem key={index} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
                           <div className="rounded-xl overflow-hidden shadow-md">
                             <img
                               src={image}
-                              alt={`실종/목격 동물 사진 ${index + 1}`}
+                              alt={`실종/목격 사진 ${index + 1}`}
                               className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
                             />
                           </div>
                         </CarouselItem>
                       ))}
                     </CarouselContent>
-                    {images.length > 3 && (
+                    {images.length > 1 && (
                       <>
                         <CarouselPrevious className="left-2" />
                         <CarouselNext className="right-2" />
@@ -147,74 +145,73 @@ const MissingAnimalDetail = () => {
               </div>
             )}
 
-            {/* 동물 정보 */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              {/* 기본 정보 */}
-              <div className="lg:col-span-2 p-6 bg-gray-50 rounded-2xl">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">동물 정보</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-sm font-medium text-gray-500 w-16">성별</span>
-                      <span className="text-base text-gray-800">{post.gender}</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <span className="text-sm font-medium text-gray-500 w-16">나이</span>
-                      <span className="text-base text-gray-800">{post.age}</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <span className="text-sm font-medium text-gray-500 w-16">털색</span>
-                      <span className="text-base text-gray-800">{post.furColor}</span>
-                    </div>
+            {/* 상세 정보 */}
+            <div className="mb-8 bg-gray-50 rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">상세 정보</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {post.gender && (
+                  <div className="flex items-center space-x-2">
+                    <span className="font-medium text-gray-600">성별:</span>
+                    <span className="text-gray-800">{post.gender}</span>
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Calendar className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm font-medium text-gray-500">실종/목격일</span>
-                      <span className="text-base text-gray-800">{post.missingDate}</span>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <MapPin className="w-4 h-4 text-gray-500 mt-1" />
-                      <span className="text-sm font-medium text-gray-500">실종/목격장소</span>
-                      <span className="text-base text-gray-800 flex-1">{post.missingLocation}</span>
-                    </div>
+                )}
+                {post.age && (
+                  <div className="flex items-center space-x-2">
+                    <span className="font-medium text-gray-600">나이:</span>
+                    <span className="text-gray-800">{post.age}</span>
                   </div>
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-sm font-medium text-gray-500 w-16">특징</span>
-                    <span className="text-base text-gray-800 flex-1">{(post as any).description || '특징 정보가 없습니다.'}</span>
+                )}
+                {post.furColor && (
+                  <div className="flex items-center space-x-2">
+                    <span className="font-medium text-gray-600">털색:</span>
+                    <span className="text-gray-800">{post.furColor}</span>
                   </div>
-                </div>
-              </div>
-
-              {/* 연락처 정보 - 강조된 박스 */}
-              <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Phone className="w-8 h-8 text-white" />
+                )}
+                {post.missingDate && (
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4 text-gray-600" />
+                    <span className="font-medium text-gray-600">{post.missingType === 'MS' ? '실종일:' : '목격일:'}</span>
+                    <span className="text-gray-800">{post.missingDate}</span>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-2">연락처</h3>
-                  <p className="text-sm text-gray-600 mb-4">발견하시면 즉시 연락해주세요!</p>
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <a 
-                      href={`tel:${(post as any).contact}`}
-                      className="text-2xl font-bold text-blue-600 hover:text-blue-800 transition-colors"
-                    >
-                      {(post as any).contact || '연락처 정보가 없습니다.'}
-                    </a>
+                )}
+                {post.missingLocation && (
+                  <div className="flex items-center space-x-2 md:col-span-2">
+                    <MapPin className="w-4 h-4 text-gray-600" />
+                    <span className="font-medium text-gray-600">{post.missingType === 'MS' ? '실종장소:' : '목격장소:'}</span>
+                    <span className="text-gray-800">{post.missingLocation}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-3">
-                    번호를 클릭하면 전화를 걸 수 있습니다
-                  </p>
-                </div>
+                )}
               </div>
             </div>
 
-            {/* 상세내용 */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">상세내용</h3>
-              <div className="prose prose-lg max-w-none">
+            {/* 특징 */}
+            {post.title && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">특징</h3>
+                <p className="text-gray-700 leading-relaxed bg-gray-50 rounded-lg p-4">
+                  {post.title}
+                </p>
+              </div>
+            )}
+
+            {/* 연락처 */}
+            <div className="mb-8 bg-blue-50 rounded-2xl p-6">
+              <div className="flex items-center space-x-2 mb-2">
+                <Phone className="w-5 h-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-gray-800">연락처</h3>
+              </div>
+              <p className="text-gray-700">
+                {post.missingType === 'MS' ? '실종된 반려동물을 목격하신 분은' : '목격 관련 문의사항이나 추가 정보가 있으시면'} 아래 연락처로 연락 부탁드립니다.
+              </p>
+              <p className="text-blue-600 font-medium mt-2">
+                작성자: {post.author}
+              </p>
+            </div>
+
+            {/* 상세내용 (본문 내용) */}
+            <div className="prose prose-lg max-w-none mb-8">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">상세내용</h3>
+              <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-base">
                   {post.content}
                 </p>
@@ -324,4 +321,4 @@ const MissingAnimalDetail = () => {
   );
 };
 
-export default MissingAnimalDetail;
+export default MissingPostDetail;
