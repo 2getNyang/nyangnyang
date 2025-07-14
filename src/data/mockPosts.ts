@@ -108,8 +108,15 @@ export const allPosts = [
   {
     id: '3',
     title: '실종된 강아지를 찾습니다',
-    content: '12월 28일 오후 2시경 서울 강남구 역삼동에서 실종되었습니다.',
+    content: '12월 28일 오후 2시경 서울 강남구 역삼동에서 실종되었습니다. 이름은 "골디"이고, 사람을 매우 좋아하는 성격입니다. 목에는 파란색 목걸이를 착용하고 있었습니다. 발견하시면 즉시 연락 부탁드립니다.',
     imageUrl: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1517849845537-4d257902454a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    ],
     author: '박민수',
     date: '2024-01-13',
     category: 'missing',
@@ -120,8 +127,10 @@ export const allPosts = [
     missingType: 'MS',
     age: '3세',
     furColor: '금색',
+    description: '사람을 매우 좋아하고 온순한 성격입니다. 목에 파란색 목걸이를 착용하고 있었습니다.',
     missingLocation: '서울 강남구 역삼동',
-    missingDate: '2024-12-28'
+    missingDate: '2024-12-28',
+    contact: '010-1234-5678'
   },
   {
     id: '4',
@@ -149,8 +158,15 @@ export const allPosts = [
   {
     id: '6',
     title: '고양이 목격 정보',
-    content: '어제 저녁 홍대 근처에서 목격했습니다. 주인을 찾고 있는 것 같았어요.',
+    content: '어제 저녁 홍대 근처에서 목격했습니다. 주인을 찾고 있는 것 같았어요. 회색 털에 파란 눈을 가진 고양이였습니다. 사람을 경계하는 모습이었지만 다친 곳은 없어 보였습니다.',
     imageUrl: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1573865526739-10659fec78a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1582562124811-c09040d0a901?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1466721591366-2d5fba72006d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1501286353178-1ec881214838?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    ],
     author: '한상우',
     date: '2024-01-10',
     category: 'missing',
@@ -160,9 +176,11 @@ export const allPosts = [
     gender: '암컷',
     age: '2세',
     furColor: '회색',
+    description: '파란 눈을 가진 회색 고양이. 사람을 경계하지만 공격적이지는 않음.',
     missingType: 'WT',
     missingLocation: '서울 마포구 홍대',
-    missingDate: '2024-01-09'
+    missingDate: '2024-01-09',
+    contact: '010-9876-5432'
   },
   {
     id: '7',

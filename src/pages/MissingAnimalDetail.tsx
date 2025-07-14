@@ -148,40 +148,65 @@ const MissingAnimalDetail = () => {
             )}
 
             {/* 동물 정보 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 bg-gray-50 rounded-2xl">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm font-medium text-gray-500 w-16">성별</span>
-                  <span className="text-base text-gray-800">{post.gender}</span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* 기본 정보 */}
+              <div className="lg:col-span-2 p-6 bg-gray-50 rounded-2xl">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">동물 정보</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm font-medium text-gray-500 w-16">성별</span>
+                      <span className="text-base text-gray-800">{post.gender}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm font-medium text-gray-500 w-16">나이</span>
+                      <span className="text-base text-gray-800">{post.age}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm font-medium text-gray-500 w-16">털색</span>
+                      <span className="text-base text-gray-800">{post.furColor}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm font-medium text-gray-500">실종/목격일</span>
+                      <span className="text-base text-gray-800">{post.missingDate}</span>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <MapPin className="w-4 h-4 text-gray-500 mt-1" />
+                      <span className="text-sm font-medium text-gray-500">실종/목격장소</span>
+                      <span className="text-base text-gray-800 flex-1">{post.missingLocation}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm font-medium text-gray-500 w-16">나이</span>
-                  <span className="text-base text-gray-800">{post.age}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm font-medium text-gray-500 w-16">털색</span>
-                  <span className="text-base text-gray-800">{post.furColor}</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <span className="text-sm font-medium text-gray-500 w-16">특징</span>
-                  <span className="text-base text-gray-800 flex-1">{(post as any).description || '특징 정보가 없습니다.'}</span>
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="flex items-start space-x-3">
+                    <span className="text-sm font-medium text-gray-500 w-16">특징</span>
+                    <span className="text-base text-gray-800 flex-1">{(post as any).description || '특징 정보가 없습니다.'}</span>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Calendar className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-500">실종/목격일</span>
-                  <span className="text-base text-gray-800">{post.missingDate}</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <MapPin className="w-4 h-4 text-gray-500 mt-1" />
-                  <span className="text-sm font-medium text-gray-500">실종/목격장소</span>
-                  <span className="text-base text-gray-800 flex-1">{post.missingLocation}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Phone className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-500">연락처</span>
-                  <span className="text-base text-gray-800">{(post as any).contact || '연락처 정보가 없습니다.'}</span>
+
+              {/* 연락처 정보 - 강조된 박스 */}
+              <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Phone className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">연락처</h3>
+                  <p className="text-sm text-gray-600 mb-4">발견하시면 즉시 연락해주세요!</p>
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <a 
+                      href={`tel:${(post as any).contact}`}
+                      className="text-2xl font-bold text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                      {(post as any).contact || '연락처 정보가 없습니다.'}
+                    </a>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">
+                    번호를 클릭하면 전화를 걸 수 있습니다
+                  </p>
                 </div>
               </div>
             </div>
