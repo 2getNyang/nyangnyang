@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Edit, Trash2, Reply, MapPin, Phone } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Edit, Trash2, Reply, MapPin, Phone, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -195,17 +195,37 @@ const MissingPostDetail = () => {
             )}
 
             {/* 연락처 */}
-            <div className="mb-8 bg-blue-50 rounded-2xl p-6">
-              <div className="flex items-center space-x-2 mb-2">
-                <Phone className="w-5 h-5 text-blue-600" />
+            <div className="mb-8 bg-primary/10 border border-primary/20 rounded-2xl p-6">
+              <div className="flex items-center space-x-2 mb-3">
+                <Phone className="w-5 h-5 text-primary" />
                 <h3 className="text-lg font-semibold text-gray-800">연락처</h3>
               </div>
-              <p className="text-gray-700">
-                {post.missingType === 'MS' ? '실종된 반려동물을 목격하신 분은' : '목격 관련 문의사항이나 추가 정보가 있으시면'} 아래 연락처로 연락 부탁드립니다.
-              </p>
-              <p className="text-blue-600 font-medium mt-2">
-                작성자: {post.author}
-              </p>
+              <div className="bg-background rounded-lg p-4 border border-primary/30">
+                <p className="text-gray-700 mb-3">
+                  {post.missingType === 'MS' ? '실종된 반려동물을 목격하신 분은' : '목격 관련 문의사항이나 추가 정보가 있으시면'} 아래 연락처로 연락 부탁드립니다.
+                </p>
+                <div className="flex items-center justify-between bg-primary/5 rounded-lg p-3">
+                  <div>
+                    <p className="font-medium text-gray-800">작성자: {post.author}</p>
+                    <p className="text-primary font-semibold text-lg">전화: 010-1234-5678</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="border-primary text-primary hover:bg-primary/10">
+                    복사
+                  </Button>
+                </div>
+              </div>
+              
+              {/* 채팅하기 버튼 */}
+              <div className="mt-4">
+                <Button 
+                  onClick={() => navigate(`/chat/${post.author}`)}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                  size="lg"
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  {post.author}님과 채팅하기
+                </Button>
+              </div>
             </div>
 
             {/* 상세내용 (본문 내용) */}
