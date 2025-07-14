@@ -110,7 +110,7 @@ const KakaoMap: React.FC<KakaoMapProps> = ({ latitude, longitude, address, name 
         console.log('카카오맵 스크립트 새로 로드');
         
         const script = document.createElement('script');
-        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=b2adfe5a3da5b3d7cf9958f2688c5126&autoload=false`;
+        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_API_KEY&autoload=false`;
         script.type = 'text/javascript';
         
         script.onload = () => {
