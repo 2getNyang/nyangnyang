@@ -76,7 +76,9 @@ const AppHeader = ({ onLoginClick, isLoggedIn = false, userName = "사용자", o
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>내 프로필</DropdownMenuItem>
                     <DropdownMenuItem>설정</DropdownMenuItem>
-                    <DropdownMenuItem>채팅내역</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/chat-list">채팅내역</Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 

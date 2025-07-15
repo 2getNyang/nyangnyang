@@ -19,6 +19,7 @@ import MyLikedPosts from "./pages/MyLikedPosts";
 import MyFavoriteAdoptions from "./pages/MyFavoriteAdoptions";
 import MissingAnimalDetail from "./pages/MissingAnimalDetail";
 import Chat from "./pages/Chat";
+import ChatList from "./pages/ChatList";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/adoption-review/:id" element={<AdoptionReviewDetail />} />
           <Route path="/missing-animal/:id" element={<MissingAnimalDetail />} />
           <Route path="/chat/:userId" element={<Chat />} />
+          <Route path="/chat-list" element={<ChatList />} />
           <Route path="/shelters" element={<Shelters />} />
           <Route path="/shelter/:id" element={<ShelterDetail />} />
           <Route path="/mypage" element={<MyPage />} />
