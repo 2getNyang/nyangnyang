@@ -33,7 +33,34 @@ const EditProfile = () => {
     setIsSubmitting(true);
 
     try {
-      // 실제로는 API 호출
+      // 실제로는 API 호출로 중복 체크
+      const checkDuplicate = () => {
+        // 임시 중복 체크 로직 (실제로는 서버에서 확인)
+        const existingNicknames = ['admin', '관리자', 'test', '김영희'];
+        const existingEmails = ['admin@example.com', 'test@example.com', 'kimyh@example.com'];
+        
+        if (existingNicknames.includes(formData.nickname)) {
+          return { isDuplicate: true, field: 'nickname' };
+        }
+        if (existingEmails.includes(formData.email)) {
+          return { isDuplicate: true, field: 'email' };
+        }
+        return { isDuplicate: false };
+      };
+
+      const duplicateCheck = checkDuplicate();
+      
+      if (duplicateCheck.isDuplicate) {
+        const fieldName = duplicateCheck.field === 'nickname' ? '닉네임' : '이메일';
+        toast({
+          title: `${fieldName} 중복`,
+          description: `이미 사용 중인 ${fieldName}입니다. 다른 ${fieldName}을 입력해주세요.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // 실제 저장 로직 (API 호출)
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
