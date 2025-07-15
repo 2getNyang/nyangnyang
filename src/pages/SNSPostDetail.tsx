@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Instagram } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Instagram, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { allPosts } from '@/data/mockPosts';
 import AppHeader from '@/components/AppHeader';
 
 declare global {
@@ -17,48 +16,128 @@ declare global {
   }
 }
 
+interface SNSPostDetail {
+  id: number;
+  category: number;
+  boardTitle: string;
+  boardContent: string;
+  viewCount: number;
+  instagramLink?: string;
+  images: string[];
+  createdAt: string;
+  modifiedAt: string | null;
+  deletedAt: string | null;
+  likeCount: number | null;
+  comments: any[] | null;
+  userId: number;
+  nickname: string;
+}
+
+interface APIResponse {
+  code: number;
+  data: SNSPostDetail;
+  message: string;
+}
+
 const SNSPostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [postDetail, setPostDetail] = useState<SNSPostDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const post = allPosts.find(p => p.id === id && p.category === 'sns');
+  // 현재 로그인된 사용자 ID (실제로는 auth context에서 가져와야 함)
+  const currentUserId = 1; // Mock user ID
+
+  useEffect(() => {
+    const fetchPostDetail = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:8080/api/v1/boards/sns/${id}`);
+        
+        if (!response.ok) {
+          throw new Error('게시글을 불러오는데 실패했습니다.');
+        }
+
+        const data: APIResponse = await response.json();
+        setPostDetail(data.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchPostDetail();
+    }
+  }, [id]);
 
   // Instagram embed.js 동적 로딩
- useEffect(() => {
-  const script = document.createElement('script');
-  script.src = 'https://www.instagram.com/embed.js';
-  script.async = true;
-  document.body.appendChild(script);
+  useEffect(() => {
+    if (postDetail?.instagramLink) {
+      const script = document.createElement('script');
+      script.src = 'https://www.instagram.com/embed.js';
+      script.async = true;
+      document.body.appendChild(script);
 
-  const checkAndRender = setInterval(() => {
-    const embedTarget = document.querySelector('.instagram-media');
-    if (window.instgrm && embedTarget) {
-      window.instgrm.Embeds.process();
-      clearInterval(checkAndRender);
+      const checkAndRender = setInterval(() => {
+        const embedTarget = document.querySelector('.instagram-media');
+        if (window.instgrm && embedTarget) {
+          window.instgrm.Embeds.process();
+          clearInterval(checkAndRender);
+        }
+      }, 300);
+
+      return () => {
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+        clearInterval(checkAndRender);
+      };
     }
-  }, 300);
+  }, [postDetail]);
 
-  return () => {
-    document.body.removeChild(script);
-    clearInterval(checkAndRender);
+  const handleBack = () => {
+    navigate('/board?category=sns');
   };
-}, []);
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
 
-  if (!post) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">게시글을 찾을 수 없습니다</h1>
-          <Button onClick={() => navigate('/board')} variant="outline">
-            게시판으로 돌아가기
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">게시글을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !postDetail) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            {error || '게시글을 찾을 수 없습니다'}
+          </h1>
+          <Button onClick={handleBack} variant="outline">
+            SNS 홍보 게시판으로 돌아가기
           </Button>
         </div>
       </div>
     );
   }
 
-  const images = [post.imageUrl, post.imageUrl, post.imageUrl].filter(Boolean);
+  const isAuthor = currentUserId === postDetail.userId;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -67,7 +146,7 @@ const SNSPostDetail = () => {
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <Button
           variant="ghost"
-          onClick={() => navigate('/board')}
+          onClick={handleBack}
           className="mb-6 hover:bg-gray-100"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -76,51 +155,66 @@ const SNSPostDetail = () => {
 
         <div className="bg-white rounded-2xl shadow-sm border-0 overflow-hidden">
           <div className="p-8">
-            <div className="flex justify-start mb-4">
+            <div className="flex justify-between items-start mb-4">
               <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 text-sm flex items-center gap-2">
                 <Instagram className="w-4 h-4" />
                 SNS 홍보
               </Badge>
+              
+              {/* 수정/삭제 버튼 */}
+              {isAuthor && (
+                <div className="flex space-x-2">
+                  <Button variant="outline" size="sm" className="text-gray-600 hover:text-gray-800">
+                    <Edit className="w-4 h-4 mr-1" />
+                    수정
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-800 hover:bg-red-50">
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    삭제
+                  </Button>
+                </div>
+              )}
             </div>
 
             <h1 className="text-3xl font-bold text-gray-800 mb-6 leading-tight">
-              {post.title}
+              {postDetail.boardTitle}
             </h1>
 
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
               <div className="flex items-center space-x-4 text-gray-600">
                 <div className="flex items-center space-x-2">
                   <User className="w-4 h-4" />
-                  <span className="font-medium">{post.author}</span>
+                  <span className="font-medium">{postDetail.nickname}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4" />
-                  <span>{post.date}</span>
+                  <span>{formatDate(postDetail.createdAt)}</span>
                 </div>
               </div>
               <div className="flex items-center space-x-1 text-gray-500">
                 <Eye className="w-4 h-4" />
-                <span>{post.views}</span>
+                <span>{postDetail.viewCount}</span>
               </div>
             </div>
 
             {/* Instagram Embed */}
-            {post.instagramLink && (
+            {postDetail.instagramLink && (
               <div className="mb-8 flex justify-center">
                 <blockquote
                   className="instagram-media w-full max-w-lg"
-                  data-instgrm-permalink={post.instagramLink}
+                  data-instgrm-permalink={postDetail.instagramLink}
                   data-instgrm-version="14"
                 ></blockquote>
               </div>
             )}
+
             {/* 첨부 이미지 */}
-            {images.length > 0 && (
+            {postDetail.images && postDetail.images.length > 0 && (
               <div className="mb-8">
-                {images.length === 1 ? (
+                {postDetail.images.length === 1 ? (
                   <div className="rounded-xl overflow-hidden">
                     <img
-                      src={images[0]}
+                      src={postDetail.images[0]}
                       alt="첨부 이미지"
                       className="w-full h-80 object-cover"
                     />
@@ -128,7 +222,7 @@ const SNSPostDetail = () => {
                 ) : (
                   <Carousel className="w-full">
                     <CarouselContent>
-                      {images.map((image, index) => (
+                      {postDetail.images.map((image, index) => (
                         <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                           <div className="p-1">
                             <div className="aspect-square rounded-lg overflow-hidden">
@@ -151,7 +245,7 @@ const SNSPostDetail = () => {
 
             <div className="prose prose-lg max-w-none mb-8">
               <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {post.content}
+                {postDetail.boardContent}
               </p>
             </div>
           </div>
@@ -161,16 +255,16 @@ const SNSPostDetail = () => {
               <div className="flex items-center space-x-4">
                 <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50">
                   <Heart className="w-5 h-5 mr-2" />
-                  좋아요
+                  좋아요 {postDetail.likeCount || 0}
                 </Button>
                 <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
                   <MessageCircle className="w-5 h-5 mr-2" />
-                  댓글
+                  댓글 {postDetail.comments?.length || 0}
                 </Button>
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-500">
                 <Eye className="w-4 h-4" />
-                <span>조회 {post.views}</span>
+                <span>조회 {postDetail.viewCount}</span>
               </div>
             </div>
           </div>

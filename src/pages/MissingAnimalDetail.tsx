@@ -44,8 +44,6 @@ const MissingPostDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log('MissingPostDetail - ID from useParams:', id);
-  console.log('MissingPostDetail - Current URL:', window.location.href);
 
   // 현재 로그인된 사용자 ID (실제로는 auth context에서 가져와야 함)
   const currentUserId = 1; // Mock user ID
@@ -91,8 +89,8 @@ const MissingPostDetail = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">{error || '게시글을 찾을 수 없습니다'}</h1>
-          <Button onClick={() => navigate('/board')} variant="outline">
-            게시판으로 돌아가기
+          <Button onClick={() => navigate('/board?category=missing')} variant="outline">
+            실종/목격 게시판으로 돌아가기
           </Button>
         </div>
       </div>
@@ -131,7 +129,7 @@ const MissingPostDetail = () => {
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <Button
           variant="ghost"
-          onClick={() => navigate('/board')}
+          onClick={() => navigate('/board?category=missing')}
           className="mb-6 hover:bg-gray-100"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

@@ -22,8 +22,8 @@ const AdoptionReviewDetail = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">게시글을 찾을 수 없습니다</h1>
-          <Button onClick={() => navigate('/board')} variant="outline">
-            게시판으로 돌아가기
+          <Button onClick={() => navigate('/board?category=adoption')} variant="outline">
+            입양 후기 게시판으로 돌아가기
           </Button>
         </div>
       </div>
@@ -43,7 +43,7 @@ const AdoptionReviewDetail = () => {
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <Button
           variant="ghost"
-          onClick={() => navigate('/board')}
+          onClick={() => navigate('/board?category=adoption')}
           className="mb-6 hover:bg-gray-100"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
