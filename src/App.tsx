@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Animals from "./pages/Animals";
 import Board from "./pages/Board";
 import CreatePost from "./pages/CreatePost";
 import CreateSNSPost from "./pages/CreateSNSPost";
@@ -33,6 +34,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/animals" element={<Animals />} />
           <Route path="/board" element={<Board />} />
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/create-sns-post" element={<CreateSNSPost />} />

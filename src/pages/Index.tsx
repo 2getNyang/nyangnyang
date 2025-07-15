@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import AppHeader from '@/components/AppHeader';
 import AppHeroSection from '@/components/AppHeroSection';
 import AppAnimalCard from '@/components/AppAnimalCard';
@@ -128,9 +129,11 @@ const Index = () => {
           </div>
           
           <div className="text-center">
-            <button className="golden hover:bg-yellow-500 text-gray-800 font-medium px-8 py-3 rounded-xl transition-all duration-200 hover:shadow-lg">
-              더 많은 아이들 보기
-            </button>
+            <Link to="/animals">
+              <button className="golden hover:bg-yellow-500 text-gray-800 font-medium px-8 py-3 rounded-xl transition-all duration-200 hover:shadow-lg">
+                더 많은 아이들 보기
+              </button>
+            </Link>
           </div>
         </div>
       </section>

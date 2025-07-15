@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Heart, Home, Users, ArrowRight } from 'lucide-react';
 
@@ -16,10 +17,12 @@ const AppHeroSection = () => {
           </p>
           
           <div className="flex justify-center mb-8">
-            <Button className="golden hover:bg-yellow-500 text-gray-800 font-medium px-6 py-3">
-              입양하기
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <Link to="/animals">
+              <Button className="golden hover:bg-yellow-500 text-gray-800 font-medium px-6 py-3">
+                입양하기
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
           </div>
         </div>
         
