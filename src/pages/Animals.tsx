@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AppHeader from '@/components/AppHeader';
 import Footer from '@/components/Footer';
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, MapPin, Calendar, User, Search, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { ApiResponse, ApiAnimal } from '@/types/boardList';
 
 interface Animal {
   id: string;
@@ -34,7 +35,7 @@ const Animals = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [userName, setUserName] = useState('김철수');
   const [favorites, setFavorites] = useState<string[]>(['1', '3']);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0); // API는 0부터 시작
   const [searchKeyword, setSearchKeyword] = useState('');
   const [filters, setFilters] = useState({
     noticeNumber: '',
@@ -43,63 +44,93 @@ const Animals = () => {
     city: '',
     district: ''
   });
+  const [animals, setAnimals] = useState<Animal[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const animalsPerPage = 12;
 
-  // Mock data for animals
-  const allAnimals: Animal[] = [
-    {
-      id: '1',
-      noticeNumber: 'A2024070001',
-      name: '초코',
-      species: '개',
-      breed: '믹스견',
-      age: '3세',
-      gender: '수컷',
-      location: '서울시 강남구',
-      foundDate: '2024-06-15',
-      foundPlace: '강남역 근처',
-      description: '매우 온순하고 사람을 좋아하는 초코입니다.',
-      personality: ['온순함', '사람좋아함'],
-      isUrgent: false,
-      protectionStatus: '보호중',
-      color: '갈색',
-      shelter: '강남구 보호소',
-      imageUrl: 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop'
-    },
-    // ... 더 많은 동물 데이터를 추가하여 페이징 테스트
-    ...Array.from({ length: 50 }, (_, i) => ({
-      id: `${i + 2}`,
-      noticeNumber: `A202407${String(i + 2).padStart(4, '0')}`,
-      name: `동물${i + 2}`,
-      species: i % 2 === 0 ? '개' : '고양이',
-      breed: i % 2 === 0 ? '믹스견' : '코리안숏헤어',
-      age: `${(i % 5) + 1}세`,
-      gender: i % 2 === 0 ? '수컷' : '암컷',
-      location: `서울시 ${['강남구', '서초구', '송파구', '강동구'][i % 4]}`,
-      foundDate: `2024-06-${String((i % 30) + 1).padStart(2, '0')}`,
-      foundPlace: `${['역 근처', '공원', '주택가', '상가'][i % 4]}`,
-      description: `귀여운 동물${i + 2}입니다.`,
-      personality: ['온순함', '활발함'][i % 2] ? ['온순함'] : ['활발함'],
-      isUrgent: i % 10 === 0,
-      protectionStatus: '보호중',
-      color: ['갈색', '검은색', '흰색', '회색'][i % 4],
-      shelter: `${['강남구', '서초구', '송파구', '강동구'][i % 4]} 보호소`,
-      imageUrl: i % 2 === 0 
-        ? 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop'
-        : 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop'
-    }))
-  ];
+  // API 호출 함수
+  const fetchAnimals = async (page: number = 0) => {
+    setLoading(true);
+    try {
+      const url = `http://localhost:8080/api/v1/boards/4?page=${page}&size=${animalsPerPage}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch animals');
+      }
+      
+      const data: ApiResponse = await response.json();
+      
+      // API 데이터를 Animal 인터페이스에 맞게 변환
+      const transformedAnimals: Animal[] = data.data.content.map(apiAnimal => ({
+        id: apiAnimal.boardId.toString(),
+        noticeNumber: apiAnimal.boardId.toString(),
+        name: apiAnimal.kindName || '이름 없음',
+        species: getSpeciesFromKindName(apiAnimal.kindName),
+        breed: apiAnimal.kindName || '',
+        age: `${apiAnimal.age}세`,
+        gender: apiAnimal.gender === '수컷' ? '수컷' : '암컷',
+        location: apiAnimal.missingLocation || '',
+        foundDate: apiAnimal.missingDate || '',
+        foundPlace: apiAnimal.missingLocation || '',
+        description: '',
+        personality: [],
+        isUrgent: false,
+        protectionStatus: apiAnimal.lostType === '실종' ? '실종' : '목격',
+        color: apiAnimal.furColor || '',
+        shelter: apiAnimal.nickName || '',
+        imageUrl: apiAnimal.thumbnailUrl || 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop'
+      }));
+      
+      setAnimals(transformedAnimals);
+      setTotalElements(data.data.totalElements);
+      setTotalPages(data.data.totalPages);
+    } catch (error) {
+      console.error('Error fetching animals:', error);
+      toast({
+        title: "데이터 로드 실패",
+        description: "동물 정보를 불러오는데 실패했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // 검색 및 필터링 로직
+  // kindName에서 축종 추출
+  const getSpeciesFromKindName = (kindName: string): string => {
+    if (!kindName) return '';
+    // 개 품종들
+    const dogBreeds = ['골든 리트리버', '그레이 하운드', '미텔 스피츠', '말티즈', '진돗개', '믹스견'];
+    // 고양이 품종들
+    const catBreeds = ['레그돌', '브리티쉬롱헤어', '러시안 블루', '데본 렉스', '코리안숏헤어'];
+    
+    if (dogBreeds.some(breed => kindName.includes(breed))) return '개';
+    if (catBreeds.some(breed => kindName.includes(breed))) return '고양이';
+    
+    // 기본적으로 품종명에 따라 추정
+    if (kindName.includes('개') || kindName.includes('리트리버') || kindName.includes('하운드')) return '개';
+    if (kindName.includes('고양이') || kindName.includes('숏헤어') || kindName.includes('롱헤어')) return '고양이';
+    
+    return '기타';
+  };
+
+  // 컴포넌트 마운트 시 API 호출
+  useEffect(() => {
+    fetchAnimals(currentPage);
+  }, [currentPage]);
+
+  // 검색 및 필터링된 동물들 (클라이언트 사이드 필터링)
   const filteredAnimals = useMemo(() => {
-    return allAnimals.filter(animal => {
+    return animals.filter(animal => {
       // 키워드 검색
       if (searchKeyword) {
         const keyword = searchKeyword.toLowerCase();
         const searchFields = [
           animal.noticeNumber,
-          animal.description,
           animal.breed,
           animal.color,
           animal.shelter
@@ -117,7 +148,7 @@ const Animals = () => {
       if (filters.species && filters.species !== 'all' && animal.species !== filters.species) {
         return false;
       }
-      if (filters.breed && filters.breed !== 'all' && animal.breed !== filters.breed) {
+      if (filters.breed && filters.breed !== 'all' && !animal.breed.includes(filters.breed)) {
         return false;
       }
       if (filters.city && filters.city !== 'all' && !animal.location.includes(filters.city)) {
@@ -129,12 +160,7 @@ const Animals = () => {
 
       return true;
     });
-  }, [searchKeyword, filters]);
-
-  // 페이징 계산
-  const totalPages = Math.ceil(filteredAnimals.length / animalsPerPage);
-  const startIndex = (currentPage - 1) * animalsPerPage;
-  const currentAnimals = filteredAnimals.slice(startIndex, startIndex + animalsPerPage);
+  }, [animals, searchKeyword, filters]);
 
   // 찜하기 토글
   const toggleFavorite = (animalId: string) => {
@@ -173,7 +199,7 @@ const Animals = () => {
       city: '',
       district: ''
     });
-    setCurrentPage(1);
+    setCurrentPage(0);
   };
 
   // 페이지 변경
@@ -291,9 +317,13 @@ const Animals = () => {
         </div>
 
         {/* 동물 카드 리스트 */}
-        {currentAnimals.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <p className="text-gray-500 text-lg">데이터를 불러오는 중...</p>
+          </div>
+        ) : filteredAnimals.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-            {currentAnimals.map((animal) => (
+            {filteredAnimals.map((animal) => (
               <Card key={animal.id} className="h-full hover:shadow-lg transition-shadow duration-300">
                 <div className="aspect-[4/3] overflow-hidden rounded-t-lg relative">
                   <img 
@@ -369,7 +399,7 @@ const Animals = () => {
             <Button
               variant="outline"
               onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
+              disabled={currentPage === 0}
             >
               이전
             </Button>
@@ -377,11 +407,11 @@ const Animals = () => {
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               let pageNum;
               if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
+                pageNum = i;
+              } else if (currentPage <= 2) {
+                pageNum = i;
+              } else if (currentPage >= totalPages - 3) {
+                pageNum = totalPages - 5 + i;
               } else {
                 pageNum = currentPage - 2 + i;
               }
@@ -392,7 +422,7 @@ const Animals = () => {
                   variant={currentPage === pageNum ? "default" : "outline"}
                   onClick={() => handlePageChange(pageNum)}
                 >
-                  {pageNum}
+                  {pageNum + 1}
                 </Button>
               );
             })}
@@ -400,7 +430,7 @@ const Animals = () => {
             <Button
               variant="outline"
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages - 1}
             >
               다음
             </Button>
