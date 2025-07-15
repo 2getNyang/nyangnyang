@@ -14,6 +14,7 @@ import AdoptionReviewDetail from "./pages/AdoptionReviewDetail";
 import Shelters from "./pages/Shelters";
 import ShelterDetail from "./pages/ShelterDetail";
 import MyPage from "./pages/MyPage";
+import EditProfile from "./pages/EditProfile";
 import MyPosts from "./pages/MyPosts";
 import MyLikedPosts from "./pages/MyLikedPosts";
 import MyFavoriteAdoptions from "./pages/MyFavoriteAdoptions";
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/shelters" element={<Shelters />} />
           <Route path="/shelter/:id" element={<ShelterDetail />} />
           <Route path="/mypage" element={<MyPage />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/my-posts" element={<MyPosts />} />
           <Route path="/my-liked-posts" element={<MyLikedPosts />} />
           <Route path="/my-favorite-adoptions" element={<MyFavoriteAdoptions />} />

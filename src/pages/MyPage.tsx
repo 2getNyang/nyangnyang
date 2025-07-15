@@ -62,6 +62,9 @@ const MyPage = () => {
 
   const handleMenuClick = (menuId: string) => {
     switch (menuId) {
+      case 'edit-profile':
+        navigate('/edit-profile');
+        break;
       case 'my-posts':
         navigate('/my-posts');
         break;
@@ -71,7 +74,6 @@ const MyPage = () => {
       case 'favorite-adoptions':
         navigate('/my-favorite-adoptions');
         break;
-      case 'edit-profile':
       case 'adoption-applications':
       default:
         console.log(`${menuId} 페이지는 아직 구현되지 않았습니다.`);
