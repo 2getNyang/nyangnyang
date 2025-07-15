@@ -28,11 +28,18 @@ const BoardCard = ({ post }: BoardCardProps) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
+    console.log('BoardCard - handleCardClick called');
+    console.log('BoardCard - post.id:', post.id);
+    console.log('BoardCard - post.category:', post.category);
+    
     if (post.category === 'sns') {
+      console.log('BoardCard - navigating to SNS post:', `/sns-post/${post.id}`);
       navigate(`/sns-post/${post.id}`);
     } else if (post.category === 'adoption') {
+      console.log('BoardCard - navigating to adoption review:', `/adoption-review/${post.id}`);
       navigate(`/adoption-review/${post.id}`);
     } else if (post.category === 'missing') {
+      console.log('BoardCard - navigating to missing animal:', `/missing-animal/${post.id}`);
       navigate(`/missing-animal/${post.id}`);
     } else {
       console.log('Navigate to general post detail:', post.id);

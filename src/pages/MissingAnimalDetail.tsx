@@ -44,6 +44,9 @@ const MissingPostDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  console.log('MissingPostDetail - ID from useParams:', id);
+  console.log('MissingPostDetail - Current URL:', window.location.href);
+
   // 현재 로그인된 사용자 ID (실제로는 auth context에서 가져와야 함)
   const currentUserId = 1; // Mock user ID
 
