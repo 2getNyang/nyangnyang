@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,9 +14,10 @@ interface BoardTabsProps {
   currentPosts: Post[];
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  loading?: boolean;
 }
 
-const BoardTabs = ({ activeTab, onTabChange, currentPosts, searchTerm, onSearchChange }: BoardTabsProps) => {
+const BoardTabs = ({ activeTab, onTabChange, currentPosts, searchTerm, onSearchChange, loading }: BoardTabsProps) => {
   const navigate = useNavigate();
 
 const handleCreatePost = () => {
@@ -60,27 +60,51 @@ const handleCreatePost = () => {
       </div>
 
       <TabsContent value="adoption" className="mt-0">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {currentPosts.map((post) => (
-            <BoardCard key={post.id} post={post} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-muted-foreground">로딩 중...</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {currentPosts.map((post) => (
+              <div key={post.id} onClick={() => navigate(`/adoption-review-detail/${post.id}`)} className="cursor-pointer">
+                <BoardCard post={post} />
+              </div>
+            ))}
+          </div>
+        )}
       </TabsContent>
 
       <TabsContent value="sns" className="mt-0">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {currentPosts.map((post) => (
-            <BoardCard key={post.id} post={post} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-muted-foreground">로딩 중...</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {currentPosts.map((post) => (
+              <div key={post.id} onClick={() => navigate(`/sns-post-detail/${post.id}`)} className="cursor-pointer">
+                <BoardCard post={post} />
+              </div>
+            ))}
+          </div>
+        )}
       </TabsContent>
 
       <TabsContent value="missing" className="mt-0">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {currentPosts.map((post) => (
-            <MissingAnimalCard key={post.id} post={post} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-muted-foreground">로딩 중...</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {currentPosts.map((post) => (
+              <div key={post.id} onClick={() => navigate(`/missing-animal-detail/${post.id}`)} className="cursor-pointer">
+                <MissingAnimalCard post={post} />
+              </div>
+            ))}
+          </div>
+        )}
       </TabsContent>
     </Tabs>
   );

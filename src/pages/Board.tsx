@@ -1,19 +1,59 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AppHeader from '@/components/AppHeader';
 import BoardTabs from '@/components/board/BoardTabs';
 import BoardPagination from '@/components/board/BoardPagination';
 import LoginModal from '@/components/LoginModal';
 import { useBoardFilter } from '@/hooks/useBoardFilter';
-import { allPosts } from '@/data/mockPosts';
+import { BoardListItem, BoardCategory } from '@/types/boardList';
+import { Post } from '@/types/board';
 
 const Board = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [userName, setUserName] = useState('김철수');
-  
-  // 나중에repetedPosts 지워주세요
-  const repeatedPosts = Array(5).fill(allPosts).flat();
+  const [boardData, setBoardData] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // API 데이터 가져오기
+  const fetchBoardData = async (category: BoardCategory) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/boards/${category}`);
+      const data: BoardListItem[] = await response.json();
+      
+      // API 응답을 Post 인터페이스로 변환
+      const convertedPosts: Post[] = data.map((item) => ({
+        id: (item.id || item.boardId || 0).toString(),
+        title: item.boardTitle || `${item.kindName || '게시글'} - ${item.lostType || ''}`,
+        content: item.boardContent || '',
+        imageUrl: item.imageUrl || item.thumbnailUrl || (item.images && item.images[0]) || '',
+        author: item.nickname || item.nickName || '익명',
+        date: item.createdAt,
+        category: category === 'review' ? 'adoption' : category === 'lost' ? 'missing' : category,
+        views: item.viewCount || 0,
+        // 실종/목격 게시판 전용 필드
+        breed: item.kindName,
+        gender: item.gender,
+        age: item.age?.toString(),
+        furColor: item.furColor,
+        missingLocation: item.missingLocation,
+        missingDate: item.missingDate,
+        missingType: item.lostType === '실종' ? 'MS' : item.lostType === '목격' ? 'WT' : undefined,
+        // SNS 홍보 게시판 전용 필드
+        instagramLink: item.instagramLink,
+        images: item.images
+      }));
+      
+      setBoardData(convertedPosts);
+    } catch (error) {
+      console.error('Failed to fetch board data:', error);
+      setBoardData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const {
     activeTab,
     searchTerm,
@@ -24,9 +64,25 @@ const Board = () => {
     handleSearchChange,
     setCurrentPage,
   } = useBoardFilter({
-  posts: repeatedPosts, //repeatePosts 대신에 appPosts 적으세요
+    posts: boardData,
     postsPerPage: 12,
   });
+
+  // 탭 변경 시 데이터 가져오기
+  useEffect(() => {
+    let apiCategory: BoardCategory;
+    switch (activeTab) {
+      case 'adoption':
+        apiCategory = 'review'; // 입양 후기는 review API 사용
+        break;
+      case 'missing':
+        apiCategory = 'lost'; // 실종/목격은 lost API 사용
+        break;
+      default:
+        apiCategory = activeTab as BoardCategory;
+    }
+    fetchBoardData(apiCategory);
+  }, [activeTab]);
 
   const handleLoginClick = () => {
     setIsLoginModalOpen(true);
@@ -48,6 +104,7 @@ const Board = () => {
           currentPosts={currentPosts}
           searchTerm={searchTerm}
           onSearchChange={handleSearchChange}
+          loading={loading}
         />
 
         <BoardPagination

@@ -14,7 +14,7 @@ export const useBoardFilter = ({ posts, postsPerPage }: UseBoardFilterProps) => 
 
   const filteredPosts = useMemo(() => {
     return posts.filter(post => {
-      const matchesCategory = activeTab === 'all' || post.category === activeTab;
+      const matchesCategory = post.category === activeTab;
       const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesCategory && matchesSearch;
     });
