@@ -33,7 +33,7 @@ const BoardCard = ({ post }: BoardCardProps) => {
     } else if (post.category === 'adoption') {
       navigate(`/adoption-review/${post.id}`);
     } else if (post.category === 'missing') {
-      navigate(`/missing-post/${post.id}`);
+      navigate(`/missing-animal/${post.id}`);
     } else {
       console.log('Navigate to general post detail:', post.id);
     }

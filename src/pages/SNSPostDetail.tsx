@@ -67,7 +67,7 @@ const SNSPostDetail = () => {
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <Button
           variant="ghost"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/board')}
           className="mb-6 hover:bg-gray-100"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
