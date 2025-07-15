@@ -32,6 +32,7 @@ interface Animal {
 }
 
 const Animals = () => {
+  const [selectedCategory, setSelectedCategory] = useState<'adoption' | 'review' | 'sns' | 'lost'>('lost'); // 기본값 lost
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [userName, setUserName] = useState('김철수');
   const [favorites, setFavorites] = useState<string[]>(['1', '3']);
@@ -51,11 +52,23 @@ const Animals = () => {
 
   const animalsPerPage = 12;
 
+  // 카테고리 ID 매핑
+  const getCategoryId = (category: string): number => {
+    const categoryMap = {
+      'adoption': 1,
+      'review': 2, 
+      'sns': 3,
+      'lost': 4
+    };
+    return categoryMap[category as keyof typeof categoryMap] || 4;
+  };
+
   // API 호출 함수
-  const fetchAnimals = async (page: number = 0) => {
+  const fetchAnimals = async (page: number = 0, category: string = selectedCategory) => {
     setLoading(true);
     try {
-      const url = `http://localhost:8080/api/v1/boards/4?page=${page}&size=${animalsPerPage}`;
+      const categoryId = getCategoryId(category);
+      const url = `http://localhost:8080/api/v1/boards/${categoryId}?page=${page}&size=${animalsPerPage}`;
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -120,8 +133,8 @@ const Animals = () => {
 
   // 컴포넌트 마운트 시 API 호출
   useEffect(() => {
-    fetchAnimals(currentPage);
-  }, [currentPage]);
+    fetchAnimals(currentPage, selectedCategory);
+  }, [currentPage, selectedCategory]);
 
   // 검색 및 필터링된 동물들 (클라이언트 사이드 필터링)
   const filteredAnimals = useMemo(() => {
@@ -220,8 +233,34 @@ const Animals = () => {
       <div className="container mx-auto px-4 py-8">
         {/* 페이지 제목 */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">입양 동물 찾기</h1>
-          <p className="text-gray-600">새로운 가족을 기다리는 아이들을 만나보세요</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">게시판</h1>
+          <p className="text-gray-600">다양한 카테고리의 게시글을 확인하세요</p>
+        </div>
+
+        {/* 카테고리 선택 */}
+        <div className="mb-8">
+          <div className="flex justify-center">
+            <div className="flex bg-white rounded-lg shadow-sm border p-1">
+              {[
+                { key: 'adoption', label: '입양 공고', id: 1 },
+                { key: 'review', label: '입양 후기', id: 2 },
+                { key: 'sns', label: 'SNS 홍보', id: 3 },
+                { key: 'lost', label: '실종/목격', id: 4 }
+              ].map((category) => (
+                <Button
+                  key={category.key}
+                  variant={selectedCategory === category.key ? "default" : "ghost"}
+                  onClick={() => {
+                    setSelectedCategory(category.key as any);
+                    setCurrentPage(0);
+                  }}
+                  className="mx-1"
+                >
+                  {category.label}
+                </Button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* 검색 및 필터 영역 */}
