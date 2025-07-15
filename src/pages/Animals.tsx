@@ -114,16 +114,16 @@ const Animals = () => {
       if (filters.noticeNumber && !animal.noticeNumber.includes(filters.noticeNumber)) {
         return false;
       }
-      if (filters.species && animal.species !== filters.species) {
+      if (filters.species && filters.species !== 'all' && animal.species !== filters.species) {
         return false;
       }
-      if (filters.breed && animal.breed !== filters.breed) {
+      if (filters.breed && filters.breed !== 'all' && animal.breed !== filters.breed) {
         return false;
       }
-      if (filters.city && !animal.location.includes(filters.city)) {
+      if (filters.city && filters.city !== 'all' && !animal.location.includes(filters.city)) {
         return false;
       }
-      if (filters.district && !animal.location.includes(filters.district)) {
+      if (filters.district && filters.district !== 'all' && !animal.location.includes(filters.district)) {
         return false;
       }
 
@@ -227,7 +227,7 @@ const Animals = () => {
                   <SelectValue placeholder="축종" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">전체</SelectItem>
+                  <SelectItem value="all">전체</SelectItem>
                   <SelectItem value="개">개</SelectItem>
                   <SelectItem value="고양이">고양이</SelectItem>
                 </SelectContent>
@@ -238,7 +238,7 @@ const Animals = () => {
                   <SelectValue placeholder="품종" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">전체</SelectItem>
+                  <SelectItem value="all">전체</SelectItem>
                   <SelectItem value="믹스견">믹스견</SelectItem>
                   <SelectItem value="코리안숏헤어">코리안숏헤어</SelectItem>
                   <SelectItem value="말티즈">말티즈</SelectItem>
@@ -251,7 +251,7 @@ const Animals = () => {
                   <SelectValue placeholder="시도" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">전체</SelectItem>
+                  <SelectItem value="all">전체</SelectItem>
                   <SelectItem value="서울시">서울시</SelectItem>
                   <SelectItem value="부산시">부산시</SelectItem>
                   <SelectItem value="대구시">대구시</SelectItem>
@@ -264,7 +264,7 @@ const Animals = () => {
                   <SelectValue placeholder="시군구" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">전체</SelectItem>
+                  <SelectItem value="all">전체</SelectItem>
                   <SelectItem value="강남구">강남구</SelectItem>
                   <SelectItem value="서초구">서초구</SelectItem>
                   <SelectItem value="송파구">송파구</SelectItem>
