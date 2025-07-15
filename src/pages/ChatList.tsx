@@ -139,7 +139,7 @@ const ChatList = () => {
                   <h3 className="font-medium text-gray-900 truncate">
                     {room.otherUserName}
                   </h3>
-                  <div className="flex items-center ml-2">
+                  <div className="flex flex-col items-end ml-2">
                     {/* 시간 */}
                     <span className="text-xs text-gray-500 whitespace-nowrap">
                       {formatTime(room.lastMessageTime)}
@@ -147,7 +147,7 @@ const ChatList = () => {
                     {/* 안읽은 수 */}
                     {room.unreadCount > 0 && (
                       <div 
-                        className="ml-2 px-2 py-1 rounded-full text-white text-xs font-bold min-w-[20px] h-5 flex items-center justify-center"
+                        className="mt-1 px-2 py-1 rounded-full text-white text-xs font-bold min-w-[20px] h-5 flex items-center justify-center"
                         style={{ backgroundColor: '#FF3B30' }}
                       >
                         {formatUnreadCount(room.unreadCount)}
