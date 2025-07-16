@@ -90,12 +90,20 @@ const CreateSNSPost = () => {
         nickname: user.nickname
       };
       
+      console.log('전송할 DTO 데이터:', dtoData);
+      console.log('JSON.stringify 결과:', JSON.stringify(dtoData));
+      
       formData.append('dto', JSON.stringify(dtoData));
 
       // 이미지 파일들 추가
       images.forEach((image) => {
         formData.append('images', image);
       });
+      
+      console.log('FormData 내용 확인:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
 
       const accessToken = localStorage.getItem('accessToken');
       const response = await fetch('http://localhost:8080/api/v1/boards/sns', {
