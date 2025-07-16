@@ -34,12 +34,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const login = (userData: User) => {
+    console.log('로그인 완료:', userData);
+    const token = localStorage.getItem('accessToken');
+    console.log('현재 저장된 토큰:', token);
     setUser(userData);
     setIsLoggedIn(true);
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = async () => {
+    console.log('로그아웃 시작');
     try {
       // 서버로 로그아웃 요청
       await fetch('http://localhost:8080/logout', {
@@ -50,6 +54,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       console.error('로그아웃 요청 실패:', error);
     } finally {
       // 로컬 상태 초기화
+      console.log('로그아웃 완료 - 토큰 제거');
       setUser(null);
       setIsLoggedIn(false);
       localStorage.removeItem('user');
@@ -64,6 +69,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const checkAuthStatus = async () => {
+    console.log('인증 상태 확인 시작');
+    const accessToken = localStorage.getItem('accessToken');
+    console.log('저장된 토큰:', accessToken);
     try {
       const accessToken = localStorage.getItem('accessToken');
       const headers: Record<string, string> = {};

@@ -21,6 +21,9 @@ const AppHeader = ({ onLoginClick }: AppHeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isLoggedIn, logout } = useAuth();
   
+  // 로그인 상태 콘솔 출력
+  console.log('헤더 상태 - 로그인 여부:', isLoggedIn, '사용자:', user);
+  
   // Mock notification data
   const notifications = [
     { id: 1, title: "새로운 입양 신청", content: "초코에 대한 입양 신청이 접수되었습니다.", time: "2분 전" },
