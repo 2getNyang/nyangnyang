@@ -84,10 +84,9 @@ const CreateSNSPost = () => {
       const dtoData = {
         boardTitle: title.trim(),
         boardContent: content.trim(),
-        InstagramLink: instagramLink.trim(),
+        instagramLink: instagramLink.trim(),
         category: 2,
-        userId: user.id,
-        nickname: user.nickname
+        userId: user.id
       };
       
       console.log('전송할 DTO 데이터:', dtoData);
