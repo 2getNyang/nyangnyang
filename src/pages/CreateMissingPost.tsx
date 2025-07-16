@@ -22,29 +22,20 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const missingPostSchema = z.object({
-  lostType: z.string().min(1, "실종유형을 선택해주세요"),
-  missingDate: z.date({ required_error: "날짜를 선택해주세요" }),
-  upKindCd: z.string().min(1, "축종을 선택해주세요"),
-  kindCd: z.string().min(1, "품종을 선택해주세요"),
-  regionCode: z.string().min(1, "시/도를 선택해주세요"),
+  lostType: z.string().optional(),
+  missingDate: z.date().optional(),
+  upKindCd: z.string().optional(),
+  kindCd: z.string().optional(),
+  regionCode: z.string().optional(),
   subRegionCode: z.string().optional(),
-  missingLocation: z.string().min(1, "구체적인 장소를 입력해주세요"),
-  phone: z.string().min(1, "연락처를 입력해주세요"),
-  sexCd: z.string().min(1, "성별을 선택해주세요"),
-  age: z.string().min(1, "나이를 선택해주세요"),
-  furColor: z.string().min(1, "털색을 입력해주세요"),
-  distinctFeatures: z.string().min(1, "특징을 입력해주세요"),
-  content: z.string().min(1, "본문을 입력해주세요"),
-  images: z.array(z.any()).min(1, "사진을 한 장 이상 업로드해주세요"),
-}).refine((data) => {
-  // 세종특별자치시가 아닌 경우 시/군/구는 필수
-  if (data.regionCode !== '50' && (!data.subRegionCode || data.subRegionCode.trim() === '')) {
-    return false;
-  }
-  return true;
-}, {
-  message: "시/군/구를 선택해주세요",
-  path: ["subRegionCode"],
+  missingLocation: z.string().optional(),
+  phone: z.string().optional(),
+  sexCd: z.string().optional(),
+  age: z.string().optional(),
+  furColor: z.string().optional(),
+  distinctFeatures: z.string().optional(),
+  content: z.string().optional(),
+  images: z.array(z.any()).optional(),
 });
 
 type MissingPostForm = z.infer<typeof missingPostSchema>;
@@ -218,6 +209,30 @@ const CreateMissingPost = () => {
       toast({
         title: "인증 오류",
         description: "로그인 정보를 확인할 수 없습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 모든 필수 항목 검증
+    if (!data.lostType || !data.missingDate || !data.upKindCd || !data.kindCd || 
+        !data.regionCode || !data.missingLocation?.trim() || !data.phone?.trim() || 
+        !data.sexCd || !data.age || !data.furColor?.trim() || 
+        !data.distinctFeatures?.trim() || !data.content?.trim() || images.length === 0) {
+      
+      toast({
+        title: "입력 오류",
+        description: "모든 항목을 기재해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 세종특별자치시가 아닌 경우 시/군/구 검증
+    if (data.regionCode !== '50' && !data.subRegionCode) {
+      toast({
+        title: "입력 오류",
+        description: "시/군/구를 선택해주세요.",
         variant: "destructive",
       });
       return;
