@@ -36,13 +36,17 @@ const ChatRoom = () => {
   const currentUser: ChatUser = { id: '7', name: '로그인한사용자' };
   const otherUser: ChatUser = { id: 'other', name: '상대방' };
 
-  // 채팅방 접근 권한 확인
+  // 채팅방 접근 권한 확인 (테스트용으로 임시 비활성화)
   useEffect(() => {
     if (!roomId) {
       navigate('/chat');
       return;
     }
 
+    // 임시로 권한 체크를 건너뛰고 바로 허용 (백엔드 연결시 주석 해제)
+    setIsAuthorized(true);
+    
+    /*
     const checkRoomAccess = async () => {
       try {
         const response = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}/check?userId=${currentUser.id}`);
@@ -64,6 +68,7 @@ const ChatRoom = () => {
     };
 
     checkRoomAccess();
+    */
   }, [roomId, currentUser.id, navigate, toast]);
 
   // WebSocket 연결 설정
