@@ -22,8 +22,8 @@ const LoginCallback = () => {
       if (token) {
         // JWT 토큰이 URL 파라미터로 전달된 경우
         try {
-          // 토큰을 쿠키에 저장 (백엔드에서 처리해야 함)
-          document.cookie = `token=${token}; path=/; secure; samesite=strict`;
+          // 토큰을 localStorage에 저장
+          localStorage.setItem('accessToken', token);
           
           // 사용자 정보 가져오기
           await checkAuthStatus();

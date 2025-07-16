@@ -53,6 +53,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUser(null);
       setIsLoggedIn(false);
       localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
       
       // 브라우저 히스토리를 대체하여 뒤로가기 시 로그인 상태가 되지 않도록 함
       window.history.replaceState(null, '', window.location.pathname);
@@ -64,8 +65,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const checkAuthStatus = async () => {
     try {
+      const accessToken = localStorage.getItem('accessToken');
+      const headers: Record<string, string> = {};
+      
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+      
       const response = await fetch('http://localhost:8080/api/v1/auth/me', {
         method: 'GET',
+        headers,
         credentials: 'include',
       });
       
@@ -75,6 +84,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       } else {
         // 서버에서 인증되지 않은 경우 로컬 스토리지 정리
         localStorage.removeItem('user');
+        localStorage.removeItem('accessToken');
         setUser(null);
         setIsLoggedIn(false);
       }
