@@ -63,6 +63,7 @@ const App = () => (
             <Route path="/test6" element={<TestPage6 />} />
             <Route path="/test7" element={<TestPage7 />} />
             <Route path="/login/callback" element={<LoginCallback />} />
+            <Route path="/oauth2/redirect" element={<LoginCallback />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
           </Routes>
