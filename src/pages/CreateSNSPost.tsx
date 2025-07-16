@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppHeader from '@/components/AppHeader';
 import LoginModal from '@/components/LoginModal';
@@ -9,10 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, X, Instagram } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 
 const CreateSNSPost = () => {
   const navigate = useNavigate();
+  const { user, isLoggedIn } = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [instagramLink, setinstagramLink] = useState('');
@@ -39,37 +42,89 @@ const CreateSNSPost = () => {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim() || !content.trim()) {
+  // 로그인 확인
+  useEffect(() => {
+    if (!isLoggedIn) {
       toast({
-        title: "입력 오류",
-        description: "제목과 본문을 모두 입력해주세요.",
+        title: "로그인 필요",
+        description: "게시글 작성을 위해 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      navigate('/board');
+    }
+  }, [isLoggedIn, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isLoggedIn || !user) {
+      toast({
+        title: "로그인 필요",
+        description: "게시글 작성을 위해 로그인이 필요합니다.",
         variant: "destructive",
       });
       return;
     }
- // instagramLink 정리
-  const normalizedInstagramLink = instagramLink.endsWith('/')
-    ? instagramLink
-    : instagramLink + '/';
-    
-    const postData = {
-      title,
-      content,
-      instagramLink, 
-      images,
-      category: 'sns',
-    };
 
-    console.log('SNS 홍보 게시글 데이터:', postData);
+    if (!title.trim() || !content.trim() || !instagramLink.trim()) {
+      toast({
+        title: "입력 오류",
+        description: "모든 항목을 기재해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    toast({
-      title: "SNS 홍보 게시글 작성 완료",
-      description: "게시글이 성공적으로 작성되었습니다.",
-    });
+    setIsLoading(true);
 
-    navigate('/board');
+    try {
+      const formData = new FormData();
+      formData.append('boardTitle', title.trim());
+      formData.append('boardContent', content.trim());
+      formData.append('InstagramLink', instagramLink.trim());
+      formData.append('category', '2'); // SNS 홍보 게시판 카테고리 번호
+      formData.append('userId', user.id.toString());
+      formData.append('nickname', user.nickname);
+
+      // 이미지 파일들 추가
+      images.forEach((image) => {
+        formData.append('image', image);
+      });
+
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch('http://localhost:8080/api/v1/boards/sns', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (response.ok) {
+        toast({
+          title: "SNS 홍보 게시글 작성 완료",
+          description: "게시글이 성공적으로 작성되었습니다.",
+        });
+        navigate('/board');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast({
+          title: "게시글 작성 실패",
+          description: errorData.message || "게시글 작성 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('게시글 작성 오류:', error);
+      toast({
+        title: "게시글 작성 실패",
+        description: "네트워크 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -191,8 +246,8 @@ const CreateSNSPost = () => {
                 >
                   취소
                 </Button>
-                <Button type="submit" className="flex-1">
-                  SNS 홍보 게시글 작성
+                <Button type="submit" className="flex-1" disabled={isLoading || !isLoggedIn}>
+                  {isLoading ? '작성 중...' : 'SNS 홍보 게시글 작성'}
                 </Button>
               </div>
             </form>
