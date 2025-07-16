@@ -159,9 +159,19 @@ const MissingPostDetail = () => {
       const result = await response.json();
       console.log('응답 데이터:', result);
       
-      if (result.code === 200 && result.data?.roomId) {
-        console.log('채팅방 생성 성공, roomId:', result.data.roomId);
-        navigate(`/chat/room/${result.data.roomId}`);
+      // 응답이 단순히 roomId인 경우와 {code, data} 형태인 경우 모두 처리
+      let roomId = null;
+      if (typeof result === 'number' || typeof result === 'string') {
+        roomId = result;
+      } else if (result.code === 200 && result.data?.roomId) {
+        roomId = result.data.roomId;
+      } else if (result.data) {
+        roomId = result.data;
+      }
+      
+      if (roomId) {
+        console.log('채팅방 생성 성공, roomId:', roomId);
+        navigate(`/chat/room/${roomId}`);
       } else {
         console.log('채팅방 생성 실패:', result);
         toast({
