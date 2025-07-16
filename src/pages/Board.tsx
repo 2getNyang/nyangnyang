@@ -23,20 +23,20 @@ const Board = () => {
       const result = await response.json();
       console.log('API response:', result); // API 응답 전체 구조 확인
       
-      // API 응답이 { data: [...] } 형태인지 확인
-      const data: BoardListItem[] = result.data || result;
+      // API 응답에서 실제 게시글 배열 추출
+      const data: any[] = result.data?.content || [];
       
       const convertedPosts: Post[] = data.map((item) => {
         console.log('Board item from API:', item); // API에서 받은 아이템 확인
         return {
-          id: (item.id || item.boardId || 0).toString(),
+          id: item.id.toString(),
           title: item.boardTitle || `${item.kindName || '게시글'} - ${item.lostType || ''}`,
           content: item.boardContent || '',
           imageUrl: item.imageUrl || item.thumbnailUrl || (item.images && item.images[0]) || '',
           author: item.nickname || item.nickName || '익명',
           date: item.createdAt,
           category: category === 'review' ? 'adoption' : category === 'lost' ? 'missing' : category,
-          views: item.viewCount || 0,
+          views: item.boardViewCount || item.viewCount || 0,
           // 실종/목격 게시판 전용 필드
           breed: item.kindName,
           gender: item.gender,
