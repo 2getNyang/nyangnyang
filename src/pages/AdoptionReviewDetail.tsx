@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Edit, Trash2, Reply } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,10 +12,64 @@ const AdoptionReviewDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
+  const [post, setPost] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const post = allPosts.find(p => p.id === id && p.category === 'adoption');
+  // 실제 API에서 게시글 데이터 가져오기
+  useEffect(() => {
+    const fetchPostDetail = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      try {
+        console.log('Fetching post detail for ID:', id);
+        const response = await fetch(`http://localhost:8080/api/v1/boards/review/${id}`);
+        const result = await response.json();
+        console.log('API response for post detail:', result);
+        
+        if (result.data) {
+          // API 응답 데이터를 화면에 표시할 형태로 변환
+          const convertedPost = {
+            id: result.data.id.toString(),
+            title: result.data.boardTitle || '제목 없음',
+            content: result.data.boardContent || '',
+            imageUrl: result.data.imageUrl || '',
+            author: result.data.nickname || '익명',
+            date: result.data.createdAt,
+            category: 'adoption',
+            views: result.data.boardViewCount || 0,
+            likes: 0 // API에 좋아요 수가 없다면 기본값
+          };
+          setPost(convertedPost);
+        }
+      } catch (error) {
+        console.error('Failed to fetch post detail:', error);
+        // API 호출 실패 시 mock 데이터에서 찾기 (fallback)
+        const mockPost = allPosts.find(p => p.id === id && p.category === 'adoption');
+        setPost(mockPost);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPostDetail();
+  }, [id]);
+
   const postComments = comments.filter(c => c.postId === id);
   const adoptionAnimal = post?.adoptionPostId ? adoptionAnimals.find(a => a.id === post.adoptionPostId) : null;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AppHeader onLoginClick={() => {}} />
+        <div className="container mx-auto max-w-4xl px-4 py-8">
+          <div className="flex justify-center items-center py-12">
+            <div className="text-muted-foreground">로딩 중...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
