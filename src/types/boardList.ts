@@ -1,43 +1,98 @@
-export interface BoardListItem {
-  // 공통 필드
-  id?: number;
-  boardId?: number; // lost 카테고리에서 사용
-  categoryId?: number;
-  nickname?: string;
-  nickName?: string; // lost 카테고리에서 사용
-  userId?: number;
+export interface boardList {
+  //게시글 id
+  id: number;
+
+  //카테고리 id
+  categoryId : number;
+
+  //작성자
+  nickname : string;
+
+  //유저 id
+  userId? : string;
+
+  //조회수
+  boardViewCount : number;
+
+  //썸네일 이미지 링크
+  imageUrl? : string;
+
+  //은서님 전용 이미지 링크
+  images?: string[];
+
+  //제목
   boardTitle?: string;
-  boardContent?: string;
-  viewCount?: number;
+
+  //본문
+  boardContent: string;
+
+  //작성일
   createdAt: string;
-  
-  // 이미지 필드
-  imageUrl?: string; // review, lost 카테고리
-  thumbnailUrl?: string; // lost 카테고리 대체 필드
-  images?: string[]; // sns 카테고리
-  
+
   // SNS 홍보 게시판 전용 필드
   instagramLink?: string;
-  likeCount?: number;
-  comments?: any;
-  modifiedAt?: string;
-  deletedAt?: string;
-  
+
   // 실종/목격 게시판 전용 필드
   kindName?: string;
   gender?: string;
-  age?: number;
+  age?: string;
   furColor?: string;
   missingLocation?: string;
   missingDate?: string;
-  lostType?: string; // "실종" | "목격"
-  deleteAt?: string;
+  // 실종/목격 구분 필드 (MS: 실종, WT: 목격)
+  lostType?: 'MS' | 'WT';
 }
 
 export type BoardCategory = 'adoption' | 'review' | 'sns' | 'lost';
 
-export interface BoardApiResponse {
+// API 응답 타입
+export interface ApiResponse {
   code: number;
-  data: BoardListItem[];
+  data: {
+    content: ApiAnimal[];
+    pageable: {
+      pageNumber: number;
+      pageSize: number;
+      sort: {
+        empty: boolean;
+        sorted: boolean;
+        unsorted: boolean;
+      };
+      offset: number;
+      unpaged: boolean;
+      paged: boolean;
+    };
+    last: boolean;
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    first: boolean;
+    numberOfElements: number;
+    empty: boolean;
+  };
   message: string;
+}
+
+export interface ApiAnimal {
+  boardId: number;
+  categoryId: number;
+  userId: number;
+  nickName: string;
+  lostType?: string;
+  viewCount: number;
+  kindName: string;
+  age: number;
+  furColor: string;
+  gender: string;
+  missingLocation: string;
+  missingDate: string;
+  thumbnailUrl?: string;
+  createdAt: string;
+  deleteAt?: string;
 }
