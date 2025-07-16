@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { CalendarIcon, Upload, X } from 'lucide-react';
 import AppHeader from '@/components/AppHeader';
 import LoginModal from '@/components/LoginModal';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,17 +23,17 @@ import { cn } from '@/lib/utils';
 
 const missingPostSchema = z.object({
   lostType: z.string().min(1, "실종유형을 선택해주세요"),
-  date: z.date({ required_error: "날짜를 선택해주세요" }),
+  missingDate: z.date({ required_error: "날짜를 선택해주세요" }),
   upKindCd: z.string().min(1, "축종을 선택해주세요"),
   kindCd: z.string().min(1, "품종을 선택해주세요"),
   regionCode: z.string().min(1, "시/도를 선택해주세요"),
   subRegionCode: z.string().min(1, "시/군/구를 선택해주세요"),
-  specificLocation: z.string().min(1, "구체적인 장소를 입력해주세요"),
-  contact: z.string().min(1, "연락처를 입력해주세요"),
+  missingLocation: z.string().min(1, "구체적인 장소를 입력해주세요"),
+  phone: z.string().min(1, "연락처를 입력해주세요"),
   sexCd: z.string().min(1, "성별을 선택해주세요"),
   age: z.string().min(1, "나이를 선택해주세요"),
   furColor: z.string().min(1, "털색을 입력해주세요"),
-  characteristics: z.string().min(1, "특징을 입력해주세요"),
+  distinctFeatures: z.string().min(1, "특징을 입력해주세요"),
   title: z.string().min(1, "제목을 입력해주세요"),
   content: z.string().min(1, "본문을 입력해주세요"),
 });
@@ -59,6 +60,7 @@ interface SubRegion {
 
 const CreateMissingPost = () => {
   const navigate = useNavigate();
+  const { isLoggedIn, user } = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [formData, setFormData] = useState<FormData | null>(null);
@@ -77,8 +79,18 @@ const CreateMissingPost = () => {
   const selectedUpKindCd = form.watch('upKindCd');
   const selectedRegionCode = form.watch('regionCode');
 
-  // 초기 폼 데이터 가져오기
+  // 로그인 확인 및 초기 폼 데이터 가져오기
   useEffect(() => {
+    if (!isLoggedIn) {
+      toast({
+        title: "로그인 필요",
+        description: "게시글 작성을 위해 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      navigate('/board');
+      return;
+    }
+
     const fetchFormData = async () => {
       try {
         const response = await fetch('http://localhost:8080/api/v1/boards/lost/form-info');
@@ -105,7 +117,7 @@ const CreateMissingPost = () => {
     };
 
     fetchFormData();
-  }, []);
+  }, [isLoggedIn, navigate]);
 
   // 축종 변경 시 품종 목록 가져오기
   useEffect(() => {
@@ -187,17 +199,78 @@ const CreateMissingPost = () => {
     }
   };
 
-  const onSubmit = (data: MissingPostForm) => {
-    // 게시글 저장 로직 (추후 백엔드 연동)
-    console.log('Form data:', data);
-    console.log('Images:', images);
-    
-    toast({
-      title: "게시글 작성 완료",
-      description: "실종/목격 제보가 성공적으로 작성되었습니다.",
-    });
-    
-    navigate('/board');
+  const onSubmit = async (data: MissingPostForm) => {
+    if (!user) {
+      toast({
+        title: "인증 오류",
+        description: "로그인 정보를 확인할 수 없습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      
+      // DTO 데이터 준비
+      const dto = {
+        categoryId: 4,
+        userId: user.id,
+        lostType: data.lostType,
+        missingDate: format(data.missingDate, 'yyyy-MM-dd'),
+        upKindCd: data.upKindCd,
+        kindCd: data.kindCd,
+        regionCode: data.regionCode,
+        subRegionCode: data.subRegionCode,
+        missingLocation: data.missingLocation,
+        phone: data.phone,
+        sexCd: data.sexCd,
+        age: parseInt(data.age),
+        furColor: data.furColor,
+        distinctFeatures: data.distinctFeatures,
+        title: data.title,
+        content: data.content,
+      };
+
+      // DTO를 JSON 문자열로 변환하여 FormData에 추가
+      formData.append('dto', JSON.stringify(dto));
+
+      // 이미지 파일들 추가
+      images.forEach((image) => {
+        formData.append('images', image);
+      });
+
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('http://localhost:8080/api/v1/boards/lost', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        toast({
+          title: "게시글 작성 완료",
+          description: "실종/목격 제보가 성공적으로 작성되었습니다.",
+        });
+        navigate('/board');
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "작성 실패",
+          description: errorData.message || "게시글 작성에 실패했습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+      toast({
+        title: "네트워크 오류",
+        description: "게시글 작성 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -257,7 +330,7 @@ const CreateMissingPost = () => {
                 {/* 날짜 선택 */}
                 <FormField
                   control={form.control}
-                  name="date"
+                  name="missingDate"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel>날짜</FormLabel>
@@ -352,7 +425,7 @@ const CreateMissingPost = () => {
                 {/* 구체적인 장소 */}
                 <FormField
                   control={form.control}
-                  name="specificLocation"
+                  name="missingLocation"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>구체적인 장소</FormLabel>
@@ -367,7 +440,7 @@ const CreateMissingPost = () => {
                 {/* 연락처 */}
                 <FormField
                   control={form.control}
-                  name="contact"
+                  name="phone"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>연락처</FormLabel>
@@ -506,7 +579,7 @@ const CreateMissingPost = () => {
                 {/* 특징 */}
                 <FormField
                   control={form.control}
-                  name="characteristics"
+                  name="distinctFeatures"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>특징</FormLabel>
