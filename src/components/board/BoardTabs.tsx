@@ -67,9 +67,7 @@ const handleCreatePost = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {currentPosts.map((post) => (
-              <div key={post.id} onClick={() => navigate(`/adoption-review/${post.id}`)} className="cursor-pointer">
-                <BoardCard post={post} />
-              </div>
+              <BoardCard key={post.id} post={post} />
             ))}
           </div>
         )}
@@ -83,9 +81,7 @@ const handleCreatePost = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {currentPosts.map((post) => (
-              <div key={post.id} onClick={() => navigate(`/sns-post/${post.id}`)} className="cursor-pointer">
-                <BoardCard post={post} />
-              </div>
+              <BoardCard key={post.id} post={post} />
             ))}
           </div>
         )}

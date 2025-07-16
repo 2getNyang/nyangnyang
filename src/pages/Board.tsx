@@ -5,7 +5,7 @@ import BoardTabs from '@/components/board/BoardTabs';
 import BoardPagination from '@/components/board/BoardPagination';
 import LoginModal from '@/components/LoginModal';
 import { useBoardFilter } from '@/hooks/useBoardFilter';
-import { BoardListItem, BoardCategory } from '@/types/boardList';
+import { boardList, BoardCategory } from '@/types/boardList';
 import { Post } from '@/types/board';
 
 const Board = () => {
