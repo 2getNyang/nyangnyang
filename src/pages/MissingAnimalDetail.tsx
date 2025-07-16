@@ -4,6 +4,7 @@ import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Edit, Trash2, Rep
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { useToast } from '@/hooks/use-toast';
 import AppHeader from '@/components/AppHeader';
 
 interface Comment {
@@ -39,6 +40,7 @@ interface PostDetail {
 const MissingPostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [liked, setLiked] = useState(false);
   const [postDetail, setPostDetail] = useState<PostDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,7 @@ const MissingPostDetail = () => {
 
 
   // 현재 로그인된 사용자 ID (실제로는 auth context에서 가져와야 함)
-  const currentUserId = 1; // Mock user ID
+  const currentUserId = 7; // 테스트용 사용자 ID
 
   useEffect(() => {
     const fetchPostDetail = async () => {
@@ -123,6 +125,49 @@ const MissingPostDetail = () => {
   };
 
   const organizedComments = organizeComments(postDetail.comments);
+
+  // 채팅하기 버튼 클릭 핸들러
+  const handleChatClick = async () => {
+    if (currentUserId === postDetail.userId) {
+      toast({
+        title: "알림",
+        description: "자신과는 채팅할 수 없어요.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/chat/room?user1Id=${currentUserId}&user2Id=${postDetail.userId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const result = await response.json();
+      
+      if (result.code === 200 && result.data?.roomId) {
+        navigate(`/chat/room/${result.data.roomId}`);
+      } else {
+        toast({
+          title: "오류",
+          description: "채팅방 생성에 실패했습니다.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create chat room:', error);
+      toast({
+        title: "오류",
+        description: "채팅방 생성 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -275,12 +320,13 @@ const MissingPostDetail = () => {
               {/* 채팅하기 버튼 */}
               <div className="mt-4">
                 <Button 
-                  onClick={() => navigate(`/chat/${postDetail.nickname}`)}
+                  onClick={handleChatClick}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   size="lg"
+                  disabled={currentUserId === postDetail.userId}
                 >
                   <Send className="mr-2 h-4 w-4" />
-                  {postDetail.nickname}님과 채팅하기
+                  {currentUserId === postDetail.userId ? '자신과는 채팅할 수 없어요' : `${postDetail.nickname}님과 채팅하기`}
                 </Button>
               </div>
             </div>
