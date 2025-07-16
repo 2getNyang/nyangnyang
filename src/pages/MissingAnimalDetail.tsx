@@ -141,7 +141,7 @@ const MissingPostDetail = () => {
       const response = await fetch(
         `http://localhost:8080/api/v1/chat/room?user1Id=${currentUserId}&user2Id=${postDetail.userId}`,
         {
-          method: 'PUT',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },

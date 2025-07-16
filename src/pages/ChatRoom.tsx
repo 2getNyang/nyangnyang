@@ -121,7 +121,7 @@ const ChatRoom = () => {
 
     // WebSocket으로 메시지 전송
     stompClientRef.current.publish({
-      destination: '/pub/chat/message',
+      destination: '/pub/api/v1/chat/message',
       body: JSON.stringify(message)
     });
 
