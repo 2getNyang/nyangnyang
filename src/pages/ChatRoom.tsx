@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, Phone, Video, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -22,9 +23,11 @@ interface ChatUser {
 const ChatRoom = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [newMessage, setNewMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const stompClientRef = useRef<Client | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -33,9 +36,39 @@ const ChatRoom = () => {
   const currentUser: ChatUser = { id: '7', name: '로그인한사용자' };
   const otherUser: ChatUser = { id: 'other', name: '상대방' };
 
+  // 채팅방 접근 권한 확인
+  useEffect(() => {
+    if (!roomId) {
+      navigate('/chat');
+      return;
+    }
+
+    const checkRoomAccess = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}/check?userId=${currentUser.id}`);
+        if (!response.ok) {
+          console.error('채팅방 접근 권한이 없습니다.');
+          toast({
+            title: "오류",
+            description: "채팅방에 접근할 권한이 없습니다.",
+            variant: "destructive"
+          });
+          navigate('/chat');
+          return;
+        }
+        setIsAuthorized(true);
+      } catch (error) {
+        console.error('채팅방 권한 확인 실패:', error);
+        navigate('/chat');
+      }
+    };
+
+    checkRoomAccess();
+  }, [roomId, currentUser.id, navigate, toast]);
+
   // WebSocket 연결 설정
   useEffect(() => {
-    if (!roomId) return;
+    if (!roomId || !isAuthorized) return;
 
     const socket = new SockJS('http://localhost:8080/ws-stomp');
     const client = new Client({
@@ -75,7 +108,7 @@ const ChatRoom = () => {
         client.deactivate();
       }
     };
-  }, [roomId]);
+  }, [roomId, isAuthorized]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
