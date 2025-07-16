@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/context/AuthContext";
 import Index from "./pages/Index";
 import Animals from "./pages/Animals";
 import Board from "./pages/Board";
@@ -26,17 +27,19 @@ import ChatRoom from "./pages/ChatRoom";
 import TestPage from "./pages/TestPage";
 import TestPage6 from "./pages/TestPage6";
 import TestPage7 from "./pages/TestPage7";
+import LoginCallback from "./pages/LoginCallback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/animals" element={<Animals />} />
           <Route path="/board" element={<Board />} />
@@ -59,11 +62,13 @@ const App = () => (
             <Route path="/test" element={<TestPage />} />
             <Route path="/test6" element={<TestPage6 />} />
             <Route path="/test7" element={<TestPage7 />} />
+            <Route path="/login/callback" element={<LoginCallback />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

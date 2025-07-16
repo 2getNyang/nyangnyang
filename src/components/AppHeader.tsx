@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, Menu, X, User } from 'lucide-react';
+import { ChevronDown, Menu, X, User, LogOut, Settings, FileText, MessageCircle, Heart as HeartIcon, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import { Heart } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface AppHeaderProps {
   onLoginClick: () => void;
-  isLoggedIn?: boolean;
-  userName?: string;
-  onLogout?: () => void;
 }
 
-const AppHeader = ({ onLoginClick, isLoggedIn = false, userName = "사용자", onLogout }: AppHeaderProps) => {
+const AppHeader = ({ onLoginClick }: AppHeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isLoggedIn, logout } = useAuth();
   
   // Mock notification data
   const notifications = [
@@ -52,43 +53,16 @@ const AppHeader = ({ onLoginClick, isLoggedIn = false, userName = "사용자", o
             {/* Desktop Actions */}
             {isLoggedIn ? (
               <div className="hidden md:flex items-center space-x-4">
-                {/* 마이페이지 버튼 */}
-                <Link to="/mypage">
-                  <Button className="golden hover:bg-yellow-500 text-gray-800 font-medium px-4 py-2 text-sm flex items-center space-x-2">
-                    <User className="w-4 h-4" />
-                    <span>마이페이지</span>
-                  </Button>
-                </Link>
-
-                {/* 사용자 드롭다운 */}
+                {/* 알림 */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 px-3 py-2">
-                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-gray-600">
-                          {userName.charAt(0)}
-                        </span>
-                      </div>
-                      <span className="text-sm font-medium">{userName}</span>
-                      <ChevronDown className="w-3 h-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>내 프로필</DropdownMenuItem>
-                    <DropdownMenuItem>설정</DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/chat-list">채팅내역</Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* 알림 드롭다운 */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-1 text-gray-700 hover:text-gray-900 relative px-3 py-2">
-                      <span className="text-sm font-medium">알림</span>
-                      <ChevronDown className="w-3 h-3" />
-                      <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    <Button variant="ghost" className="relative px-3 py-2">
+                      <Bell className="w-5 h-5" />
+                      {notifications.length > 0 && (
+                        <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 text-white">
+                          {notifications.length}
+                        </Badge>
+                      )}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80">
@@ -109,13 +83,65 @@ const AppHeader = ({ onLoginClick, isLoggedIn = false, userName = "사용자", o
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Button 
-                  onClick={onLogout}
-                  variant="ghost"
-                  className="text-gray-700 hover:text-gray-900 px-3 py-2"
-                >
-                  <span className="text-sm font-medium">로그아웃</span>
-                </Button>
+                {/* 사용자 드롭다운 */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-xs font-medium text-gray-600">
+                          {user?.name?.charAt(0) || 'U'}
+                        </span>
+                      </div>
+                      <span className="text-sm font-medium">{user?.name || '사용자'}</span>
+                      <ChevronDown className="w-3 h-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem className="flex items-center space-x-2">
+                      <User className="w-4 h-4" />
+                      <span>{user?.name || '사용자'}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/mypage" className="flex items-center space-x-2">
+                        <User className="w-4 h-4" />
+                        <span>마이페이지</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/edit-profile" className="flex items-center space-x-2">
+                        <Settings className="w-4 h-4" />
+                        <span>프로필 수정</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/my-posts" className="flex items-center space-x-2">
+                        <FileText className="w-4 h-4" />
+                        <span>내 게시글</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/my-liked-posts" className="flex items-center space-x-2">
+                        <HeartIcon className="w-4 h-4" />
+                        <span>좋아요 한 글</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/chat-list" className="flex items-center space-x-2">
+                        <MessageCircle className="w-4 h-4" />
+                        <span>채팅 목록</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={logout}
+                      className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>로그아웃</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <Button 
@@ -148,7 +174,24 @@ const AppHeader = ({ onLoginClick, isLoggedIn = false, userName = "사용자", o
               <Link to="/shelters" className="text-gray-600 hover:text-gray-800 transition-colors py-2 text-sm font-medium">보호소 찾기</Link>
               <Link to="/board" className="text-gray-600 hover:text-gray-800 transition-colors py-2 text-sm font-medium">커뮤니티</Link>
               {isLoggedIn && (
-                <Link to="/mypage" className="text-gray-600 hover:text-gray-800 transition-colors py-2 text-sm font-medium">마이페이지</Link>
+                <>
+                  <Link to="/mypage" className="text-gray-600 hover:text-gray-800 transition-colors py-2 text-sm font-medium">마이페이지</Link>
+                  <Link to="/chat-list" className="text-gray-600 hover:text-gray-800 transition-colors py-2 text-sm font-medium">채팅 목록</Link>
+                  <button 
+                    onClick={logout}
+                    className="text-red-600 hover:text-red-700 transition-colors py-2 text-sm font-medium text-left"
+                  >
+                    로그아웃
+                  </button>
+                </>
+              )}
+              {!isLoggedIn && (
+                <button 
+                  onClick={onLoginClick}
+                  className="text-golden hover:text-yellow-600 transition-colors py-2 text-sm font-medium text-left"
+                >
+                  로그인
+                </button>
               )}
             </div>
           </nav>

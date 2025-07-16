@@ -63,9 +63,6 @@ const Shelters = () => {
     <div className="min-h-screen bg-gray-50">
       <AppHeader 
         onLoginClick={() => setIsLoggedIn(!isLoggedIn)}
-        isLoggedIn={isLoggedIn}
-        userName="김철수"
-        onLogout={() => setIsLoggedIn(false)}
       />
       
       <div className="container mx-auto px-4 py-8">

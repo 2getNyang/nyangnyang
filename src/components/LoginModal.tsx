@@ -10,9 +10,25 @@ interface LoginModalProps {
 
 const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const handleSocialLogin = (provider: string) => {
-    console.log(`Logging in with ${provider}`);
-    // Here you would implement the actual social login logic
-    // For now, we'll just log the provider
+    let authUrl = '';
+    
+    switch (provider) {
+      case 'kakao':
+        authUrl = 'http://localhost:8080/oauth2/authorization/kakao';
+        break;
+      case 'naver':
+        authUrl = 'http://localhost:8080/oauth2/authorization/naver';
+        break;
+      case 'google':
+        authUrl = 'http://localhost:8080/oauth2/authorization/google';
+        break;
+      default:
+        console.error('지원하지 않는 소셜 로그인 제공자:', provider);
+        return;
+    }
+    
+    // OAuth2 인증 페이지로 리다이렉트
+    window.location.href = authUrl;
   };
 
   return (

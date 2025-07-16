@@ -19,9 +19,6 @@ const ShelterDetail = () => {
       <div className="min-h-screen bg-gray-50">
         <AppHeader 
           onLoginClick={() => setIsLoggedIn(!isLoggedIn)}
-          isLoggedIn={isLoggedIn}
-          userName="김철수"
-          onLogout={() => setIsLoggedIn(false)}
         />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
@@ -39,9 +36,6 @@ const ShelterDetail = () => {
     <div className="min-h-screen bg-gradient-to-br from-golden-light via-white to-amber-50">
       <AppHeader 
         onLoginClick={() => setIsLoggedIn(!isLoggedIn)}
-        isLoggedIn={isLoggedIn}
-        userName="김철수"
-        onLogout={() => setIsLoggedIn(false)}
       />
       
       <div className="container mx-auto px-4 py-8">

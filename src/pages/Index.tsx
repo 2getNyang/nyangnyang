@@ -6,11 +6,11 @@ import AppHeroSection from '@/components/AppHeroSection';
 import AppAnimalCard from '@/components/AppAnimalCard';
 import LoginModal from '@/components/LoginModal';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/context/AuthContext';
 
 const Index = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [userName, setUserName] = useState('김철수');
+  const { isLoggedIn } = useAuth();
 
   // Mock data for abandoned animals with images
   const animals = [
@@ -104,9 +104,6 @@ const Index = () => {
     <div className="min-h-screen bg-gray-50">
       <AppHeader 
         onLoginClick={() => setIsLoginModalOpen(true)}
-        isLoggedIn={isLoggedIn}
-        userName={userName}
-        onLogout={() => setIsLoggedIn(false)}
       />
       <AppHeroSection />
       
@@ -145,15 +142,6 @@ const Index = () => {
         onClose={() => setIsLoginModalOpen(false)}
       />
       
-      {/* 테스트용 로그인 토글 버튼 */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <button 
-          onClick={() => setIsLoggedIn(!isLoggedIn)}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm shadow-lg"
-        >
-          {isLoggedIn ? '로그아웃 테스트' : '로그인 테스트'}
-        </button>
-      </div>
     </div>
   );
 };

@@ -98,9 +98,6 @@ const Board = () => {
     <div className="min-h-screen bg-gray-50">
       <AppHeader 
         onLoginClick={handleLoginClick}
-        isLoggedIn={isLoggedIn}
-        userName={userName}
-        onLogout={() => setIsLoggedIn(false)}
       />
       
       <div className="container mx-auto px-4 py-8">
