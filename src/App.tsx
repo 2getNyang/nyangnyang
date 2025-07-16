@@ -23,6 +23,7 @@ import MissingAnimalDetail from "./pages/MissingAnimalDetail";
 import Chat from "./pages/Chat";
 import ChatList from "./pages/ChatList";
 import ChatRoom from "./pages/ChatRoom";
+import TestPage from "./pages/TestPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/my-posts" element={<MyPosts />} />
           <Route path="/my-liked-posts" element={<MyLikedPosts />} />
           <Route path="/my-favorite-adoptions" element={<MyFavoriteAdoptions />} />
+          <Route path="/test" element={<TestPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

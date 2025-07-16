@@ -230,7 +230,7 @@ const ChatRoom = () => {
         ) : (
           messages.map((message, index) => {
             const prevMessage = index > 0 ? messages[index - 1] : undefined;
-            const isMyMessage = message.senderId === currentUser.id;
+            const isMyMessage = message.senderId.toString() === currentUser.id;
             
             return (
               <div key={message.id}>
