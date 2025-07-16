@@ -22,10 +22,10 @@ const AdoptionReviewDetail = () => {
       
       setLoading(true);
       try {
-        console.log('Fetching post detail for ID:', id);
+        console.log('📌Fetching post detail for ID:', id);
         const response = await fetch(`http://localhost:8080/api/v1/boards/review/${id}`);
         const result = await response.json();
-        console.log('API response for post detail:', result);
+        console.log('📌API response for post detail:', result);
         
         if (result.data) {
           // API 응답 데이터를 화면에 표시할 형태로 변환
