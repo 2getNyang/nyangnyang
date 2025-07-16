@@ -34,7 +34,6 @@ const missingPostSchema = z.object({
   age: z.string().min(1, "나이를 선택해주세요"),
   furColor: z.string().min(1, "털색을 입력해주세요"),
   distinctFeatures: z.string().min(1, "특징을 입력해주세요"),
-  title: z.string().min(1, "제목을 입력해주세요"),
   content: z.string().min(1, "본문을 입력해주세요"),
 });
 
@@ -224,11 +223,10 @@ const CreateMissingPost = () => {
         subRegionCode: data.subRegionCode,
         missingLocation: data.missingLocation,
         phone: data.phone,
-        sexCd: data.sexCd,
+        gender: data.sexCd,
         age: parseInt(data.age),
         furColor: data.furColor,
         distinctFeatures: data.distinctFeatures,
-        title: data.title,
         content: data.content,
       };
 
@@ -602,20 +600,6 @@ const CreateMissingPost = () => {
                   )}
                 />
 
-                {/* 제목 */}
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>제목</FormLabel>
-                      <FormControl>
-                        <Input placeholder="제목을 입력해주세요" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 {/* 본문 */}
                 <FormField
