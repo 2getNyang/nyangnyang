@@ -138,6 +138,11 @@ const MissingPostDetail = () => {
     }
 
     try {
+      console.log('=== 채팅방 생성 시도 ===');
+      console.log('currentUserId:', currentUserId);
+      console.log('postDetail.userId:', postDetail.userId);
+      console.log('요청 URL:', `http://localhost:8080/api/v1/chat/room?user1Id=${currentUserId}&user2Id=${postDetail.userId}`);
+      
       const response = await fetch(
         `http://localhost:8080/api/v1/chat/room?user1Id=${currentUserId}&user2Id=${postDetail.userId}`,
         {
@@ -148,19 +153,25 @@ const MissingPostDetail = () => {
         }
       );
 
+      console.log('응답 상태:', response.status);
+      console.log('응답 헤더:', response.headers);
+      
       const result = await response.json();
+      console.log('응답 데이터:', result);
       
       if (result.code === 200 && result.data?.roomId) {
+        console.log('채팅방 생성 성공, roomId:', result.data.roomId);
         navigate(`/chat/room/${result.data.roomId}`);
       } else {
+        console.log('채팅방 생성 실패:', result);
         toast({
           title: "오류",
-          description: "채팅방 생성에 실패했습니다.",
+          description: `채팅방 생성에 실패했습니다. (${result.message || '알 수 없는 오류'})`,
           variant: "destructive"
         });
       }
     } catch (error) {
-      console.error('Failed to create chat room:', error);
+      console.error('채팅방 생성 중 예외 발생:', error);
       toast({
         title: "오류",
         description: "채팅방 생성 중 오류가 발생했습니다.",
