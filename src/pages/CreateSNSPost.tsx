@@ -79,16 +79,22 @@ const CreateSNSPost = () => {
 
     try {
       const formData = new FormData();
-      formData.append('boardTitle', title.trim());
-      formData.append('boardContent', content.trim());
-      formData.append('InstagramLink', instagramLink.trim());
-      formData.append('category', '2'); // SNS 홍보 게시판 카테고리 번호
-      formData.append('userId', user.id.toString());
-      formData.append('nickname', user.nickname);
+      
+      // DTO 데이터를 JSON 문자열로 생성
+      const dtoData = {
+        boardTitle: title.trim(),
+        boardContent: content.trim(),
+        InstagramLink: instagramLink.trim(),
+        category: 2,
+        userId: user.id,
+        nickname: user.nickname
+      };
+      
+      formData.append('dto', JSON.stringify(dtoData));
 
       // 이미지 파일들 추가
       images.forEach((image) => {
-        formData.append('image', image);
+        formData.append('images', image);
       });
 
       const accessToken = localStorage.getItem('accessToken');
