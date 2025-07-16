@@ -20,7 +20,11 @@ const Board = () => {
     setLoading(true);
     try {
       const response = await fetch(`http://localhost:8080/api/v1/boards/${category}`);
-      const data: BoardListItem[] = await response.json();
+      const result = await response.json();
+      console.log('API response:', result); // API 응답 전체 구조 확인
+      
+      // API 응답이 { data: [...] } 형태인지 확인
+      const data: BoardListItem[] = result.data || result;
       
       const convertedPosts: Post[] = data.map((item) => {
         console.log('Board item from API:', item); // API에서 받은 아이템 확인
