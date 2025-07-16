@@ -22,28 +22,30 @@ const Board = () => {
       const response = await fetch(`http://localhost:8080/api/v1/boards/${category}`);
       const data: BoardListItem[] = await response.json();
       
-      // API 응답을 Post 인터페이스로 변환
-      const convertedPosts: Post[] = data.map((item) => ({
-        id: (item.id || item.boardId || 0).toString(),
-        title: item.boardTitle || `${item.kindName || '게시글'} - ${item.lostType || ''}`,
-        content: item.boardContent || '',
-        imageUrl: item.imageUrl || item.thumbnailUrl || (item.images && item.images[0]) || '',
-        author: item.nickname || item.nickName || '익명',
-        date: item.createdAt,
-        category: category === 'review' ? 'adoption' : category === 'lost' ? 'missing' : category,
-        views: item.viewCount || 0,
-        // 실종/목격 게시판 전용 필드
-        breed: item.kindName,
-        gender: item.gender,
-        age: item.age?.toString(),
-        furColor: item.furColor,
-        missingLocation: item.missingLocation,
-        missingDate: item.missingDate,
-        missingType: item.lostType === '실종' ? 'MS' : item.lostType === '목격' ? 'WT' : undefined,
-        // SNS 홍보 게시판 전용 필드
-        instagramLink: item.instagramLink,
-        images: item.images
-      }));
+      const convertedPosts: Post[] = data.map((item) => {
+        console.log('Board item from API:', item); // API에서 받은 아이템 확인
+        return {
+          id: (item.id || item.boardId || 0).toString(),
+          title: item.boardTitle || `${item.kindName || '게시글'} - ${item.lostType || ''}`,
+          content: item.boardContent || '',
+          imageUrl: item.imageUrl || item.thumbnailUrl || (item.images && item.images[0]) || '',
+          author: item.nickname || item.nickName || '익명',
+          date: item.createdAt,
+          category: category === 'review' ? 'adoption' : category === 'lost' ? 'missing' : category,
+          views: item.viewCount || 0,
+          // 실종/목격 게시판 전용 필드
+          breed: item.kindName,
+          gender: item.gender,
+          age: item.age?.toString(),
+          furColor: item.furColor,
+          missingLocation: item.missingLocation,
+          missingDate: item.missingDate,
+          missingType: item.lostType === '실종' ? 'MS' : item.lostType === '목격' ? 'WT' : undefined,
+          // SNS 홍보 게시판 전용 필드
+          instagramLink: item.instagramLink,
+          images: item.images
+        };
+      });
       
       setBoardData(convertedPosts);
     } catch (error) {
