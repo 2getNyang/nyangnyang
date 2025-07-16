@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import AppHeader from '@/components/AppHeader';
 
 interface Comment {
@@ -41,14 +42,14 @@ const MissingPostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [postDetail, setPostDetail] = useState<PostDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-
-  // 현재 로그인된 사용자 ID (실제로는 auth context에서 가져와야 함)
-  const currentUserId = 7; // 테스트용 사용자 ID
+  // 현재 로그인된 사용자 ID
+  const currentUserId = user?.id;
 
   useEffect(() => {
     const fetchPostDetail = async () => {
@@ -190,6 +191,46 @@ const MissingPostDetail = () => {
     }
   };
 
+  // 삭제 처리 함수
+  const handleDelete = async () => {
+    if (!window.confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:8080/api/v1/boards/lost/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        toast({
+          title: "삭제 완료",
+          description: "게시글이 성공적으로 삭제되었습니다.",
+        });
+        navigate('/board?category=missing');
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "삭제 실패",
+          description: errorData.message || "게시글 삭제에 실패했습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: "네트워크 오류",
+        description: "게시글 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeader onLoginClick={() => {}} />
@@ -219,7 +260,12 @@ const MissingPostDetail = () => {
                     <Edit className="w-4 h-4 mr-1" />
                     수정
                   </Button>
-                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-800 hover:bg-red-50">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                    onClick={handleDelete}
+                  >
                     <Trash2 className="w-4 h-4 mr-1" />
                     삭제
                   </Button>
