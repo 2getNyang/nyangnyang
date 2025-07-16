@@ -232,6 +232,9 @@ const CreateMissingPost = () => {
         content: data.content,
       };
 
+      console.log('전송될 DTO 객체:', dto);
+      console.log('전송될 JSON 데이터:', JSON.stringify(dto));
+
       // DTO를 JSON Blob으로 변환하여 FormData에 추가 (Content-Type 명시)
       const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
       formData.append('dto', dtoBlob);
