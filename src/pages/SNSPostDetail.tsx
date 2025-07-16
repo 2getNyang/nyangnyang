@@ -4,6 +4,9 @@ import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Instagram, Edit, 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import AppHeader from '@/components/AppHeader';
 
 declare global {
@@ -42,12 +45,11 @@ interface APIResponse {
 const SNSPostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, isLoggedIn } = useAuth();
   const [postDetail, setPostDetail] = useState<SNSPostDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // 현재 로그인된 사용자 ID (실제로는 auth context에서 가져와야 함)
-  const currentUserId = 1; // Mock user ID
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchPostDetail = async () => {
@@ -102,6 +104,54 @@ const SNSPostDetail = () => {
     navigate('/board?category=sns');
   };
 
+  const handleDelete = async () => {
+    if (!isLoggedIn || !user || !id) {
+      toast({
+        title: "삭제 실패",
+        description: "로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:8080/api/v1/boards/lost/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        toast({
+          title: "게시글 삭제 완료",
+          description: "게시글이 성공적으로 삭제되었습니다.",
+        });
+        navigate('/board?category=sns');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast({
+          title: "게시글 삭제 실패",
+          description: errorData.message || "게시글 삭제 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('게시글 삭제 오류:', error);
+      toast({
+        title: "게시글 삭제 실패",
+        description: "네트워크 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('ko-KR', {
@@ -137,7 +187,7 @@ const SNSPostDetail = () => {
     );
   }
 
-  const isAuthor = currentUserId === postDetail.userId;
+  const isAuthor = isLoggedIn && user && user.id === postDetail.userId;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -168,10 +218,28 @@ const SNSPostDetail = () => {
                     <Edit className="w-4 h-4 mr-1" />
                     수정
                   </Button>
-                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-800 hover:bg-red-50">
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    삭제
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-red-600 hover:text-red-800 hover:bg-red-50" disabled={isDeleting}>
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        {isDeleting ? '삭제 중...' : '삭제'}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>게시글을 삭제하시겠습니까?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          이 작업은 되돌릴 수 없습니다. 게시글이 영구적으로 삭제됩니다.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>취소</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                          삭제
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               )}
             </div>
