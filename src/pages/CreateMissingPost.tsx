@@ -232,8 +232,9 @@ const CreateMissingPost = () => {
         content: data.content,
       };
 
-      // DTO를 JSON 문자열로 변환하여 FormData에 추가
-      formData.append('dto', JSON.stringify(dto));
+      // DTO를 JSON Blob으로 변환하여 FormData에 추가 (Content-Type 명시)
+      const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
+      formData.append('dto', dtoBlob);
 
       // 이미지 파일들 추가
       images.forEach((image) => {
