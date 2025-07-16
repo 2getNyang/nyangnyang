@@ -27,7 +27,7 @@ const missingPostSchema = z.object({
   upKindCd: z.string().min(1, "축종을 선택해주세요"),
   kindCd: z.string().min(1, "품종을 선택해주세요"),
   regionCode: z.string().min(1, "시/도를 선택해주세요"),
-  subRegionCode: z.string().min(1, "시/군/구를 선택해주세요"),
+  subRegionCode: z.string().optional(),
   missingLocation: z.string().min(1, "구체적인 장소를 입력해주세요"),
   phone: z.string().min(1, "연락처를 입력해주세요"),
   sexCd: z.string().min(1, "성별을 선택해주세요"),
@@ -35,6 +35,16 @@ const missingPostSchema = z.object({
   furColor: z.string().min(1, "털색을 입력해주세요"),
   distinctFeatures: z.string().min(1, "특징을 입력해주세요"),
   content: z.string().min(1, "본문을 입력해주세요"),
+  images: z.array(z.any()).min(1, "사진을 한 장 이상 업로드해주세요"),
+}).refine((data) => {
+  // 세종특별자치시가 아닌 경우 시/군/구는 필수
+  if (data.regionCode !== '50' && (!data.subRegionCode || data.subRegionCode.trim() === '')) {
+    return false;
+  }
+  return true;
+}, {
+  message: "시/군/구를 선택해주세요",
+  path: ["subRegionCode"],
 });
 
 type MissingPostForm = z.infer<typeof missingPostSchema>;
@@ -72,6 +82,7 @@ const CreateMissingPost = () => {
     defaultValues: {
       lostType: '',
       sexCd: '',
+      images: [],
     }
   });
 
@@ -172,11 +183,15 @@ const CreateMissingPost = () => {
       });
       return;
     }
-    setImages(prev => [...prev, ...files]);
+    const newImages = [...images, ...files];
+    setImages(newImages);
+    form.setValue('images', newImages);
   };
 
   const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    const newImages = images.filter((_, i) => i !== index);
+    setImages(newImages);
+    form.setValue('images', newImages);
   };
 
   // 성별 표시 변환
