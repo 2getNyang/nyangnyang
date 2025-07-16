@@ -457,21 +457,24 @@ const CreateMissingPost = () => {
                 <div className="space-y-4">
                   {/* 축종과 품종 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="upKindCd"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>축종</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="축종 선택" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {formData?.upKinds.map((upKind) => (
-                                <SelectItem key={upKind.upKindCd} value={upKind.upKindCd}>
+                  <FormField
+                    control={form.control}
+                    name="upKindCd"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>축종</FormLabel>
+                        <Select onValueChange={(value) => {
+                          console.log('선택된 축종:', value);
+                          field.onChange(value);
+                        }} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="축종 선택" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {formData?.upKinds.map((upKind) => (
+                              <SelectItem key={upKind.upKindCd} value={upKind.upKindCd}>
                                   {upKind.upKindName}
                                 </SelectItem>
                               ))}
