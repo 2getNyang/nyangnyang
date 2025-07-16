@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,15 +21,15 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const missingPostSchema = z.object({
-  type: z.enum(['missing', 'sighted'], { required_error: "구분을 선택해주세요" }),
+  lostType: z.string().min(1, "실종유형을 선택해주세요"),
   date: z.date({ required_error: "날짜를 선택해주세요" }),
-  city: z.string().min(1, "시/도를 선택해주세요"),
-  district: z.string().min(1, "시/군/구를 선택해주세요"),
+  upKindCd: z.string().min(1, "축종을 선택해주세요"),
+  kindCd: z.string().min(1, "품종을 선택해주세요"),
+  regionCode: z.string().min(1, "시/도를 선택해주세요"),
+  subRegionCode: z.string().min(1, "시/군/구를 선택해주세요"),
   specificLocation: z.string().min(1, "구체적인 장소를 입력해주세요"),
   contact: z.string().min(1, "연락처를 입력해주세요"),
-  species: z.string().min(1, "축종을 선택해주세요"),
-  breed: z.string().min(1, "품종을 선택해주세요"),
-  gender: z.enum(['unknown', 'male', 'female'], { required_error: "성별을 선택해주세요" }),
+  sexCd: z.string().min(1, "성별을 선택해주세요"),
   age: z.string().min(1, "나이를 선택해주세요"),
   furColor: z.string().min(1, "털색을 입력해주세요"),
   characteristics: z.string().min(1, "특징을 입력해주세요"),
@@ -39,38 +39,113 @@ const missingPostSchema = z.object({
 
 type MissingPostForm = z.infer<typeof missingPostSchema>;
 
-const cities = [
-  "서울특별시", "부산광역시", "대구광역시", "인천광역시", "광주광역시", "대전광역시", "울산광역시", "세종특별자치시",
-  "경기도", "강원도", "충청북도", "충청남도", "전라북도", "전라남도", "경상북도", "경상남도", "제주특별자치도"
-];
+interface FormData {
+  upKinds: Array<{ upKindCd: string; upKindName: string }>;
+  regions: Array<{ regionCode: string; regionName: string }>;
+  genders: string[];
+  lostTypes: string[];
+  ages: number[];
+}
 
-const districts: Record<string, string[]> = {
-  "서울특별시": ["강남구", "강동구", "강북구", "강서구", "관악구", "광진구", "구로구", "금천구", "노원구", "도봉구", "동대문구", "동작구", "마포구", "서대문구", "서초구", "성동구", "성북구", "송파구", "양천구", "영등포구", "용산구", "은평구", "종로구", "중구", "중랑구"],
-  "경기도": ["수원시", "성남시", "안양시", "안산시", "용인시", "광명시", "평택시", "과천시", "오산시", "시흥시", "군포시", "의왕시", "하남시", "이천시", "안성시", "김포시", "화성시", "광주시", "양주시", "포천시", "여주시", "연천군", "가평군", "양평군"],
-  // 다른 지역들도 필요시 추가 가능
-};
+interface Breed {
+  kindCd: string;
+  kindName: string;
+}
 
-const breeds: Record<string, string[]> = {
-  "dog": ["골든 리트리버", "리브라도 리트리버", "비숑 프리제", "푸들", "말티즈", "포메라니안", "치와와", "요크셔 테리어", "시바견", "진돗개", "삽살개", "닥스훈트", "비글", "보더 콜리", "허스키", "마라뮤트", "셰퍼드", "불독", "로트와일러", "그레이하운드", "잭 러셀 테리어", "코커 스패니얼", "기타"],
-  "cat": ["코리안 숏헤어", "페르시안", "러시안 블루", "브리티시 숏헤어", "메인쿤", "아메리칸 숏헤어", "스코티시 폴드", "먼치킨", "벵갈", "샴", "래그돌", "노르웨이 숲", "터키시 앙고라", "아비시니안", "버미즈", "기타"],
-  "other": ["토끼", "햄스터", "기니피그", "페럿", "앵무새", "카나리아", "거북이", "이구아나", "기타"]
-};
+interface SubRegion {
+  subRegionCode: string;
+  subRegionName: string;
+}
 
 const CreateMissingPost = () => {
   const navigate = useNavigate();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [images, setImages] = useState<File[]>([]);
+  const [formData, setFormData] = useState<FormData | null>(null);
+  const [breeds, setBreeds] = useState<Breed[]>([]);
+  const [subRegions, setSubRegions] = useState<SubRegion[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const form = useForm<MissingPostForm>({
     resolver: zodResolver(missingPostSchema),
     defaultValues: {
-      type: 'missing',
-      gender: 'unknown',
+      lostType: '',
+      sexCd: '',
     }
   });
 
-  const selectedCity = form.watch('city');
-  const selectedSpecies = form.watch('species');
+  const selectedUpKindCd = form.watch('upKindCd');
+  const selectedRegionCode = form.watch('regionCode');
+
+  // 초기 폼 데이터 가져오기
+  useEffect(() => {
+    const fetchFormData = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/v1/boards/lost/form-info');
+        if (response.ok) {
+          const result = await response.json();
+          setFormData(result.data);
+        } else {
+          toast({
+            title: "데이터 로딩 실패",
+            description: "폼 데이터를 불러오는데 실패했습니다.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('Form data fetch error:', error);
+        toast({
+          title: "네트워크 오류",
+          description: "데이터를 불러오는 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFormData();
+  }, []);
+
+  // 축종 변경 시 품종 목록 가져오기
+  useEffect(() => {
+    if (selectedUpKindCd) {
+      const fetchBreeds = async () => {
+        try {
+          const response = await fetch(`http://localhost:8080/api/v1/boards/lost/upkind/${selectedUpKindCd}/kinds`);
+          if (response.ok) {
+            const breeds = await response.json();
+            setBreeds(breeds);
+          }
+        } catch (error) {
+          console.error('Breeds fetch error:', error);
+        }
+      };
+
+      fetchBreeds();
+      form.setValue('kindCd', ''); // 품종 초기화
+    }
+  }, [selectedUpKindCd, form]);
+
+  // 시도 변경 시 구군 목록 가져오기
+  useEffect(() => {
+    if (selectedRegionCode) {
+      const fetchSubRegions = async () => {
+        try {
+          const response = await fetch(`http://localhost:8080/api/v1/boards/lost/regions/${selectedRegionCode}/sub-regions`);
+          if (response.ok) {
+            const subRegions = await response.json();
+            setSubRegions(subRegions);
+          }
+        } catch (error) {
+          console.error('Sub regions fetch error:', error);
+        }
+      };
+
+      fetchSubRegions();
+      form.setValue('subRegionCode', ''); // 구군 초기화
+    }
+  }, [selectedRegionCode, form]);
 
   const handleLoginClick = () => {
     setIsLoginModalOpen(true);
@@ -93,6 +168,25 @@ const CreateMissingPost = () => {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  // 성별 표시 변환
+  const getGenderLabel = (gender: string) => {
+    switch (gender) {
+      case 'M': return '수컷';
+      case 'F': return '암컷';
+      case 'Q': return '모름';
+      default: return gender;
+    }
+  };
+
+  // 실종유형 표시 변환
+  const getLostTypeLabel = (lostType: string) => {
+    switch (lostType) {
+      case 'MS': return '실종';
+      case 'WT': return '목격';
+      default: return lostType;
+    }
+  };
+
   const onSubmit = (data: MissingPostForm) => {
     // 게시글 저장 로직 (추후 백엔드 연동)
     console.log('Form data:', data);
@@ -105,6 +199,17 @@ const CreateMissingPost = () => {
     
     navigate('/board');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">데이터를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -123,22 +228,25 @@ const CreateMissingPost = () => {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* 구분 */}
+                {/* 실종유형 */}
                 <FormField
                   control={form.control}
-                  name="type"
+                  name="lostType"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>구분</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="구분을 선택해주세요" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="missing">실종</SelectItem>
-                          <SelectItem value="sighted">목격</SelectItem>
+                          {formData?.lostTypes.map((lostType) => (
+                            <SelectItem key={lostType} value={lostType}>
+                              {getLostTypeLabel(lostType)}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -192,22 +300,21 @@ const CreateMissingPost = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="city"
+                    name="regionCode"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>시/도</FormLabel>
-                        <Select onValueChange={(value) => {
-                          field.onChange(value);
-                          form.setValue('district', ''); // 시/도 변경 시 시/군/구 초기화
-                        }} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="시/도 선택" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {cities.map((city) => (
-                              <SelectItem key={city} value={city}>{city}</SelectItem>
+                            {formData?.regions.map((region) => (
+                              <SelectItem key={region.regionCode} value={region.regionCode}>
+                                {region.regionName}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -218,19 +325,21 @@ const CreateMissingPost = () => {
 
                   <FormField
                     control={form.control}
-                    name="district"
+                    name="subRegionCode"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>시/군/구</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCity}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedRegionCode}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="시/군/구 선택" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {selectedCity && districts[selectedCity]?.map((district) => (
-                              <SelectItem key={district} value={district}>{district}</SelectItem>
+                            {subRegions.map((subRegion) => (
+                              <SelectItem key={subRegion.subRegionCode} value={subRegion.subRegionCode}>
+                                {subRegion.subRegionName}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -276,23 +385,22 @@ const CreateMissingPost = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="species"
+                      name="upKindCd"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>축종</FormLabel>
-                          <Select onValueChange={(value) => {
-                            field.onChange(value);
-                            form.setValue('breed', ''); // 축종 변경 시 품종 초기화
-                          }} value={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="축종 선택" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="dog">개</SelectItem>
-                              <SelectItem value="cat">고양이</SelectItem>
-                              <SelectItem value="other">기타</SelectItem>
+                              {formData?.upKinds.map((upKind) => (
+                                <SelectItem key={upKind.upKindCd} value={upKind.upKindCd}>
+                                  {upKind.upKindName}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -302,19 +410,21 @@ const CreateMissingPost = () => {
 
                     <FormField
                       control={form.control}
-                      name="breed"
+                      name="kindCd"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>품종</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value} disabled={!selectedSpecies}>
+                          <Select onValueChange={field.onChange} value={field.value} disabled={!selectedUpKindCd}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="품종 선택" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {selectedSpecies && breeds[selectedSpecies]?.map((breed) => (
-                                <SelectItem key={breed} value={breed}>{breed}</SelectItem>
+                              {breeds.map((breed) => (
+                                <SelectItem key={breed.kindCd} value={breed.kindCd}>
+                                  {breed.kindName}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -328,30 +438,24 @@ const CreateMissingPost = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
-                      name="gender"
+                      name="sexCd"
                       render={({ field }) => (
-                        <FormItem className="space-y-3">
+                        <FormItem>
                           <FormLabel>성별</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex flex-row space-x-6"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="unknown" id="unknown" />
-                                <Label htmlFor="unknown">미확인</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="male" id="male" />
-                                <Label htmlFor="male">수컷</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="female" id="female" />
-                                <Label htmlFor="female">암컷</Label>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="성별 선택" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {formData?.genders.map((gender) => (
+                                <SelectItem key={gender} value={gender}>
+                                  {getGenderLabel(gender)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -370,9 +474,10 @@ const CreateMissingPost = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="unknown">나이 모름</SelectItem>
-                              {Array.from({length: 20}, (_, i) => i + 1).map((age) => (
-                                <SelectItem key={age} value={age.toString()}>{age}살</SelectItem>
+                              {formData?.ages.map((age) => (
+                                <SelectItem key={age} value={age.toString()}>
+                                  {age}살
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
