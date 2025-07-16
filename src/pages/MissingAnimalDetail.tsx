@@ -52,6 +52,8 @@ const MissingPostDetail = () => {
     const fetchPostDetail = async () => {
       try {
         setLoading(true);
+        console.log('useParams id:', id);
+        console.log('API URL:', `http://localhost:8080/api/v1/boards/lost/${id}`);
         const response = await fetch(`http://localhost:8080/api/v1/boards/lost/${id}`);
         const result = await response.json();
         
