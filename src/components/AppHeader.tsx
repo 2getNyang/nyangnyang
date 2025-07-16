@@ -92,17 +92,17 @@ const AppHeader = ({ onLoginClick }: AppHeaderProps) => {
                     <Button variant="ghost" className="flex items-center space-x-2">
                       <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                         <span className="text-xs font-medium text-gray-600">
-                          {user?.name?.charAt(0) || 'U'}
+                          {user?.nickname?.charAt(0) || 'U'}
                         </span>
                       </div>
-                      <span className="text-sm font-medium">{user?.name || '사용자'}</span>
+                      <span className="text-sm font-medium">{user?.nickname || '사용자'}</span>
                       <ChevronDown className="w-3 h-3" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem className="flex items-center space-x-2">
                       <User className="w-4 h-4" />
-                      <span>{user?.name || '사용자'}</span>
+                      <span>{user?.nickname || '사용자'}</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
