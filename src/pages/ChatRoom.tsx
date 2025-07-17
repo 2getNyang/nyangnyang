@@ -216,7 +216,10 @@ const ChatRoom = () => {
           
           // 상대방이 보낸 메시지인 경우 읽음 처리
           if (receivedMessage.senderId !== currentUserId) {
-            console.log('상대방 메시지 수신, 읽음 처리 요청:', roomId);
+            console.log('📖 상대방 메시지 수신, 읽음 처리 요청:', roomId);
+            console.log('📖 읽음 처리 목적지:', `/pub/api/v1/chat/read/${roomId}`);
+            console.log('📖 현재 사용자 ID:', currentUserId);
+            
             client.publish({
               destination: `/pub/api/v1/chat/read/${roomId}`,
               headers: {
@@ -224,21 +227,50 @@ const ChatRoom = () => {
               },
               body: JSON.stringify({})
             });
+            
+            console.log('📖 읽음 처리 요청 전송 완료');
           }
         });
 
-        // 읽음 처리 상태 업데이트 구독
+        // 읽음 처리 상태 업데이트 구독 - 여러 패턴 시도
+        console.log('📖 읽음 처리 구독 설정 중:', `/sub/chat/${roomId}/read`);
+        
+        // 패턴 1: /read 엔드포인트
         client.subscribe(`/sub/chat/${roomId}/read`, (message) => {
+          console.log('📖 읽음 처리 정보 수신 (패턴1):', message.body);
           const readInfo = JSON.parse(message.body);
-          console.log('읽음 처리 정보 수신:', readInfo);
+          console.log('📖 파싱된 읽음 정보:', readInfo);
           
           // 내가 보낸 메시지들을 읽음 처리
-          setMessages(prev => prev.map(msg => {
-            if (msg.senderId === currentUserId) {
-              return { ...msg, isRead: true };
+          setMessages(prev => {
+            const updated = prev.map(msg => {
+              if (msg.senderId === currentUserId) {
+                console.log('📖 메시지 읽음 처리:', msg.id, msg.content);
+                return { ...msg, isRead: true };
+              }
+              return msg;
+            });
+            return updated;
+          });
+        });
+
+        // 패턴 2: 일반 채팅방 구독에서 읽음 처리 정보가 올 수도 있음
+        client.subscribe(`/sub/chat/${roomId}/status`, (message) => {
+          console.log('📖 상태 정보 수신 (패턴2):', message.body);
+          try {
+            const statusInfo = JSON.parse(message.body);
+            if (statusInfo.type === 'read' || statusInfo.isRead !== undefined) {
+              console.log('📖 상태에서 읽음 정보 감지:', statusInfo);
+              setMessages(prev => prev.map(msg => {
+                if (msg.senderId === currentUserId) {
+                  return { ...msg, isRead: true };
+                }
+                return msg;
+              }));
             }
-            return msg;
-          }));
+          } catch (e) {
+            console.log('📖 상태 정보 파싱 실패:', e);
+          }
         });
       },
       onDisconnect: () => {
