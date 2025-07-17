@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Send, Phone, Video, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -20,56 +21,113 @@ interface ChatUser {
   name: string;
 }
 
+interface ChatRoomInfo {
+  id: string;
+  user1Id: string;
+  user2Id: string;
+  user1Name: string;
+  user2Name: string;
+}
+
 const ChatRoom = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [newMessage, setNewMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [chatRoomInfo, setChatRoomInfo] = useState<ChatRoomInfo | null>(null);
+  const [otherUserName, setOtherUserName] = useState('상대방');
+  const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const stompClientRef = useRef<Client | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // 현재 로그인된 사용자 정보 (실제로는 auth context에서 가져와야 함)
-  const currentUser: ChatUser = { id: '7', name: '로그인한사용자' };
-  const otherUser: ChatUser = { id: 'other', name: '상대방' };
+  // 현재 로그인된 사용자 정보
+  const currentUserId = user?.id?.toString() || '7';
 
-  // 채팅방 접근 권한 확인 (테스트용으로 임시 비활성화)
+  // 채팅방 정보와 메시지 로드
   useEffect(() => {
     if (!roomId) {
       navigate('/chat');
       return;
     }
 
-    // 임시로 권한 체크를 건너뛰고 바로 허용 (백엔드 연결시 주석 해제)
-    setIsAuthorized(true);
-    
-    /*
-    const checkRoomAccess = async () => {
+    const loadChatData = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}/check?userId=${currentUser.id}`);
+        const token = localStorage.getItem('accessToken');
+        
+        // 채팅방 메시지 가져오기
+        const response = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}/messages`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
         if (!response.ok) {
-          console.error('채팅방 접근 권한이 없습니다.');
-          toast({
-            title: "오류",
-            description: "채팅방에 접근할 권한이 없습니다.",
-            variant: "destructive"
-          });
-          navigate('/chat');
-          return;
+          if (response.status === 403) {
+            toast({
+              title: "오류",
+              description: "채팅방에 접근할 권한이 없습니다.",
+              variant: "destructive"
+            });
+            navigate('/board?category=missing');
+            return;
+          }
+          throw new Error('채팅방 메시지를 불러오지 못했습니다.');
         }
+
+        const data = await response.json();
+        console.log('채팅방 데이터:', data);
+
+        // 메시지 데이터 설정
+        if (data.messages && Array.isArray(data.messages)) {
+          const formattedMessages = data.messages.map((msg: any) => ({
+            id: msg.id?.toString() || Date.now().toString(),
+            content: msg.content || '',
+            senderId: msg.senderId?.toString() || '',
+            senderName: msg.senderName || '알 수 없음',
+            timestamp: new Date(msg.timestamp || Date.now()),
+            isRead: msg.isRead || false
+          }));
+          setMessages(formattedMessages);
+        }
+
+        // 채팅방 정보에서 상대방 이름 설정
+        if (data.roomInfo) {
+          const roomInfo = data.roomInfo;
+          setChatRoomInfo(roomInfo);
+          
+          // 현재 사용자가 아닌 상대방의 이름 찾기
+          if (roomInfo.user1Id?.toString() === currentUserId) {
+            setOtherUserName(roomInfo.user2Name || '상대방');
+          } else if (roomInfo.user2Id?.toString() === currentUserId) {
+            setOtherUserName(roomInfo.user1Name || '상대방');
+          } else {
+            setOtherUserName('상대방');
+          }
+        }
+
         setIsAuthorized(true);
+        setLoading(false);
+
       } catch (error) {
-        console.error('채팅방 권한 확인 실패:', error);
-        navigate('/chat');
+        console.error('채팅 데이터 로드 실패:', error);
+        toast({
+          title: "오류",
+          description: "채팅방을 불러오지 못했습니다.",
+          variant: "destructive"
+        });
+        navigate('/board?category=missing');
       }
     };
 
-    checkRoomAccess();
-    */
-  }, [roomId, currentUser.id, navigate, toast]);
+    loadChatData();
+  }, [roomId, currentUserId, navigate, toast]);
 
   // WebSocket 연결 설정
   useEffect(() => {
@@ -151,8 +209,8 @@ const ChatRoom = () => {
 
     const message = {
       roomId: roomId,
-      senderId: currentUser.id,
-      senderName: currentUser.name,
+      senderId: currentUserId,
+      senderName: user?.nickname || '사용자',
       content: newMessage.trim(),
       timestamp: new Date().toISOString()
     };
@@ -185,6 +243,16 @@ const ChatRoom = () => {
     adjustTextareaHeight();
   }, [newMessage]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-lg font-medium text-gray-800 mb-2">채팅방을 불러오고 있습니다...</h1>
+        </div>
+      </div>
+    );
+  }
+
   if (!roomId) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -212,29 +280,10 @@ const ChatRoom = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-              <span className="text-primary font-semibold">
-                {otherUser.name.charAt(0)}
-              </span>
-            </div>
             <div>
-              <h1 className="font-semibold text-foreground">{otherUser.name}</h1>
-              <p className="text-sm text-muted-foreground">
-                {isConnected ? '온라인' : '연결 중...'}
-              </p>
+              <h1 className="font-semibold text-foreground">{otherUserName}님</h1>
             </div>
           </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" className="p-2">
-            <Phone className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="sm" className="p-2">
-            <Video className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="sm" className="p-2">
-            <MoreVertical className="h-5 w-5" />
-          </Button>
         </div>
       </div>
 
@@ -252,13 +301,8 @@ const ChatRoom = () => {
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl text-primary font-semibold">
-                  {otherUser.name.charAt(0)}
-                </span>
-              </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                {otherUser.name}님과의 채팅
+                {otherUserName}님과의 채팅
               </h3>
               <p className="text-muted-foreground">
                 첫 메시지를 보내서 대화를 시작해보세요!
@@ -268,7 +312,7 @@ const ChatRoom = () => {
         ) : (
           messages.map((message, index) => {
             const prevMessage = index > 0 ? messages[index - 1] : undefined;
-            const isMyMessage = message.senderId.toString() === currentUser.id;
+            const isMyMessage = message.senderId.toString() === currentUserId;
             
             return (
               <div key={message.id}>
