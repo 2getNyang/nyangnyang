@@ -188,63 +188,75 @@ const CreatePost = () => {
                       </Label>
                     </div>
                     
-                    {/* 입양 신청 카드들 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {adoptionApplications.map((application) => (
-                        <div key={application.id} className="relative">
-                          <RadioGroupItem
-                            value={application.id}
-                            id={application.id}
-                            className="absolute top-3 right-3 z-10"
-                          />
-                          <Card 
-                            className={`h-full transition-all duration-200 cursor-pointer hover:shadow-md ${
-                              selectedAdoptionId === application.id 
-                                ? 'ring-2 ring-primary bg-primary/5 border-primary' 
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                            onClick={() => setSelectedAdoptionId(application.id)}
-                          >
-                            <div className="flex h-full">
-                              <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded-l-lg">
-                                <img 
-                                  src={application.imageUrl || 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop'}
-                                  alt={application.animalName}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <CardContent className="flex-1 p-4 pr-12">
-                                <div className="flex justify-between items-start mb-2">
-                                  <div>
-                                    <h4 className="font-semibold text-gray-800 mb-1">{application.animalName}</h4>
-                                    <p className="text-sm text-gray-600">{application.species} • {application.breed}</p>
-                                  </div>
-                                  {selectedAdoptionId === application.id && (
-                                    <CheckCircle2 className="w-5 h-5 text-primary absolute top-2 right-2" />
-                                  )}
+                    {/* 입양 신청 카드들 - 스크롤 영역 */}
+                    <div className="max-h-80 overflow-y-auto border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {adoptionApplications.map((application) => (
+                          <div key={application.id} className="relative">
+                            <RadioGroupItem
+                              value={application.id}
+                              id={application.id}
+                              className="absolute top-3 right-3 z-10"
+                            />
+                            <Card 
+                              className={`h-28 transition-all duration-200 cursor-pointer hover:shadow-md ${
+                                selectedAdoptionId === application.id 
+                                  ? 'ring-2 ring-primary bg-primary/5 border-primary' 
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                              onClick={() => setSelectedAdoptionId(application.id)}
+                            >
+                              <div className="flex h-full">
+                                {/* 사진 영역 - 정사각형으로 고정 */}
+                                <div className="w-28 h-28 flex-shrink-0 overflow-hidden rounded-l-lg">
+                                  <img 
+                                    src={application.imageUrl || 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop'}
+                                    alt={application.animalName}
+                                    className="w-full h-full object-cover"
+                                  />
                                 </div>
                                 
-                                <div className="space-y-1">
-                                  <div className="flex items-center space-x-2 text-gray-600">
-                                    <User className="w-3 h-3" />
-                                    <span className="text-xs">{application.age} • {application.gender}</span>
+                                {/* 내용 영역 */}
+                                <CardContent className="flex-1 p-3 pr-10 flex flex-col justify-center">
+                                  <div className="mb-2">
+                                    <h4 className="font-semibold text-gray-800 text-sm mb-1 leading-tight">{application.animalName}</h4>
+                                    <p className="text-xs text-gray-600">{application.species} • {application.breed}</p>
                                   </div>
                                   
-                                  <div className="flex items-center space-x-2 text-gray-600">
-                                    <MapPin className="w-3 h-3" />
-                                    <span className="text-xs">{application.location}</span>
+                                  <div className="space-y-1">
+                                    <div className="flex items-center space-x-1 text-gray-600">
+                                      <User className="w-3 h-3 flex-shrink-0" />
+                                      <span className="text-xs truncate">{application.age} • {application.gender}</span>
+                                    </div>
+                                    
+                                    <div className="flex items-center space-x-1 text-gray-600">
+                                      <MapPin className="w-3 h-3 flex-shrink-0" />
+                                      <span className="text-xs truncate">{application.location}</span>
+                                    </div>
+                                    
+                                    <div className="flex items-center space-x-1 text-gray-600">
+                                      <Calendar className="w-3 h-3 flex-shrink-0" />
+                                      <span className="text-xs truncate">신청일: {application.applicationDate}</span>
+                                    </div>
                                   </div>
                                   
-                                  <div className="flex items-center space-x-2 text-gray-600">
-                                    <Calendar className="w-3 h-3" />
-                                    <span className="text-xs">신청일: {application.applicationDate}</span>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </div>
-                          </Card>
+                                  {/* 선택 표시 아이콘 */}
+                                  {selectedAdoptionId === application.id && (
+                                    <CheckCircle2 className="w-4 h-4 text-primary absolute top-2 right-2" />
+                                  )}
+                                </CardContent>
+                              </div>
+                            </Card>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* 카드가 없을 때 메시지 */}
+                      {adoptionApplications.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <p className="text-sm">신청한 입양 공고가 없습니다.</p>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </RadioGroup>
                 </div>
