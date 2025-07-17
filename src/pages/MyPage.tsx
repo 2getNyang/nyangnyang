@@ -140,7 +140,7 @@ const MyPage = () => {
         </div>
 
         {/* 회원탈퇴 링크 */}
-        <div className="max-w-4xl mx-auto mt-8 mb-8 text-center">
+        <div className="max-w-4xl mx-auto mt-0 mb-0 text-center">
           <button 
             onClick={() => navigate('/withdrawal-terms')}
             className="text-xs text-gray-400 hover:text-gray-600 underline transition-colors"
