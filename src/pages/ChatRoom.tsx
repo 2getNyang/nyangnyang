@@ -232,45 +232,43 @@ const ChatRoom = () => {
           }
         });
 
-        // 읽음 처리 상태 업데이트 구독 - 여러 패턴 시도
-        console.log('📖 읽음 처리 구독 설정 중:', `/sub/chat/${roomId}/read`);
-        
-        // 패턴 1: /read 엔드포인트
-        client.subscribe(`/sub/chat/${roomId}/read`, (message) => {
-          console.log('📖 읽음 처리 정보 수신 (패턴1):', message.body);
-          const readInfo = JSON.parse(message.body);
-          console.log('📖 파싱된 읽음 정보:', readInfo);
-          
-          // 내가 보낸 메시지들을 읽음 처리
-          setMessages(prev => {
-            const updated = prev.map(msg => {
-              if (msg.senderId === currentUserId) {
-                console.log('📖 메시지 읽음 처리:', msg.id, msg.content);
-                return { ...msg, isRead: true };
-              }
-              return msg;
-            });
-            return updated;
-          });
-        });
-
-        // 패턴 2: 일반 채팅방 구독에서 읽음 처리 정보가 올 수도 있음
-        client.subscribe(`/sub/chat/${roomId}/status`, (message) => {
-          console.log('📖 상태 정보 수신 (패턴2):', message.body);
-          try {
-            const statusInfo = JSON.parse(message.body);
-            if (statusInfo.type === 'read' || statusInfo.isRead !== undefined) {
-              console.log('📖 상태에서 읽음 정보 감지:', statusInfo);
-              setMessages(prev => prev.map(msg => {
-                if (msg.senderId === currentUserId) {
-                  return { ...msg, isRead: true };
-                }
-                return msg;
-              }));
+        // 읽음 처리를 즉시 화면에 반영 (일단 optimistic update)
+        // 상대방이 메시지를 받으면 즉시 읽음 처리로 표시
+        const handleOptimisticRead = () => {
+          console.log('📖 즉시 읽음 처리 (optimistic)');
+          setMessages(prev => prev.map(msg => {
+            if (msg.senderId === currentUserId) {
+              console.log('📖 메시지 즉시 읽음 처리:', msg.id, msg.content);
+              return { ...msg, isRead: true };
             }
-          } catch (e) {
-            console.log('📖 상태 정보 파싱 실패:', e);
-          }
+            return msg;
+          }));
+        };
+
+        // 여러 가능한 구독 경로 시도
+        const subscriptions = [
+          `/sub/chat/${roomId}/read`,
+          `/sub/api/v1/chat/${roomId}/read`, 
+          `/sub/chat/read/${roomId}`,
+          `/sub/api/v1/chat/read/${roomId}`,
+          `/topic/chat/${roomId}/read`,
+          `/queue/chat/${roomId}/read`
+        ];
+
+        subscriptions.forEach((path, index) => {
+          console.log(`📖 구독 시도 ${index + 1}:`, path);
+          client.subscribe(path, (message) => {
+            console.log(`📖 읽음 처리 정보 수신 (경로${index + 1}):`, message.body);
+            try {
+              const readInfo = JSON.parse(message.body);
+              console.log('📖 파싱된 읽음 정보:', readInfo);
+              handleOptimisticRead();
+            } catch (e) {
+              console.log('📖 읽음 정보 파싱 실패:', e);
+              // 파싱 실패해도 일단 읽음 처리
+              handleOptimisticRead();
+            }
+          });
         });
       },
       onDisconnect: () => {
