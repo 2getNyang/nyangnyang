@@ -193,60 +193,67 @@ const CreatePost = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {adoptionApplications.map((application) => (
                           <div key={application.id} className="relative">
+                            {/* 숨겨진 라디오 버튼 */}
                             <RadioGroupItem
                               value={application.id}
                               id={application.id}
-                              className="absolute top-3 right-3 z-10"
+                              className="sr-only"
                             />
-                            <Card 
-                              className={`h-28 transition-all duration-200 cursor-pointer hover:shadow-md ${
-                                selectedAdoptionId === application.id 
-                                  ? 'ring-2 ring-primary bg-primary/5 border-primary' 
-                                  : 'border-gray-200 hover:border-gray-300'
-                              }`}
-                              onClick={() => setSelectedAdoptionId(application.id)}
+                            <Label 
+                              htmlFor={application.id}
+                              className="cursor-pointer block"
                             >
-                              <div className="flex h-full">
-                                {/* 사진 영역 - 정사각형으로 고정 */}
-                                <div className="w-28 h-28 flex-shrink-0 overflow-hidden rounded-l-lg">
-                                  <img 
-                                    src={application.imageUrl || 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop'}
-                                    alt={application.animalName}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                                
-                                {/* 내용 영역 */}
-                                <CardContent className="flex-1 p-3 pr-10 flex flex-col justify-center">
-                                  <div className="mb-2">
-                                    <h4 className="font-semibold text-gray-800 text-sm mb-1 leading-tight">{application.animalName}</h4>
-                                    <p className="text-xs text-gray-600">{application.species} • {application.breed}</p>
+                              <Card 
+                                className={`h-28 transition-all duration-200 hover:shadow-md ${
+                                  selectedAdoptionId === application.id 
+                                    ? 'ring-2 ring-primary border-primary bg-primary/10' 
+                                    : 'border-gray-200 hover:border-gray-300'
+                                }`}
+                              >
+                                <div className="flex h-full relative">
+                                  {/* 사진 영역 - 정사각형으로 고정 */}
+                                  <div className="w-28 h-28 flex-shrink-0 overflow-hidden rounded-l-lg">
+                                    <img 
+                                      src={application.imageUrl || 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop'}
+                                      alt={application.animalName}
+                                      className="w-full h-full object-cover"
+                                    />
                                   </div>
                                   
-                                  <div className="space-y-1">
-                                    <div className="flex items-center space-x-1 text-gray-600">
-                                      <User className="w-3 h-3 flex-shrink-0" />
-                                      <span className="text-xs truncate">{application.age} • {application.gender}</span>
+                                  {/* 내용 영역 */}
+                                  <CardContent className="flex-1 p-3 pr-10 flex flex-col justify-center">
+                                    <div className="mb-2">
+                                      <h4 className="font-semibold text-gray-800 text-sm mb-1 leading-tight">{application.animalName}</h4>
+                                      <p className="text-xs text-gray-600">{application.species} • {application.breed}</p>
                                     </div>
                                     
-                                    <div className="flex items-center space-x-1 text-gray-600">
-                                      <MapPin className="w-3 h-3 flex-shrink-0" />
-                                      <span className="text-xs truncate">{application.location}</span>
+                                    <div className="space-y-1">
+                                      <div className="flex items-center space-x-1 text-gray-600">
+                                        <User className="w-3 h-3 flex-shrink-0" />
+                                        <span className="text-xs truncate">{application.age} • {application.gender}</span>
+                                      </div>
+                                      
+                                      <div className="flex items-center space-x-1 text-gray-600">
+                                        <MapPin className="w-3 h-3 flex-shrink-0" />
+                                        <span className="text-xs truncate">{application.location}</span>
+                                      </div>
+                                      
+                                      <div className="flex items-center space-x-1 text-gray-600">
+                                        <Calendar className="w-3 h-3 flex-shrink-0" />
+                                        <span className="text-xs truncate">신청일: {application.applicationDate}</span>
+                                      </div>
                                     </div>
-                                    
-                                    <div className="flex items-center space-x-1 text-gray-600">
-                                      <Calendar className="w-3 h-3 flex-shrink-0" />
-                                      <span className="text-xs truncate">신청일: {application.applicationDate}</span>
-                                    </div>
-                                  </div>
+                                  </CardContent>
                                   
                                   {/* 선택 표시 아이콘 */}
                                   {selectedAdoptionId === application.id && (
-                                    <CheckCircle2 className="w-4 h-4 text-primary absolute top-2 right-2" />
+                                    <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-0.5">
+                                      <CheckCircle2 className="w-4 h-4" />
+                                    </div>
                                   )}
-                                </CardContent>
-                              </div>
-                            </Card>
+                                </div>
+                              </Card>
+                            </Label>
                           </div>
                         ))}
                       </div>
