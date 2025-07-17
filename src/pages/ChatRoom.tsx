@@ -232,43 +232,17 @@ const ChatRoom = () => {
           }
         });
 
-        // 읽음 처리를 즉시 화면에 반영 (일단 optimistic update)
-        // 상대방이 메시지를 받으면 즉시 읽음 처리로 표시
-        const handleOptimisticRead = () => {
-          console.log('📖 즉시 읽음 처리 (optimistic)');
+        // 읽음 처리 구독 - 단순하게 하나의 경로만 사용
+        client.subscribe(`/sub/chat/${roomId}/read`, (message) => {
+          console.log('📖 읽음 처리 정보 수신:', message.body);
+          
+          // 즉시 내가 보낸 모든 메시지를 읽음으로 처리
           setMessages(prev => prev.map(msg => {
             if (msg.senderId === currentUserId) {
-              console.log('📖 메시지 즉시 읽음 처리:', msg.id, msg.content);
               return { ...msg, isRead: true };
             }
             return msg;
           }));
-        };
-
-        // 여러 가능한 구독 경로 시도
-        const subscriptions = [
-          `/sub/chat/${roomId}/read`,
-          `/sub/api/v1/chat/${roomId}/read`, 
-          `/sub/chat/read/${roomId}`,
-          `/sub/api/v1/chat/read/${roomId}`,
-          `/topic/chat/${roomId}/read`,
-          `/queue/chat/${roomId}/read`
-        ];
-
-        subscriptions.forEach((path, index) => {
-          console.log(`📖 구독 시도 ${index + 1}:`, path);
-          client.subscribe(path, (message) => {
-            console.log(`📖 읽음 처리 정보 수신 (경로${index + 1}):`, message.body);
-            try {
-              const readInfo = JSON.parse(message.body);
-              console.log('📖 파싱된 읽음 정보:', readInfo);
-              handleOptimisticRead();
-            } catch (e) {
-              console.log('📖 읽음 정보 파싱 실패:', e);
-              // 파싱 실패해도 일단 읽음 처리
-              handleOptimisticRead();
-            }
-          });
         });
       },
       onDisconnect: () => {
