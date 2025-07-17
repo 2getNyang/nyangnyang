@@ -110,7 +110,7 @@ const ChatRoom = () => {
           
           setMessages(formattedMessages);
           
-          // 상대방 정보 조회
+          // 상대방 정보 조회 - 다양한 응답 구조 대응
           if (otherUserId) {
             try {
               const userResponse = await fetch(`http://localhost:8080/api/v1/user/${otherUserId}`, {
@@ -125,8 +125,28 @@ const ChatRoom = () => {
                 console.log('상대방 사용자 정보 전체:', userData);
                 console.log('상대방 사용자 ID:', otherUserId);
                 
-                const otherUserNickname = userData.data?.nickname || userData.nickname || '상대방';
+                // 다양한 API 응답 구조에 대응
+                let otherUserNickname = '상대방';
+                if (userData.data && userData.data.nickname) {
+                  otherUserNickname = userData.data.nickname;
+                } else if (userData.nickname) {
+                  otherUserNickname = userData.nickname;
+                } else if (userData.data && userData.data.userName) {
+                  otherUserNickname = userData.data.userName;
+                } else if (userData.userName) {
+                  otherUserNickname = userData.userName;
+                } else if (userData.data && userData.data.name) {
+                  otherUserNickname = userData.data.name;
+                } else if (userData.name) {
+                  otherUserNickname = userData.name;
+                }
+                
                 console.log('상대방 닉네임:', otherUserNickname);
+                console.log('사용자 데이터 구조:', Object.keys(userData));
+                if (userData.data) {
+                  console.log('사용자 data 구조:', Object.keys(userData.data));
+                }
+                
                 setOtherUserName(otherUserNickname);
                 
                 // 메시지의 senderName도 업데이트
@@ -135,13 +155,17 @@ const ChatRoom = () => {
                   senderName: msg.senderId === currentUserId ? (user?.nickname || '나') : otherUserNickname
                 })));
               } else {
-                console.warn('상대방 정보 조회 실패');
+                console.warn('상대방 정보 조회 실패 - 응답 상태:', userResponse.status);
+                const errorText = await userResponse.text();
+                console.warn('에러 응답:', errorText);
                 setOtherUserName('상대방');
               }
             } catch (error) {
               console.error('상대방 정보 조회 오류:', error);
               setOtherUserName('상대방');
             }
+          } else {
+            console.warn('상대방 ID를 찾을 수 없습니다. 메시지 데이터:', messagesData);
           }
         }
 
@@ -198,6 +222,20 @@ const ChatRoom = () => {
               body: JSON.stringify({})
             });
           }
+        });
+
+        // 읽음 처리 상태 업데이트 구독
+        client.subscribe(`/sub/chat/${roomId}/read`, (message) => {
+          const readInfo = JSON.parse(message.body);
+          console.log('읽음 처리 정보 수신:', readInfo);
+          
+          // 내가 보낸 메시지들을 읽음 처리
+          setMessages(prev => prev.map(msg => {
+            if (msg.senderId === currentUserId) {
+              return { ...msg, isRead: true };
+            }
+            return msg;
+          }));
         });
       },
       onDisconnect: () => {
@@ -397,9 +435,9 @@ const ChatRoom = () => {
                       <span className="text-xs text-muted-foreground px-3">
                         {formatTime(message.timestamp)}
                       </span>
-                      {isMyMessage && (
+                      {isMyMessage && message.isRead && (
                         <span className="text-xs text-muted-foreground">
-                          {message.isRead ? '읽음' : '1'}
+                          읽음
                         </span>
                       )}
                     </div>
