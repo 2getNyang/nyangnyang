@@ -122,9 +122,11 @@ const ChatRoom = () => {
               
               if (userResponse.ok) {
                 const userData = await userResponse.json();
-                console.log('상대방 사용자 정보:', userData);
+                console.log('상대방 사용자 정보 전체:', userData);
+                console.log('상대방 사용자 ID:', otherUserId);
                 
                 const otherUserNickname = userData.data?.nickname || userData.nickname || '상대방';
+                console.log('상대방 닉네임:', otherUserNickname);
                 setOtherUserName(otherUserNickname);
                 
                 // 메시지의 senderName도 업데이트
@@ -174,14 +176,28 @@ const ChatRoom = () => {
         // 채팅방 구독
         client.subscribe(`/sub/chat/${roomId}`, (message) => {
           const receivedMessage = JSON.parse(message.body);
-          setMessages(prev => [...prev, {
+          const newMessage = {
             id: receivedMessage.id || Date.now().toString(),
             content: receivedMessage.content,
             senderId: receivedMessage.senderId,
             senderName: receivedMessage.senderName,
             timestamp: new Date(receivedMessage.timestamp || Date.now()),
             isRead: false
-          }]);
+          };
+          
+          setMessages(prev => [...prev, newMessage]);
+          
+          // 상대방이 보낸 메시지인 경우 읽음 처리
+          if (receivedMessage.senderId !== currentUserId) {
+            console.log('상대방 메시지 수신, 읽음 처리 요청:', roomId);
+            client.publish({
+              destination: `/pub/api/v1/chat/read/${roomId}`,
+              headers: {
+                userId: currentUserId
+              },
+              body: JSON.stringify({})
+            });
+          }
         });
       },
       onDisconnect: () => {
