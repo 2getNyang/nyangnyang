@@ -60,6 +60,12 @@ const ChatRoom = () => {
       try {
         const token = localStorage.getItem('accessToken');
         
+        // location.state에서 게시글 작성자 정보 확인
+        console.log('🔍 location.state:', location.state);
+        if (location.state && location.state.authorId) {
+          console.log('🔍 게시글 작성자 ID:', location.state.authorId);
+        }
+        
         // 채팅방 메시지 가져오기
         const response = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}/messages`, {
           headers: {
@@ -167,8 +173,7 @@ const ChatRoom = () => {
                 })));
               } else {
                 console.warn('상대방 정보 조회 실패 - 응답 상태:', userResponse.status);
-                const errorText = await userResponse.text();
-                console.warn('에러 응답:', errorText);
+                console.warn('에러 응답:', responseText);
                 setOtherUserName('상대방');
               }
             } catch (error) {
