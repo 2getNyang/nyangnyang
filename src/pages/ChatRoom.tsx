@@ -81,34 +81,65 @@ const ChatRoom = () => {
           throw new Error('채팅방 메시지를 불러오지 못했습니다.');
         }
 
-        const data = await response.json();
-        console.log('채팅방 데이터:', data);
+        const result = await response.json();
+        console.log('채팅방 API 응답:', result);
 
-        // 메시지 데이터 설정
-        if (data.messages && Array.isArray(data.messages)) {
-          const formattedMessages = data.messages.map((msg: any) => ({
-            id: msg.id?.toString() || Date.now().toString(),
-            content: msg.content || '',
-            senderId: msg.senderId?.toString() || '',
-            senderName: msg.senderName || '알 수 없음',
-            timestamp: new Date(msg.timestamp || Date.now()),
-            isRead: msg.isRead || false
-          }));
-          setMessages(formattedMessages);
-        }
-
-        // 채팅방 정보에서 상대방 이름 설정
-        if (data.roomInfo) {
-          const roomInfo = data.roomInfo;
-          setChatRoomInfo(roomInfo);
+        // API 응답에서 메시지 데이터 추출
+        const messagesData = result.data || [];
+        
+        if (Array.isArray(messagesData)) {
+          // 메시지 데이터 변환 및 상대방 ID 찾기
+          let otherUserId = '';
+          const formattedMessages = messagesData.map((msg: any) => {
+            const senderId = msg.senderId?.toString() || '';
+            
+            // 현재 사용자가 아닌 senderId를 상대방으로 설정
+            if (senderId !== currentUserId && !otherUserId) {
+              otherUserId = senderId;
+            }
+            
+            return {
+              id: msg.id?.toString() || Date.now().toString(),
+              content: msg.content || '',
+              senderId: senderId,
+              senderName: senderId === currentUserId ? (user?.nickname || '나') : '상대방', // 임시로 설정
+              timestamp: new Date(msg.craetedAt || msg.createdAt || Date.now()), // craetedAt 오타 대응
+              isRead: msg.isRead || false
+            };
+          });
           
-          // 현재 사용자가 아닌 상대방의 이름 찾기
-          if (roomInfo.user1Id?.toString() === currentUserId) {
-            setOtherUserName(roomInfo.user2Name || '상대방');
-          } else if (roomInfo.user2Id?.toString() === currentUserId) {
-            setOtherUserName(roomInfo.user1Name || '상대방');
-          } else {
-            setOtherUserName('상대방');
+          setMessages(formattedMessages);
+          
+          // 상대방 정보 조회
+          if (otherUserId) {
+            try {
+              const userResponse = await fetch(`http://localhost:8080/api/v1/user/${otherUserId}`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+              });
+              
+              if (userResponse.ok) {
+                const userData = await userResponse.json();
+                console.log('상대방 사용자 정보:', userData);
+                
+                const otherUserNickname = userData.data?.nickname || userData.nickname || '상대방';
+                setOtherUserName(otherUserNickname);
+                
+                // 메시지의 senderName도 업데이트
+                setMessages(prev => prev.map(msg => ({
+                  ...msg,
+                  senderName: msg.senderId === currentUserId ? (user?.nickname || '나') : otherUserNickname
+                })));
+              } else {
+                console.warn('상대방 정보 조회 실패');
+                setOtherUserName('상대방');
+              }
+            } catch (error) {
+              console.error('상대방 정보 조회 오류:', error);
+              setOtherUserName('상대방');
+            }
           }
         }
 
@@ -127,7 +158,7 @@ const ChatRoom = () => {
     };
 
     loadChatData();
-  }, [roomId, currentUserId, navigate, toast]);
+  }, [roomId, currentUserId, navigate, toast, user]);
 
   // WebSocket 연결 설정
   useEffect(() => {
