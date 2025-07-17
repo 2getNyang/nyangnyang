@@ -142,21 +142,8 @@ const ChatRoom = () => {
                 console.log('🔍 파싱된 사용자 정보:', JSON.stringify(userData, null, 2));
                 console.log('🔍 상대방 사용자 ID:', otherUserId);
                 
-                // 다양한 API 응답 구조에 대응
-                let otherUserNickname = '상대방';
-                if (userData.data && userData.data.nickname) {
-                  otherUserNickname = userData.data.nickname;
-                } else if (userData.nickname) {
-                  otherUserNickname = userData.nickname;
-                } else if (userData.data && userData.data.userName) {
-                  otherUserNickname = userData.data.userName;
-                } else if (userData.userName) {
-                  otherUserNickname = userData.userName;
-                } else if (userData.data && userData.data.name) {
-                  otherUserNickname = userData.data.name;
-                } else if (userData.name) {
-                  otherUserNickname = userData.name;
-                }
+                // API 응답이 data.nickname 구조
+                const otherUserNickname = userData.data?.nickname || '상대방';
                 
                 console.log('상대방 닉네임:', otherUserNickname);
                 console.log('사용자 데이터 구조:', Object.keys(userData));
