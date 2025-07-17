@@ -8,15 +8,29 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, X, Image } from 'lucide-react';
+import { Upload, X, Image, MapPin, Calendar, User, CheckCircle2 } from 'lucide-react';
 import { BoardCategory } from '@/types/board';
 import { toast } from '@/hooks/use-toast';
+
+// 입양 신청 내역 타입 정의
+interface AdoptionApplication {
+  id: string;
+  animalName: string;
+  species: string;
+  breed: string;
+  age: string;
+  gender: string;
+  location: string;
+  applicationDate: string;
+  imageUrl?: string;
+}
 
 const CreatePost = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [category, setCategory] = useState<BoardCategory>('adoption');
+  const [selectedAdoptionId, setSelectedAdoptionId] = useState<string>('');
 
   useEffect(() => {
     const stateCategory = location.state?.category;
@@ -27,6 +41,43 @@ const CreatePost = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState<File[]>([]);
+
+  // 모의 입양 신청 내역 데이터
+  const [adoptionApplications] = useState<AdoptionApplication[]>([
+    {
+      id: '1',
+      animalName: '코코',
+      species: '강아지',
+      breed: '말티즈',
+      age: '2세',
+      gender: '암컷',
+      location: '서울 강남구',
+      applicationDate: '2024-01-15',
+      imageUrl: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop'
+    },
+    {
+      id: '2',
+      animalName: '루루',
+      species: '고양이',
+      breed: '러시안블루',
+      age: '3세',
+      gender: '수컷',
+      location: '서울 서초구',
+      applicationDate: '2024-02-20',
+      imageUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=300&fit=crop'
+    },
+    {
+      id: '3',
+      animalName: '뽀삐',
+      species: '강아지',
+      breed: '포메라니안',
+      age: '1세',
+      gender: '암컷',
+      location: '경기 성남시',
+      applicationDate: '2024-03-10',
+      imageUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=300&fit=crop'
+    }
+  ]);
 
   const handleLoginClick = () => {
     setIsLoginModalOpen(true);
@@ -117,6 +168,87 @@ const CreatePost = () => {
                   className="text-base"
                 />
               </div>
+
+              {/* 입양 신청 내역 선택 - 입양 후기에서만 표시 */}
+              {category === 'adoption' && (
+                <div className="space-y-4">
+                  <Label className="text-base font-medium">입양 신청 내역</Label>
+                  <p className="text-sm text-gray-600">작성하실 후기와 관련된 입양 신청 내역을 선택해주세요.</p>
+                  
+                  <RadioGroup
+                    value={selectedAdoptionId}
+                    onValueChange={setSelectedAdoptionId}
+                    className="space-y-4"
+                  >
+                    {/* 선택 안함 옵션 */}
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="" id="none" />
+                      <Label htmlFor="none" className="text-sm font-medium">
+                        선택 안함
+                      </Label>
+                    </div>
+                    
+                    {/* 입양 신청 카드들 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {adoptionApplications.map((application) => (
+                        <div key={application.id} className="relative">
+                          <RadioGroupItem
+                            value={application.id}
+                            id={application.id}
+                            className="absolute top-3 right-3 z-10"
+                          />
+                          <Card 
+                            className={`h-full transition-all duration-200 cursor-pointer hover:shadow-md ${
+                              selectedAdoptionId === application.id 
+                                ? 'ring-2 ring-primary bg-primary/5 border-primary' 
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => setSelectedAdoptionId(application.id)}
+                          >
+                            <div className="flex h-full">
+                              <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded-l-lg">
+                                <img 
+                                  src={application.imageUrl || 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop'}
+                                  alt={application.animalName}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <CardContent className="flex-1 p-4 pr-12">
+                                <div className="flex justify-between items-start mb-2">
+                                  <div>
+                                    <h4 className="font-semibold text-gray-800 mb-1">{application.animalName}</h4>
+                                    <p className="text-sm text-gray-600">{application.species} • {application.breed}</p>
+                                  </div>
+                                  {selectedAdoptionId === application.id && (
+                                    <CheckCircle2 className="w-5 h-5 text-primary absolute top-2 right-2" />
+                                  )}
+                                </div>
+                                
+                                <div className="space-y-1">
+                                  <div className="flex items-center space-x-2 text-gray-600">
+                                    <User className="w-3 h-3" />
+                                    <span className="text-xs">{application.age} • {application.gender}</span>
+                                  </div>
+                                  
+                                  <div className="flex items-center space-x-2 text-gray-600">
+                                    <MapPin className="w-3 h-3" />
+                                    <span className="text-xs">{application.location}</span>
+                                  </div>
+                                  
+                                  <div className="flex items-center space-x-2 text-gray-600">
+                                    <Calendar className="w-3 h-3" />
+                                    <span className="text-xs">신청일: {application.applicationDate}</span>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </div>
+                          </Card>
+                        </div>
+                      ))}
+                    </div>
+                  </RadioGroup>
+                </div>
+              )}
 
               {/* 본문 */}
               <div className="space-y-2">
