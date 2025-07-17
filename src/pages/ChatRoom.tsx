@@ -112,18 +112,29 @@ const ChatRoom = () => {
           
           // 상대방 정보 조회 - 다양한 응답 구조 대응
           if (otherUserId) {
+            console.log('🔍 상대방 ID로 정보 조회 시작:', otherUserId);
             try {
-              const userResponse = await fetch(`http://localhost:8080/api/v1/user/${otherUserId}`, {
+              const apiUrl = `http://localhost:8080/api/v1/user/${otherUserId}`;
+              console.log('🔍 API 요청 URL:', apiUrl);
+              console.log('🔍 Authorization 토큰:', localStorage.getItem('accessToken') ? '토큰 있음' : '토큰 없음');
+              
+              const userResponse = await fetch(apiUrl, {
                 headers: {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type': 'application/json',
                 },
               });
               
+              console.log('🔍 API 응답 상태:', userResponse.status);
+              console.log('🔍 API 응답 헤더:', Object.fromEntries(userResponse.headers.entries()));
+              
+              const responseText = await userResponse.text();
+              console.log('🔍 RAW 응답 텍스트:', responseText);
+              
               if (userResponse.ok) {
-                const userData = await userResponse.json();
-                console.log('상대방 사용자 정보 전체:', userData);
-                console.log('상대방 사용자 ID:', otherUserId);
+                const userData = JSON.parse(responseText);
+                console.log('🔍 파싱된 사용자 정보:', JSON.stringify(userData, null, 2));
+                console.log('🔍 상대방 사용자 ID:', otherUserId);
                 
                 // 다양한 API 응답 구조에 대응
                 let otherUserNickname = '상대방';
