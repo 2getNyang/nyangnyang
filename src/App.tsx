@@ -21,6 +21,7 @@ import MyPosts from "./pages/MyPosts";
 import MyLikedPosts from "./pages/MyLikedPosts";
 import MyFavoriteAdoptions from "./pages/MyFavoriteAdoptions";
 import MissingAnimalDetail from "./pages/MissingAnimalDetail";
+import WithdrawalTerms from "./pages/WithdrawalTerms";
 import Chat from "./pages/Chat";
 import ChatList from "./pages/ChatList";
 import ChatRoom from "./pages/ChatRoom";
@@ -59,6 +60,7 @@ const App = () => (
           <Route path="/my-posts" element={<MyPosts />} />
           <Route path="/my-liked-posts" element={<MyLikedPosts />} />
           <Route path="/my-favorite-adoptions" element={<MyFavoriteAdoptions />} />
+          <Route path="/withdrawal-terms" element={<WithdrawalTerms />} />
             <Route path="/test" element={<TestPage />} />
             <Route path="/test6" element={<TestPage6 />} />
             <Route path="/test7" element={<TestPage7 />} />
