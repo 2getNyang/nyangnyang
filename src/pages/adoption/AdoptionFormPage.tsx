@@ -14,11 +14,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 const AdoptionFormPage: React.FC = () => {
   const { desertionNo } = useParams<{ desertionNo: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Form state
   const [userName, setUserName] = useState('');
@@ -68,8 +70,9 @@ const AdoptionFormPage: React.FC = () => {
 
     try {
       const adoptionData = {
+        userId: user?.id,
         userName,
-        userBirth: userBirth ? format(userBirth, 'yyyyMMdd') : '',
+        userBirth: userBirth ? format(userBirth, 'yyyy-MM-dd') : '',
         userGender,
         userPhone,
         familyPhone,
@@ -78,13 +81,13 @@ const AdoptionFormPage: React.FC = () => {
         detailAddress,
         housingType,
         job,
-        experience: experience === 'Y',
-        hasOtherPets: hasOtherPets === 'Y',
+        experience: experience === 'YES' ? 'YES' : 'NO',
+        hasOtherPets: hasOtherPets === 'YES' ? 'YES' : 'NO',
         adultCount,
         childrenCount,
-        allConsent: allConsent === 'Y',
-        hasAllergy: hasAllergy === 'Y',
-        consentForCheck: consentForCheck === 'Y',
+        allConsent: allConsent === 'YES' ? 'YES' : 'NO',
+        hasAllergy: hasAllergy === 'YES' ? 'YES' : 'NO',
+        consentForCheck: consentForCheck === 'YES' ? 'YES' : 'NO',
         applicationReason
       };
 
@@ -287,32 +290,32 @@ const AdoptionFormPage: React.FC = () => {
                 <h3 className="text-lg font-semibold">반려동물 관련 정보</h3>
                 
                 <div className="space-y-2">
-                  <Label>이전 동물 양육 경험 *</Label>
+                  <Label>이전에 반려동물을 키워보신 적이 있나요? *</Label>
                   <RadioGroup value={experience} onValueChange={setExperience}>
                     <div className="flex items-center space-x-6">
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="Y" id="exp-yes" />
-                        <Label htmlFor="exp-yes">예</Label>
+                        <RadioGroupItem value="YES" id="exp-yes" />
+                        <Label htmlFor="exp-yes">있습니다</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="N" id="exp-no" />
-                        <Label htmlFor="exp-no">아니오</Label>
+                        <RadioGroupItem value="NO" id="exp-no" />
+                        <Label htmlFor="exp-no">없습니다</Label>
                       </div>
                     </div>
                   </RadioGroup>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>현재 다른 반려동물 존재 여부 *</Label>
+                  <Label>현재 함께 지내는 반려동물이 있으신가요? *</Label>
                   <RadioGroup value={hasOtherPets} onValueChange={setHasOtherPets}>
                     <div className="flex items-center space-x-6">
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="Y" id="pets-yes" />
-                        <Label htmlFor="pets-yes">예</Label>
+                        <RadioGroupItem value="YES" id="pets-yes" />
+                        <Label htmlFor="pets-yes">있습니다</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="N" id="pets-no" />
-                        <Label htmlFor="pets-no">아니오</Label>
+                        <RadioGroupItem value="NO" id="pets-no" />
+                        <Label htmlFor="pets-no">없습니다</Label>
                       </div>
                     </div>
                   </RadioGroup>
@@ -325,7 +328,7 @@ const AdoptionFormPage: React.FC = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="adultCount">동거인 성인 수 *</Label>
+                    <Label htmlFor="adultCount">함께 거주 중인 성인은 몇 분이신가요? *</Label>
                     <Input
                       id="adultCount"
                       type="number"
@@ -337,7 +340,7 @@ const AdoptionFormPage: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="childrenCount">동거인 자녀 수 *</Label>
+                    <Label htmlFor="childrenCount">함께 거주 중인 자녀는 몇 분이신가요? *</Label>
                     <Input
                       id="childrenCount"
                       type="number"
@@ -350,48 +353,48 @@ const AdoptionFormPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>동거인 모두 동의 여부 *</Label>
+                  <Label>동거인 모두 입양에 동의하셨나요? *</Label>
                   <RadioGroup value={allConsent} onValueChange={setAllConsent}>
                     <div className="flex items-center space-x-6">
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="Y" id="consent-yes" />
-                        <Label htmlFor="consent-yes">예</Label>
+                        <RadioGroupItem value="YES" id="consent-yes" />
+                        <Label htmlFor="consent-yes">동의합니다</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="N" id="consent-no" />
-                        <Label htmlFor="consent-no">아니오</Label>
+                        <RadioGroupItem value="NO" id="consent-no" />
+                        <Label htmlFor="consent-no">동의하지 않습니다</Label>
                       </div>
                     </div>
                   </RadioGroup>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>알러지 보유 여부 *</Label>
+                  <Label>알러지를 가지고 계신가요? *</Label>
                   <RadioGroup value={hasAllergy} onValueChange={setHasAllergy}>
                     <div className="flex items-center space-x-6">
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="Y" id="allergy-yes" />
-                        <Label htmlFor="allergy-yes">예</Label>
+                        <RadioGroupItem value="YES" id="allergy-yes" />
+                        <Label htmlFor="allergy-yes">있습니다</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="N" id="allergy-no" />
-                        <Label htmlFor="allergy-no">아니오</Label>
+                        <RadioGroupItem value="NO" id="allergy-no" />
+                        <Label htmlFor="allergy-no">없습니다</Label>
                       </div>
                     </div>
                   </RadioGroup>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>입양 후 상태 확인 동의 *</Label>
+                  <Label>입양 후 상태 확인 요청에 동의하시나요? *</Label>
                   <RadioGroup value={consentForCheck} onValueChange={setConsentForCheck}>
                     <div className="flex items-center space-x-6">
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="Y" id="check-yes" />
-                        <Label htmlFor="check-yes">예</Label>
+                        <RadioGroupItem value="YES" id="check-yes" />
+                        <Label htmlFor="check-yes">동의합니다</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="N" id="check-no" />
-                        <Label htmlFor="check-no">아니오</Label>
+                        <RadioGroupItem value="NO" id="check-no" />
+                        <Label htmlFor="check-no">동의하지 않습니다</Label>
                       </div>
                     </div>
                   </RadioGroup>
@@ -413,12 +416,42 @@ const AdoptionFormPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* 입양 계약서 */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">입양 계약서</h3>
+                <div className="bg-gray-50 p-6 rounded-lg border space-y-4">
+                  <div className="space-y-3 text-sm">
+                    <p>• 본인은 입양한 반려동물이 무지개다리를 건너는 순간까지 양질의 사료와 신선한 물을 공급하며, 쾌적하고 안전한 환경에서 반려동물을 보살필 것입니다.</p>
+                    <p>• 본인은 연락처 변경, 이사 등의 정보 변동 시 반드시 보호단체에 이를 전달할 것입니다.</p>
+                    <p>• 본인은 보호단체와 약속된 방식으로 입양한 반려동물의 소식을 정기적으로 전달할 것입니다.</p>
+                    <p>• 본인은 입양 후 보호단체의 모니터링 및 연락에 협조할 것입니다.</p>
+                    <p>• 본인은 개인 사정으로 입양 받은 반려동물을 파양할 경우 반드시 보호단체에 반환할 것입니다.</p>
+                    <p>• 본인은 반려동물이 실종되거나 사망한 경우 즉시 보호단체에 이를 알릴 것입니다.</p>
+                    <p>• 본인은 보호단체가 반려 상황을 모니터링하여 적합하지 않다고 판단할 경우, 요구 시 반려동물을 반환할 것입니다.</p>
+                    <p>• 본인은 중성화 수술이 되지 않은 반려동물을 입양한 경우, 수술 가능 시 반드시 중성화할 것입니다.</p>
+                    <p>• 본인은 정기 예방접종 및 건강검진 등 건강 관리를 성실히 이행할 것입니다.</p>
+                    <p>• 본인은 어떠한 경우에도 책임 후원비 반환을 요구하지 않을 것입니다.</p>
+                    <p className="mt-6 pt-4 border-t border-gray-200">
+                      위의 모든 입양 조건에 동의하며, 이를 위반할 경우 반려동물의 소유권이 보호단체에 귀속됨을 약속합니다.
+                    </p>
+                  </div>
+                  <div className="mt-8 space-y-2 text-sm">
+                    <p>년     월     일</p>
+                    <p>원 보호자: ___________________ (인)</p>
+                    <p>입양 신청자: {userName || '___________________'} (인)</p>
+                  </div>
+                  <div className="mt-6 text-center font-bold">
+                    함께하게냥
+                  </div>
+                </div>
+              </div>
+
               {/* 제출 버튼 */}
               <div className="pt-6">
                 <Button
                   onClick={handleSubmit}
                   disabled={!isFormValid() || isSubmitting}
-                  className="w-full"
+                  className="w-48 mx-auto block"
                   size="lg"
                 >
                   {isSubmitting ? "신청 중..." : "입양 신청서 제출"}
