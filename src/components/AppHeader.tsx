@@ -12,6 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Heart } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useNotification } from '@/context/NotificationContext';
 
 interface AppHeaderProps {
   onLoginClick: () => void;
@@ -20,15 +21,10 @@ interface AppHeaderProps {
 const AppHeader = ({ onLoginClick }: AppHeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isLoggedIn, logout } = useAuth();
+  const { notifications, hasUnreadNotifications } = useNotification();
   
   // 로그인 상태 콘솔 출력
   console.log('헤더 상태 - 로그인 여부:', isLoggedIn, '사용자:', user);
-  
-  // Mock notification data
-  const notifications = [
-    { id: 1, title: "새로운 입양 신청", content: "초코에 대한 입양 신청이 접수되었습니다.", time: "2분 전" },
-    { id: 2, title: "메시지 도착", content: "보호소에서 새로운 메시지가 도착했습니다.", time: "1시간 전" },
-  ];
 
   return (
     <header className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -59,29 +55,26 @@ const AppHeader = ({ onLoginClick }: AppHeaderProps) => {
                 {/* 알림 */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative px-3 py-2">
-                      <Bell className="w-5 h-5" />
-                      {notifications.length > 0 && (
-                        <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 text-white">
-                          {notifications.length}
-                        </Badge>
-                      )}
+                     <Button variant="ghost" className="relative px-3 py-2">
+                       <Bell className="w-5 h-5" />
+                       {hasUnreadNotifications && (
+                         <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500"></div>
+                       )}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80">
                     <div className="p-2">
                       <p className="font-semibold text-sm mb-2">알림</p>
-                      {notifications.length > 0 ? (
-                        notifications.map((notification) => (
-                          <div key={notification.id} className="p-2 hover:bg-gray-50 rounded text-xs border-b last:border-b-0">
-                            <p className="font-medium">{notification.title}</p>
-                            <p className="text-gray-600 text-xs">{notification.content}</p>
-                            <p className="text-gray-400 text-xs mt-1">{notification.time}</p>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-gray-500 text-xs p-2">새 알림이 없습니다.</p>
-                      )}
+                       {notifications.length > 0 ? (
+                         notifications.map((notification) => (
+                           <div key={notification.notyId} className="p-2 hover:bg-gray-50 rounded text-xs border-b last:border-b-0">
+                             <p className="text-gray-600 text-xs">{notification.notyContent}</p>
+                             <p className="text-gray-400 text-xs mt-1">{new Date(notification.notyCreatedAt).toLocaleString()}</p>
+                           </div>
+                         ))
+                       ) : (
+                         <p className="text-gray-500 text-xs p-2">새 알림이 없습니다.</p>
+                       )}
                     </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
