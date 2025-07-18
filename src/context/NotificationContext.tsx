@@ -88,6 +88,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
           // 알림 구독
           client.subscribe(`/sub/notifications/${user.id}`, (message) => {
             try {
+              console.log("📩 받은 알림", message.body);
               const notification: Notification = JSON.parse(message.body);
               console.log('새 알림 수신:', notification);
               addNotification(notification);
