@@ -214,7 +214,12 @@ const SNSPostDetail = () => {
               {/* 수정/삭제 버튼 */}
               {isAuthor && (
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="text-gray-600 hover:text-gray-800">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-gray-600 hover:text-gray-800"
+                    onClick={() => navigate(`/edit-sns-post/${id}`)}
+                  >
                     <Edit className="w-4 h-4 mr-1" />
                     수정
                   </Button>
