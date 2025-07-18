@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,35 +7,75 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import AppHeader from '@/components/AppHeader';
 import Footer from '@/components/Footer';
+import path from "path";
 
 const WithdrawalTerms = () => {
   const navigate = useNavigate();
-  const [userId, setUserId] = useState('');
+  const [inputNickname, setInputNickname] = useState('');
   const [confirmText, setConfirmText] = useState('');
+  const [currentNickname, setCurrentNickname] = useState<string | null>(null);
 
-  // 임시 사용자 정보 - 실제로는 context나 쿠키에서 가져와야 함
-  const currentUserId = '김철수';
-  
-  const handleWithdrawal = () => {
-    if (userId !== currentUserId) {
-      alert('사용자 아이디가 일치하지 않습니다.');
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (!storedUser) throw new Error('저장된 유저 정보 없음');
+
+      const parsed = JSON.parse(storedUser);
+      setCurrentNickname(parsed.nickname); // ← 여기서 닉네임 추출
+    } catch (err) {
+      console.error('닉네임 조회 실패', err);
+      alert('로그인 정보를 확인할 수 없습니다.');
+    }
+  }, []);
+
+
+  const handleWithdrawal = async () => {
+    if (inputNickname !== currentNickname) {
+      alert('사용자 닉네임이 일치하지 않습니다.');
       return;
     }
-    
+
     if (confirmText !== '탈퇴합니다') {
       alert('"탈퇴합니다"를 정확히 입력해주세요.');
       return;
     }
-    
-    // 실제로는 여기서 탈퇴 API 호출
-    if (confirm('정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+
+    const confirmed = confirm('정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.');
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem('accessToken');
+
+      const res = await fetch('http://localhost:8080/api/auth/withdraw', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // 쿠키설정
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || '회원 탈퇴 실패');
+      }
+
       alert('회원탈퇴가 완료되었습니다.');
-      // 로그아웃 및 메인페이지로 이동
+      localStorage.clear(); // 로컬스토리지 정리
+      // 쿠키전부삭제
+      document.cookie.split(";").forEach(cookie => {
+        const name = cookie.split("=")[0].trim();
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+      });
+
       navigate('/');
+    } catch (err) {
+      console.error('회원탈퇴 실패', err);
+      alert('회원탈퇴에 실패했습니다. 다시 시도해 주세요.');
     }
   };
 
-  const isFormValid = userId === currentUserId && confirmText === '탈퇴합니다';
+  const isFormValid =
+      inputNickname === currentNickname && confirmText === '탈퇴합니다';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -137,20 +177,21 @@ const WithdrawalTerms = () => {
               
               <div className="space-y-6">
                 <div>
-                  <Label htmlFor="userId" className="text-gray-700">
-                    사용자 아이디 입력
+                  <Label htmlFor="nickname" className="text-gray-700">
+                    사용자 닉네임 입력
                   </Label>
                   <Input
-                    id="userId"
-                    type="text"
-                    value={userId}
-                    onChange={(e) => setUserId(e.target.value)}
-                    placeholder="현재 사용 중인 아이디를 입력하세요"
-                    className="mt-2"
+                      id="nickname"
+                      type="text"
+                      value={inputNickname}
+                      onChange={(e) => setInputNickname(e.target.value)}
+                      placeholder="현재 사용 중인 닉네임을 입력하세요"
+                      className="mt-2"
                   />
                   <p className="text-sm text-gray-500 mt-1">
-                    현재 계정: {currentUserId}
+                    현재 닉네임: {currentNickname ?? '로딩 중...'}
                   </p>
+
                 </div>
 
                 <div>
