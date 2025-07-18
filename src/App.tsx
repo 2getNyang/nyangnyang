@@ -30,6 +30,7 @@ import TestPage from "./pages/TestPage";
 import TestPage6 from "./pages/TestPage6";
 import TestPage7 from "./pages/TestPage7";
 import LoginCallback from "./pages/LoginCallback";
+import AnimalDetail from "./pages/AnimalDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
           <Route path="/create-missing-post" element={<CreateMissingPost />} />
           <Route path="/sns-post/:id" element={<SNSPostDetail />} />
           <Route path="/adoption-review/:id" element={<AdoptionReviewDetail />} />
+          <Route path="/animal/:id" element={<AnimalDetail />} />
           <Route path="/missing-animal/:id" element={<MissingAnimalDetail />} />
           <Route path="/chat/:userId" element={<Chat />} />
           <Route path="/chat-list" element={<ChatList />} />
