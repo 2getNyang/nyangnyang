@@ -64,6 +64,8 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   };
 
   useEffect(() => {
+    console.log("👤 알림 구독 시도 → user.id =", user?.id);
+    
     if (!isLoggedIn || !user?.id) {
       // 로그아웃 시 연결 해제
       if (stompClientRef.current) {
