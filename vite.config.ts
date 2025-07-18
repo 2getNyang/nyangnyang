@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080', // ← 백엔드 서버 주소
+        changeOrigin: false,
+        secure: false,
+      },
+    },
   },
   plugins: [
     react(),
