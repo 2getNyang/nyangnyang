@@ -339,13 +339,21 @@ const EditMissingPost = () => {
 
       // DTO를 JSON Blob으로 변환하여 FormData에 추가
       const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
-      formData.append('dto', dtoBlob);
+      formData.append('requestDTO', dtoBlob);
 
       // 새 이미지 파일들 추가
       if (newImages.length > 0) {
         newImages.forEach((image) => {
           formData.append('newImages', image);
         });
+      }
+
+      // 디버깅용 로그
+      console.log('전송할 DTO:', dto);
+      console.log('전송할 새 이미지 개수:', newImages.length);
+      console.log('FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
       }
 
       const token = localStorage.getItem('accessToken');
