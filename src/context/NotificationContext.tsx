@@ -78,7 +78,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
 
     // STOMP 연결 설정
     const connectStomp = () => {
-      const socket = new SockJS('http://localhost:8080/ws');
+      const socket = new SockJS('http://localhost:8080/ws-stomp');
       const client = new Client({
         webSocketFactory: () => socket,
         debug: (str) => {
