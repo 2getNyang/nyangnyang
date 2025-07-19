@@ -13,7 +13,7 @@ interface Animal {
   sexCd?: string;
   happenPlace?: string;
   processState?: string;
-  popfile?: string;
+  popfile1?: string;
   // Mock 데이터 (기존 하위 호환성)
   id?: string;
   name?: string;
@@ -76,7 +76,7 @@ const AppAnimalCard = ({ animal }: AppAnimalCardProps) => {
     <Card className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02]">
       <div className="aspect-[4/3] overflow-hidden">
         <img 
-          src={isApiData ? animal.popfile : (animal.imageUrl || 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop')}
+          src={isApiData ? animal.popfile1 : (animal.imageUrl || 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop')}
           alt={isApiData ? animal.noticeNo : animal.name}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
           onError={(e) => {
