@@ -135,7 +135,7 @@ const CreateAdoptionReviewPost = () => {
       return;
     }
 
-    if (!title.trim() || !content.trim() || !selectedFormId) {
+    if (!title.trim() || !content.trim()) {
       toast({
         title: "입력 오류",
         description: "모든 항목을 기재해주세요.",
@@ -155,17 +155,27 @@ const CreateAdoptionReviewPost = () => {
         boardContent: content.trim(),
         categoryId: 2,
         userId: user.id,
-        formId: parseInt(selectedFormId)
+        formId: selectedFormId ? parseInt(selectedFormId) : null
       };
       
       console.log('전송할 boardDTO 데이터:', boardDTO);
       
-      formData.append('boardDTO', JSON.stringify(boardDTO));
-
-      // 이미지 파일들 추가
-      images.forEach((image) => {
-        formData.append('images', image);
+      // boardDTO를 JSON Blob으로 생성하여 추가
+      const boardDTOBlob = new Blob([JSON.stringify(boardDTO)], {
+        type: 'application/json'
       });
+      formData.append('boardDTO', boardDTOBlob);
+
+      // 이미지 파일들 추가 (이미지가 없어도 빈 배열로 전송)
+      if (images.length > 0) {
+        images.forEach((image) => {
+          formData.append('images', image);
+        });
+      } else {
+        // 이미지가 없을 때 빈 파일 추가
+        const emptyFile = new File([], '', { type: 'image/jpeg' });
+        formData.append('images', emptyFile);
+      }
       
       console.log('FormData 내용 확인:');
       for (let [key, value] of formData.entries()) {
@@ -269,35 +279,50 @@ const CreateAdoptionReviewPost = () => {
                   <p className="text-gray-500">입양 신청 내역이 없습니다.</p>
                 ) : (
                   <RadioGroup value={selectedFormId} onValueChange={setSelectedFormId}>
-                    <div className="grid gap-4">
-                      {petApplications.map((app) => (
-                        <div key={app.formId} className="flex items-center space-x-3">
-                          <RadioGroupItem value={app.formId.toString()} id={`app-${app.formId}`} />
-                          <Label 
-                            htmlFor={`app-${app.formId}`} 
-                            className="flex-1 cursor-pointer"
-                          >
-                            <Card className="p-4 hover:bg-gray-50 transition-colors">
-                              <div className="flex gap-4">
-                                <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                  <img
-                                    src={app.profile1}
-                                    alt="동물 사진"
-                                    className="w-full h-full object-cover"
-                                  />
+                    <div className="space-y-4">
+                      {/* 선택안함 옵션 */}
+                      <div className="flex items-center space-x-3">
+                        <RadioGroupItem value="" id="no-selection" />
+                        <Label htmlFor="no-selection" className="cursor-pointer text-gray-600">
+                          선택안함
+                        </Label>
+                      </div>
+                      
+                      {/* 입양 신청 내역 카드들 - 2열 그리드 */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {petApplications.map((app) => (
+                          <div key={app.formId} className="flex items-start space-x-3">
+                            <RadioGroupItem 
+                              value={app.formId.toString()} 
+                              id={`app-${app.formId}`} 
+                              className="mt-2"
+                            />
+                            <Label 
+                              htmlFor={`app-${app.formId}`} 
+                              className="flex-1 cursor-pointer"
+                            >
+                              <Card className="p-3 hover:bg-gray-50 transition-colors">
+                                <div className="flex gap-3">
+                                  <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                    <img
+                                      src={app.profile1}
+                                      alt="동물 사진"
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="flex-1 space-y-1 min-w-0">
+                                    <h3 className="font-semibold text-gray-800 text-sm truncate">{app.noticeNo}</h3>
+                                    <p className="text-xs text-gray-600 truncate">{app.kindFullNm}</p>
+                                    <p className="text-xs text-gray-600">{formatGender(app.sexCd)}</p>
+                                    <p className="text-xs text-gray-600 truncate">{app.regionName} {app.subRegionName}</p>
+                                    <p className="text-xs text-gray-500">신청일: {formatDate(app.formCreateAt)}</p>
+                                  </div>
                                 </div>
-                                <div className="flex-1 space-y-1">
-                                  <h3 className="font-semibold text-gray-800">{app.noticeNo}</h3>
-                                  <p className="text-sm text-gray-600">{app.kindFullNm}</p>
-                                  <p className="text-sm text-gray-600">{formatGender(app.sexCd)}</p>
-                                  <p className="text-sm text-gray-600">{app.regionName} {app.subRegionName}</p>
-                                  <p className="text-xs text-gray-500">신청일: {formatDate(app.formCreateAt)}</p>
-                                </div>
-                              </div>
-                            </Card>
-                          </Label>
-                        </div>
-                      ))}
+                              </Card>
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </RadioGroup>
                 )}
