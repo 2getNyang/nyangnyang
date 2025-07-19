@@ -256,7 +256,12 @@ const MissingPostDetail = () => {
               {/* 수정/삭제 버튼 */}
               {hasEditPermission && (
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="text-gray-600 hover:text-gray-800">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-gray-600 hover:text-gray-800"
+                    onClick={() => navigate(`/missing-post/edit/${id}`)}
+                  >
                     <Edit className="w-4 h-4 mr-1" />
                     수정
                   </Button>
