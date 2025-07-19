@@ -75,6 +75,8 @@ const MyPage = () => {
         navigate('/my-favorite-adoptions');
         break;
       case 'adoption-applications':
+        navigate('/my-adoption-applications');
+        break;
       default:
         console.log(`${menuId} 페이지는 아직 구현되지 않았습니다.`);
         break;

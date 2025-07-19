@@ -23,6 +23,7 @@ import EditProfile from "./pages/EditProfile";
 import MyPosts from "./pages/MyPosts";
 import MyLikedPosts from "./pages/MyLikedPosts";
 import MyFavoriteAdoptions from "./pages/MyFavoriteAdoptions";
+import MyAdoptionApplications from "./pages/MyAdoptionApplications";
 import MissingAnimalDetail from "./pages/MissingAnimalDetail";
 import WithdrawalTerms from "./pages/WithdrawalTerms";
 import Chat from "./pages/Chat";
@@ -56,8 +57,9 @@ const App = () => (
            <Route path="/sns-post/:id" element={<SNSPostDetail />} />
            <Route path="/edit-sns-post/:boardId" element={<EditSNSPost />} />
           <Route path="/adoption-review/:id" element={<AdoptionReviewDetail />} />
-          <Route path="/animal/:id" element={<AnimalDetail />} />
-          <Route path="/adoption-form/:desertionNo" element={<AdoptionFormPage />} />
+           <Route path="/animal/:id" element={<AnimalDetail />} />
+           <Route path="/adoption-form/:desertionNo" element={<AdoptionFormPage />} />
+           <Route path="/adoption-form/:desertionNo/:formId" element={<AdoptionFormPage />} />
            <Route path="/missing-post/:id" element={<MissingAnimalDetail />} />
            <Route path="/missing-post/edit/:id" element={<EditMissingPost />} />
           <Route path="/chat/:userId" element={<Chat />} />
@@ -67,9 +69,10 @@ const App = () => (
           <Route path="/shelter/:id" element={<ShelterDetail />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/edit-profile" element={<EditProfile />} />
-          <Route path="/my-posts" element={<MyPosts />} />
-          <Route path="/my-liked-posts" element={<MyLikedPosts />} />
-          <Route path="/my-favorite-adoptions" element={<MyFavoriteAdoptions />} />
+           <Route path="/my-posts" element={<MyPosts />} />
+           <Route path="/my-liked-posts" element={<MyLikedPosts />} />
+           <Route path="/my-favorite-adoptions" element={<MyFavoriteAdoptions />} />
+           <Route path="/my-adoption-applications" element={<MyAdoptionApplications />} />
           <Route path="/withdrawal-terms" element={<WithdrawalTerms />} />
             <Route path="/test" element={<TestPage />} />
             <Route path="/test6" element={<TestPage6 />} />
