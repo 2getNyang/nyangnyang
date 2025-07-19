@@ -272,7 +272,7 @@ const EditMissingPost = () => {
   // 실종유형 표시 변환
   const getLostTypeLabel = (lostType: string) => {
     switch (lostType) {
-      case 'WS': return '실종';
+      case 'MS': return '실종';
       case 'WT': return '목격';
       default: return lostType;
     }
@@ -288,12 +288,12 @@ const EditMissingPost = () => {
       return;
     }
 
-    // 모든 필수 항목 검증
+    // 모든 필수 항목 검증 (이미지 포함)
+    const totalImages = existingImages.length + newImages.length;
     if (!data.lostType || !data.missingDate || !data.upKindCd || !data.kindCd || 
         !data.regionCode || !data.missingLocation?.trim() || !data.phone?.trim() || 
         !data.gender || !data.age || !data.furColor?.trim() || 
-        !data.distinctFeatures?.trim() || !data.content?.trim() || 
-        (existingImages.length === 0 && newImages.length === 0)) {
+        !data.distinctFeatures?.trim() || !data.content?.trim() || totalImages === 0) {
       
       toast({
         title: "입력 오류",
@@ -318,22 +318,23 @@ const EditMissingPost = () => {
       
       // DTO 데이터 준비
       const dto = {
-        categoryId: 4,
+        boardId: parseInt(id!),
         userId: user.id,
+        categoryId: 4,
+        content: data.content,
         lostType: data.lostType,
         missingDate: format(data.missingDate, 'yyyy-MM-dd'),
-        upKindCd: data.upKindCd,
-        kindCd: data.kindCd,
+        missingLocation: data.missingLocation,
         regionCode: data.regionCode,
         subRegionCode: data.subRegionCode,
-        missingLocation: data.missingLocation,
         phone: data.phone,
+        upKindCode: data.upKindCd,
+        kindCode: data.kindCd,
         gender: data.gender,
         age: parseInt(data.age),
         furColor: data.furColor,
         distinctFeatures: data.distinctFeatures,
-        content: data.content,
-        existingImageIds: existingImages.map(img => img.imageId),
+        remainImageIds: existingImages.map(img => img.imageId)
       };
 
       // DTO를 JSON Blob으로 변환하여 FormData에 추가
@@ -341,9 +342,11 @@ const EditMissingPost = () => {
       formData.append('dto', dtoBlob);
 
       // 새 이미지 파일들 추가
-      newImages.forEach((image) => {
-        formData.append('images', image);
-      });
+      if (newImages.length > 0) {
+        newImages.forEach((image) => {
+          formData.append('newImages', image);
+        });
+      }
 
       const token = localStorage.getItem('accessToken');
       const response = await fetch(`http://localhost:8080/api/v1/boards/lost/${id}`, {
@@ -665,142 +668,141 @@ const EditMissingPost = () => {
                     />
                   </div>
 
-                  {/* 털색과 특징 */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="furColor"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>털색</FormLabel>
-                          <FormControl>
-                            <Input placeholder="예: 갈색, 흰색 등" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                 </div>
 
-                    <FormField
-                      control={form.control}
-                      name="distinctFeatures"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>특징</FormLabel>
-                          <FormControl>
-                            <Input placeholder="예: 목걸이 착용, 특이한 무늬 등" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
+                 {/* 털색 */}
+                 <FormField
+                   control={form.control}
+                   name="furColor"
+                   render={({ field }) => (
+                     <FormItem>
+                       <FormLabel>털색</FormLabel>
+                       <FormControl>
+                         <Input placeholder="예: 갈색, 흰색과 갈색 섞임, 검은색" {...field} />
+                       </FormControl>
+                       <FormMessage />
+                     </FormItem>
+                   )}
+                 />
 
-                {/* 상세 내용 */}
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>상세 내용</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="실종 상황이나 목격 정보를 자세히 설명해주세요"
-                          className="min-h-[120px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                 {/* 특징 */}
+                 <FormField
+                   control={form.control}
+                   name="distinctFeatures"
+                   render={({ field }) => (
+                     <FormItem>
+                       <FormLabel>특징</FormLabel>
+                       <FormControl>
+                         <Textarea 
+                           placeholder="목줄 착용 여부, 특이한 무늬, 행동 특성 등을 자세히 적어주세요"
+                           className="min-h-[100px] resize-none"
+                           {...field}
+                         />
+                       </FormControl>
+                       <FormMessage />
+                     </FormItem>
+                   )}
+                 />
 
-                {/* 이미지 업로드 */}
-                <div className="space-y-4">
-                  <Label>사진 (최대 5장)</Label>
-                  
-                  {/* 기존 이미지 미리보기 */}
-                  {existingImages.length > 0 && (
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">기존 이미지</p>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                        {existingImages.map((image) => (
-                          <div key={image.imageId} className="relative">
-                            <img
-                              src={image.imageUrl}
-                              alt="기존 이미지"
-                              className="w-full h-24 object-cover rounded-lg border"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeExistingImage(image.imageId)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                 {/* 본문 */}
+                 <FormField
+                   control={form.control}
+                   name="content"
+                   render={({ field }) => (
+                     <FormItem>
+                       <FormLabel>본문</FormLabel>
+                       <FormControl>
+                         <Textarea 
+                           placeholder="상황을 자세히 설명해주세요"
+                           className="min-h-[200px] resize-none"
+                           {...field}
+                         />
+                       </FormControl>
+                       <FormMessage />
+                     </FormItem>
+                   )}
+                 />
 
-                  {/* 새 이미지 미리보기 */}
-                  {newImages.length > 0 && (
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">새 이미지</p>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                        {newImages.map((image, index) => (
-                          <div key={index} className="relative">
-                            <img
-                              src={URL.createObjectURL(image)}
-                              alt={`새 이미지 ${index + 1}`}
-                              className="w-full h-24 object-cover rounded-lg border"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeNewImage(index)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                 {/* 이미지 업로드 - 개선된 디자인 */}
+                 <div className="space-y-4">
+                   <Label className="text-base font-medium">사진 첨부 (최대 5개)</Label>
+                   
+                   <div className="space-y-4">
+                     {/* 기존 이미지들과 새 이미지들 함께 표시 */}
+                     {(existingImages.length > 0 || newImages.length > 0) && (
+                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                         {/* 기존 이미지들 */}
+                         {existingImages.map((image, index) => (
+                           <div key={`existing-${image.imageId}`} className="relative group">
+                             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
+                               <img
+                                 src={image.imageUrl}
+                                 alt={`기존 이미지 ${index + 1}`}
+                                 className="w-full h-full object-cover"
+                               />
+                               {image.thumbnail && (
+                                 <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                                   대표
+                                 </div>
+                               )}
+                             </div>
+                             <button
+                               type="button"
+                               onClick={() => removeExistingImage(image.imageId)}
+                               className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                             >
+                               <X className="w-3 h-3" />
+                             </button>
+                           </div>
+                         ))}
+                         
+                         {/* 새로 선택한 이미지들 */}
+                         {newImages.map((image, index) => (
+                           <div key={`new-${index}`} className="relative group">
+                             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
+                               <img
+                                 src={URL.createObjectURL(image)}
+                                 alt={`새 이미지 ${index + 1}`}
+                                 className="w-full h-full object-cover"
+                               />
+                             </div>
+                             <button
+                               type="button"
+                               onClick={() => removeNewImage(index)}
+                               className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                             >
+                               <X className="w-3 h-3" />
+                             </button>
+                           </div>
+                         ))}
+                       </div>
+                     )}
 
-                  {/* 이미지 업로드 버튼 */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
-                    <div className="text-center">
-                      <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                      <div className="mt-4">
-                        <label htmlFor="image-upload" className="cursor-pointer">
-                          <span className="mt-2 block text-sm font-medium text-gray-900">
-                            사진을 업로드하세요
-                          </span>
-                          <span className="block text-xs text-gray-500">
-                            PNG, JPG, GIF 최대 10MB
-                          </span>
-                        </label>
-                        <input
-                          id="image-upload"
-                          name="image-upload"
-                          type="file"
-                          className="sr-only"
-                          multiple
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          disabled={existingImages.length + newImages.length >= 5}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm text-gray-500">
-                    현재 {existingImages.length + newImages.length}/5개 이미지
-                  </p>
-                </div>
+                     {/* 업로드 버튼 */}
+                     {(existingImages.length + newImages.length) < 5 && (
+                       <label
+                         htmlFor="image-upload"
+                         className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                       >
+                         <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                         <span className="text-sm font-medium text-gray-600">사진 선택하기</span>
+                         <span className="text-xs text-gray-500 mt-1">
+                           {existingImages.length + newImages.length}/5개 선택됨
+                         </span>
+                       </label>
+                     )}
+                     
+                     <input
+                       id="image-upload"
+                       type="file"
+                       multiple
+                       accept="image/*"
+                       onChange={handleImageUpload}
+                       className="hidden"
+                       disabled={(existingImages.length + newImages.length) >= 5}
+                     />
+                   </div>
+                 </div>
 
                 {/* 버튼 */}
                 <div className="flex justify-end space-x-4 pt-6">
