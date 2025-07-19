@@ -12,6 +12,7 @@ interface Animal {
   kindFullNm?: string;
   sexCd?: string;
   happenPlace?: string;
+  happenDt?: string;
   processState?: string;
   popfile1?: string;
   // Mock 데이터 (기존 하위 호환성)
@@ -111,6 +112,13 @@ const AppAnimalCard = ({ animal }: AppAnimalCardProps) => {
               {isApiData ? getGenderText(animal.sexCd) : `${animal.age} • ${animal.gender}`}
             </span>
           </div>
+          
+          {isApiData && (
+            <div className="flex items-center space-x-2 text-gray-600">
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm">발견일: {animal.happenDt}</span>
+            </div>
+          )}
           
           <div className="flex items-center space-x-2 text-gray-600">
             <MapPin className="w-4 h-4" />
