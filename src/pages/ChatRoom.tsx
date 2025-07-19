@@ -60,38 +60,6 @@ const ChatRoom = () => {
       try {
         const token = localStorage.getItem('accessToken');
         
-        // 먼저 채팅방 정보를 가져와서 상대방 ID를 확인
-        const roomInfoResponse = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!roomInfoResponse.ok) {
-          if (roomInfoResponse.status === 403) {
-            toast({
-              title: "오류",
-              description: "채팅방에 접근할 권한이 없습니다.",
-              variant: "destructive"
-            });
-            navigate('/board?category=missing');
-            return;
-          }
-          throw new Error('채팅방 정보를 불러오지 못했습니다.');
-        }
-
-        const roomInfo = await roomInfoResponse.json();
-        console.log('채팅방 정보 API 응답:', roomInfo);
-
-        // 채팅방 정보에서 상대방 ID 찾기
-        let otherUserId = '';
-        if (roomInfo.data) {
-          const { user1Id, user2Id } = roomInfo.data;
-          otherUserId = user1Id?.toString() === currentUserId ? user2Id?.toString() : user1Id?.toString();
-          console.log('🔍 채팅방에서 찾은 상대방 ID:', otherUserId);
-        }
-        
         // 채팅방 메시지 가져오기
         const response = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}/messages`, {
           headers: {
@@ -101,6 +69,15 @@ const ChatRoom = () => {
         });
 
         if (!response.ok) {
+          if (response.status === 403) {
+            toast({
+              title: "오류",
+              description: "채팅방에 접근할 권한이 없습니다.",
+              variant: "destructive"
+            });
+            navigate('/board?category=missing');
+            return;
+          }
           throw new Error('채팅방 메시지를 불러오지 못했습니다.');
         }
 
@@ -110,29 +87,14 @@ const ChatRoom = () => {
         // API 응답에서 메시지 데이터 추출
         const messagesData = result.data || [];
         
-        // 상대방 정보 조회
+        // 메시지에서 상대방 닉네임 찾기
         let otherUserNickname = '상대방';
-        if (otherUserId) {
-          console.log('🔍 상대방 ID로 정보 조회 시작:', otherUserId);
-          try {
-            const userResponse = await fetch(`http://localhost:8080/api/v1/user/${otherUserId}`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-            });
-            
-            if (userResponse.ok) {
-              const userData = await userResponse.json();
-              console.log('🔍 파싱된 사용자 정보:', userData);
-              
-              otherUserNickname = userData.data?.nickname || userData.nickname || '상대방';
-              console.log('🔍 상대방 닉네임:', otherUserNickname);
-            } else {
-              console.warn('상대방 정보 조회 실패 - 응답 상태:', userResponse.status);
-            }
-          } catch (error) {
-            console.error('상대방 정보 조회 오류:', error);
+        if (Array.isArray(messagesData) && messagesData.length > 0) {
+          const otherMessage = messagesData.find((msg: any) => 
+            msg.senderId?.toString() !== currentUserId
+          );
+          if (otherMessage && otherMessage.senderName) {
+            otherUserNickname = otherMessage.senderName;
           }
         }
         
