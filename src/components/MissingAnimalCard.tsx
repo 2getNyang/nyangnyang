@@ -26,7 +26,7 @@ const MissingAnimalCard = ({ post }: MissingAnimalCardProps) => {
   return (
     <Card 
       className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02] cursor-pointer"
-      onClick={() => navigate(`/missing-animal/${post.id}`)}
+      onClick={() => navigate(`/missing-post/${post.id}`)}
     >
       <div className="aspect-[4/3] overflow-hidden">
         <img 

@@ -95,7 +95,7 @@ const handleCreatePost = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {currentPosts.map((post) => (
-              <div key={post.id} onClick={() => navigate(`/missing-animal/${post.id}`)} className="cursor-pointer">
+              <div key={post.id} onClick={() => navigate(`/missing-post/${post.id}`)} className="cursor-pointer">
                 <MissingAnimalCard post={post} />
               </div>
             ))}
