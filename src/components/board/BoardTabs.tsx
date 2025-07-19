@@ -21,11 +21,18 @@ const BoardTabs = ({ activeTab, onTabChange, currentPosts, searchTerm, onSearchC
   const navigate = useNavigate();
 
 const handleCreatePost = () => {
-  if (activeTab === 'sns') {
+  console.log('글작성 버튼 클릭, 현재 탭:', activeTab);
+  if (activeTab === 'adoption') {
+    console.log('입양 후기 게시글 작성 페이지로 이동');
+    navigate('/create-adoption-review-post');
+  } else if (activeTab === 'sns') {
+    console.log('SNS 홍보 게시글 작성 페이지로 이동');
     navigate('/create-sns-post');
   } else if (activeTab === 'missing') {
+    console.log('실종/목격 게시글 작성 페이지로 이동');
     navigate('/create-missing-post');
   } else {
+    console.log('기본 게시글 작성 페이지로 이동');
     navigate('/create-post', { state: { category: activeTab } });
   }
 };
