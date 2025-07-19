@@ -60,10 +60,36 @@ const ChatRoom = () => {
       try {
         const token = localStorage.getItem('accessToken');
         
-        // location.state에서 게시글 작성자 정보 확인
-        console.log('🔍 location.state:', location.state);
-        if (location.state && location.state.authorId) {
-          console.log('🔍 게시글 작성자 ID:', location.state.authorId);
+        // 먼저 채팅방 정보를 가져와서 상대방 ID를 확인
+        const roomInfoResponse = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!roomInfoResponse.ok) {
+          if (roomInfoResponse.status === 403) {
+            toast({
+              title: "오류",
+              description: "채팅방에 접근할 권한이 없습니다.",
+              variant: "destructive"
+            });
+            navigate('/board?category=missing');
+            return;
+          }
+          throw new Error('채팅방 정보를 불러오지 못했습니다.');
+        }
+
+        const roomInfo = await roomInfoResponse.json();
+        console.log('채팅방 정보 API 응답:', roomInfo);
+
+        // 채팅방 정보에서 상대방 ID 찾기
+        let otherUserId = '';
+        if (roomInfo.data) {
+          const { user1Id, user2Id } = roomInfo.data;
+          otherUserId = user1Id?.toString() === currentUserId ? user2Id?.toString() : user1Id?.toString();
+          console.log('🔍 채팅방에서 찾은 상대방 ID:', otherUserId);
         }
         
         // 채팅방 메시지 가져오기
@@ -75,101 +101,58 @@ const ChatRoom = () => {
         });
 
         if (!response.ok) {
-          if (response.status === 403) {
-            toast({
-              title: "오류",
-              description: "채팅방에 접근할 권한이 없습니다.",
-              variant: "destructive"
-            });
-            navigate('/board?category=missing');
-            return;
-          }
           throw new Error('채팅방 메시지를 불러오지 못했습니다.');
         }
 
         const result = await response.json();
-        console.log('채팅방 API 응답:', result);
+        console.log('채팅방 메시지 API 응답:', result);
 
         // API 응답에서 메시지 데이터 추출
         const messagesData = result.data || [];
         
+        // 상대방 정보 조회
+        let otherUserNickname = '상대방';
+        if (otherUserId) {
+          console.log('🔍 상대방 ID로 정보 조회 시작:', otherUserId);
+          try {
+            const userResponse = await fetch(`http://localhost:8080/api/v1/user/${otherUserId}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            });
+            
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              console.log('🔍 파싱된 사용자 정보:', userData);
+              
+              otherUserNickname = userData.data?.nickname || userData.nickname || '상대방';
+              console.log('🔍 상대방 닉네임:', otherUserNickname);
+            } else {
+              console.warn('상대방 정보 조회 실패 - 응답 상태:', userResponse.status);
+            }
+          } catch (error) {
+            console.error('상대방 정보 조회 오류:', error);
+          }
+        }
+        
+        setOtherUserName(otherUserNickname);
+
         if (Array.isArray(messagesData)) {
-          // 메시지 데이터 변환 및 상대방 ID 찾기
-          let otherUserId = '';
           const formattedMessages = messagesData.map((msg: any) => {
             const senderId = msg.senderId?.toString() || '';
-            
-            // 현재 사용자가 아닌 senderId를 상대방으로 설정
-            if (senderId !== currentUserId && !otherUserId) {
-              otherUserId = senderId;
-            }
             
             return {
               id: msg.id?.toString() || Date.now().toString(),
               content: msg.content || '',
               senderId: senderId,
-              senderName: senderId === currentUserId ? (user?.nickname || '나') : '상대방', // 임시로 설정
-              timestamp: new Date(msg.craetedAt || msg.createdAt || Date.now()), // craetedAt 오타 대응
+              senderName: senderId === currentUserId ? (user?.nickname || '나') : otherUserNickname,
+              timestamp: new Date(msg.craetedAt || msg.createdAt || Date.now()),
               isRead: msg.isRead || false
             };
           });
           
           setMessages(formattedMessages);
-          
-          // 상대방 정보 조회 - 다양한 응답 구조 대응
-          if (otherUserId) {
-            console.log('🔍 상대방 ID로 정보 조회 시작:', otherUserId);
-            try {
-              const apiUrl = `http://localhost:8080/api/v1/user/${otherUserId}`;
-              console.log('🔍 API 요청 URL:', apiUrl);
-              console.log('🔍 Authorization 토큰:', localStorage.getItem('accessToken') ? '토큰 있음' : '토큰 없음');
-              
-              const userResponse = await fetch(apiUrl, {
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-                },
-              });
-              
-              console.log('🔍 API 응답 상태:', userResponse.status);
-              console.log('🔍 API 응답 헤더:', Object.fromEntries(userResponse.headers.entries()));
-              
-              const responseText = await userResponse.text();
-              console.log('🔍 RAW 응답 텍스트:', responseText);
-              
-              if (userResponse.ok) {
-                const userData = JSON.parse(responseText);
-                console.log('🔍 파싱된 사용자 정보:', JSON.stringify(userData, null, 2));
-                console.log('🔍 상대방 사용자 ID:', otherUserId);
-                
-                // API 응답이 data.nickname 구조
-                const otherUserNickname = userData.data?.nickname || '상대방';
-                
-                console.log('상대방 닉네임:', otherUserNickname);
-                console.log('사용자 데이터 구조:', Object.keys(userData));
-                if (userData.data) {
-                  console.log('사용자 data 구조:', Object.keys(userData.data));
-                }
-                
-                setOtherUserName(otherUserNickname);
-                
-                // 메시지의 senderName도 업데이트
-                setMessages(prev => prev.map(msg => ({
-                  ...msg,
-                  senderName: msg.senderId === currentUserId ? (user?.nickname || '나') : otherUserNickname
-                })));
-              } else {
-                console.warn('상대방 정보 조회 실패 - 응답 상태:', userResponse.status);
-                console.warn('에러 응답:', responseText);
-                setOtherUserName('상대방');
-              }
-            } catch (error) {
-              console.error('상대방 정보 조회 오류:', error);
-              setOtherUserName('상대방');
-            }
-          } else {
-            console.warn('상대방 ID를 찾을 수 없습니다. 메시지 데이터:', messagesData);
-          }
         }
 
         setIsAuthorized(true);
