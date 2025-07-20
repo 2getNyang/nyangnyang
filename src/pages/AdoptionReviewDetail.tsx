@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Edit, Trash2, Reply, Send } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import AppHeader from '@/components/AppHeader';
+import CommentSection from '@/components/CommentSection';
 
 interface Comment {
   id: number;
@@ -463,55 +463,10 @@ const AdoptionReviewDetail = () => {
           </div>
 
           {/* 댓글 섹션 */}
-          <div className="px-8 py-6 border-t border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-800 mb-6">
-              댓글 {postDetail.comments.length}개
-            </h3>
-            
-            <div className="space-y-6">
-              {postDetail.comments
-                .filter(comment => comment.parentId === null)
-                .map((comment) => (
-                  <div key={comment.id} className="space-y-4">
-                    {/* 주 댓글 */}
-                    <div className="flex space-x-4">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-gray-500" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="bg-gray-50 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium text-gray-800">{comment.commentNickname}</span>
-                            <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
-                          </div>
-                          <p className="text-gray-700 leading-relaxed">{comment.commnetContent}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 대댓글 */}
-                    {postDetail.comments
-                      .filter(reply => reply.parentId === comment.id)
-                      .map((reply) => (
-                        <div key={reply.id} className="flex space-x-4 ml-14">
-                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4 text-gray-500" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="bg-blue-50 rounded-lg p-3">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium text-gray-800">{reply.commentNickname}</span>
-                                <span className="text-xs text-gray-500">{formatDate(reply.createdAt)}</span>
-                              </div>
-                              <p className="text-gray-700 leading-relaxed">{reply.commnetContent}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                ))}
-            </div>
-          </div>
+          <CommentSection 
+            comments={postDetail.comments}
+            isLoggedIn={isLoggedIn}
+          />
         </div>
       </div>
     </div>

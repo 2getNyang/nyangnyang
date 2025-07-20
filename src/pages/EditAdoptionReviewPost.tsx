@@ -69,14 +69,32 @@ const EditAdoptionReviewPost = () => {
         setTitle(result.data.boardTitle);
         setContent(result.data.boardContent);
         setExistingImages(result.data.images);
+      } else {
+        // 입양 신청 정보가 없는 경우도 정상적으로 처리
+        if (result.message && result.message.includes("PetApplicationForm")) {
+          console.log('입양 신청 정보가 없는 게시글입니다.');
+          // petApplicationDTO가 null인 경우에도 수정 폼 로드
+          setFormData({
+            ...result.data,
+            petApplicationDTO: null
+          });
+          setTitle(result.data.boardTitle || '');
+          setContent(result.data.boardContent || '');
+          setExistingImages(result.data.images || []);
+        } else {
+          throw new Error(result.message);
+        }
       }
     } catch (error) {
       console.error('수정 폼 데이터 로딩 실패:', error);
-      toast({
-        title: "오류",
-        description: "수정 폼 데이터를 불러오는데 실패했습니다.",
-        variant: "destructive",
-      });
+      // null 관련 에러가 아닌 경우에만 toast 표시
+      if (!error.message.includes("PetApplicationForm")) {
+        toast({
+          title: "오류",
+          description: "수정 폼 데이터를 불러오는데 실패했습니다.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -183,156 +201,176 @@ const EditAdoptionReviewPost = () => {
   }
 
   if (!formData) {
-    return <div className="flex justify-center items-center min-h-screen">데이터를 불러올 수 없습니다.</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">데이터를 불러올 수 없습니다.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">입양 후기 수정</h1>
-      
-      {formData.petApplicationDTO && (
-        <Card className="mb-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">입양 후기 수정</h1>
+          <p className="text-gray-600">입양한 반려동물의 소중한 후기를 수정해주세요.</p>
+        </div>
+
+        <Card>
           <CardHeader>
-            <CardTitle>입양 신청 정보</CardTitle>
+            <CardTitle>입양 후기 수정</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-4">
-              <img 
-                src={formData.petApplicationDTO.profile1} 
-                alt="반려동물"
-                className="w-24 h-24 object-cover rounded-lg"
-              />
-              <div className="flex-1">
-                <div className="font-semibold text-lg mb-1">
-                  {formData.petApplicationDTO.noticeNo}
-                </div>
-                <div className="text-muted-foreground mb-1">
-                  {formData.petApplicationDTO.kindFullNm}
-                </div>
-                <div className="text-muted-foreground mb-1">
-                  {getSexDisplay(formData.petApplicationDTO.sexCd)}
-                </div>
-                <div className="text-muted-foreground mb-1">
-                  {formData.petApplicationDTO.regionName} {formData.petApplicationDTO.subRegionName}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  신청일: {formatDate(formData.petApplicationDTO.formCreateAt)}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">제목</label>
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="제목을 입력하세요"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">내용</label>
-          <Textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="내용을 입력하세요"
-            rows={10}
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">이미지</label>
-          
-          {/* 기존 이미지 */}
-          {existingImages.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium mb-2">기존 이미지</h3>
-              <div className="flex flex-wrap gap-2">
-                {existingImages.map((image) => (
-                  <div key={image.imageId} className="relative">
-                    <img
-                      src={image.imageUrl}
-                      alt="기존 이미지"
-                      className="w-20 h-20 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeExistingImage(image.imageId)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 새 이미지 업로드 */}
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
-            <div className="text-center">
-              <Camera className="mx-auto h-12 w-12 text-gray-400" />
-              <div className="mt-4">
-                <label htmlFor="image-upload" className="cursor-pointer">
-                  <span className="mt-2 block text-sm font-medium text-gray-900">
-                    새 이미지 업로드
-                  </span>
-                  <input
-                    id="image-upload"
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
+            {formData.petApplicationDTO && (
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">입양 신청 정보</h3>
+                <div className="flex gap-4">
+                  <img 
+                    src={formData.petApplicationDTO.profile1} 
+                    alt="반려동물"
+                    className="w-24 h-24 object-cover rounded-lg"
                   />
-                </label>
-              </div>
-            </div>
-
-            {/* 새 이미지 미리보기 */}
-            {newImages.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {newImages.map((file, index) => (
-                  <div key={index} className="relative">
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt={`새 이미지 ${index + 1}`}
-                      className="w-20 h-20 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeNewImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
-                    >
-                      <X size={12} />
-                    </button>
+                  <div className="flex-1">
+                    <div className="font-semibold text-lg mb-1">
+                      {formData.petApplicationDTO.noticeNo}
+                    </div>
+                    <div className="text-muted-foreground mb-1">
+                      {formData.petApplicationDTO.kindFullNm}
+                    </div>
+                    <div className="text-muted-foreground mb-1">
+                      {getSexDisplay(formData.petApplicationDTO.sexCd)}
+                    </div>
+                    <div className="text-muted-foreground mb-1">
+                      {formData.petApplicationDTO.regionName} {formData.petApplicationDTO.subRegionName}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      신청일: {formatDate(formData.petApplicationDTO.formCreateAt)}
+                    </div>
                   </div>
-                ))}
+                </div>
               </div>
             )}
-          </div>
-        </div>
 
-        <div className="flex gap-4 pt-6">
-          <Button type="submit" className="flex-1">
-            수정하기
-          </Button>
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={() => navigate(`/adoption-review/${id}`)}
-            className="flex-1"
-          >
-            취소
-          </Button>
-        </div>
-      </form>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">제목</label>
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="제목을 입력하세요"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">내용</label>
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="내용을 입력하세요"
+                  rows={10}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">이미지 (최대 5개)</label>
+                
+                {/* 모든 이미지를 같은 줄에 표시 */}
+                <div className="mb-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {/* 기존 이미지들 */}
+                    {existingImages.map((image) => (
+                      <div key={image.imageId} className="relative group">
+                        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
+                          <img
+                            src={image.imageUrl}
+                            alt="기존 이미지"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(image.imageId)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                          기존
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* 새 이미지들 */}
+                    {newImages.map((file, index) => (
+                      <div key={`new-${index}`} className="relative group">
+                        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`새 이미지 ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeNewImage(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        <div className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-1 rounded">
+                          새로추가
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 이미지 업로드 버튼 */}
+                {existingImages.length + newImages.length < 5 && (
+                  <label
+                    htmlFor="image-upload"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                  >
+                    <Camera className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm font-medium text-gray-600">추가 이미지 선택하기</span>
+                    <span className="text-xs text-gray-500 mt-1">
+                      {existingImages.length + newImages.length}/5개 선택됨
+                    </span>
+                  </label>
+                )}
+
+                <input
+                  id="image-upload"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={existingImages.length + newImages.length >= 5}
+                />
+              </div>
+
+              <div className="flex gap-4 pt-6">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => navigate(`/adoption-review/${id}`)}
+                  className="flex-1"
+                >
+                  취소
+                </Button>
+                <Button type="submit" className="flex-1">
+                  수정하기
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

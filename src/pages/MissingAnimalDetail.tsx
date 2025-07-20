@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Edit, Trash2, Reply, MapPin, Phone, Send } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Edit, Trash2, MapPin, Phone, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import AppHeader from '@/components/AppHeader';
+import CommentSection from '@/components/CommentSection';
 
 interface Comment {
   id: number;
@@ -426,76 +427,10 @@ const MissingPostDetail = () => {
           </div>
 
           {/* 댓글 섹션 */}
-          <div className="px-8 py-6 border-t border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-800 mb-6">
-              댓글 {postDetail.comments.length}개
-            </h3>
-            
-            <div className="space-y-6">
-              {organizedComments.map((comment) => (
-                <div key={comment.id} className="space-y-4">
-                  {/* 주 댓글 */}
-                  <div className="flex space-x-4">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-gray-500" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-gray-800">{comment.commentNickname}</span>
-                          <span className="text-sm text-gray-500">{new Date(comment.createdAt).toLocaleDateString('ko-KR')}</span>
-                        </div>
-                        <p className="text-gray-700">{comment.commnetContent}</p>
-                      </div>
-                      <Button variant="ghost" size="sm" className="mt-2 text-gray-500 hover:text-gray-700">
-                        <Reply className="w-4 h-4 mr-1" />
-                        답글
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* 대댓글들 */}
-                  {comment.replies.map((reply) => (
-                    <div key={reply.id} className="ml-14 flex space-x-4">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                        <User className="w-4 h-4 text-gray-500" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="bg-gray-50 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium text-gray-800">{reply.commentNickname}</span>
-                            <span className="text-sm text-gray-500">{new Date(reply.createdAt).toLocaleDateString('ko-KR')}</span>
-                          </div>
-                          <p className="text-gray-700">{reply.commnetContent}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-
-            {/* 댓글 입력 */}
-            <div className="mt-8 pt-6 border-t border-gray-100">
-              <div className="flex space-x-4">
-                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-gray-500" />
-                </div>
-                <div className="flex-1">
-                  <textarea
-                    placeholder="댓글을 작성해주세요..."
-                    className="w-full p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows={3}
-                  />
-                  <div className="flex justify-end mt-3">
-                    <Button className="bg-blue-500 hover:bg-blue-600 text-white">
-                      댓글 작성
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <CommentSection 
+            comments={postDetail.comments}
+            isLoggedIn={!!currentUserId}
+          />
         </div>
       </div>
     </div>

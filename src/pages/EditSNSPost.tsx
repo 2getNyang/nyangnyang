@@ -152,7 +152,7 @@ const EditSNSPost = () => {
     try {
       const formData = new FormData();
       
-      // DTO 데이터를 JSON 문자열로 생성
+      // DTO 데이터를 JSON Blob으로 생성
       const dtoData = {
         boardTitle: title.trim(),
         boardContent: content.trim(),
@@ -161,12 +161,17 @@ const EditSNSPost = () => {
         existingImageIds: existingImages.map(img => img.imageId)
       };
       
-      formData.append('dto', JSON.stringify(dtoData));
+      const dtoBlob = new Blob([JSON.stringify(dtoData)], { 
+        type: 'application/json' 
+      });
+      formData.append('requestDTO', dtoBlob);
 
       // 새로운 이미지 파일들 추가
-      newImages.forEach((image) => {
-        formData.append('images', image);
-      });
+      if (newImages.length > 0) {
+        newImages.forEach((image) => {
+          formData.append('newImages', image);
+        });
+      }
 
       const accessToken = localStorage.getItem('accessToken');
       const response = await fetch(`http://localhost:8080/api/v1/boards/sns/${boardId}`, {
@@ -281,90 +286,78 @@ const EditSNSPost = () => {
               <div className="space-y-4">
                 <Label className="text-base font-medium">이미지 (최대 5개)</Label>
                 
-                {/* 기존 이미지들 */}
-                {existingImages.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-gray-700">기존 이미지</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                      {existingImages.map((image, index) => (
-                        <div key={image.imageId} className="relative group">
-                          <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
-                            <img
-                              src={image.imageUrl}
-                              alt={`기존 이미지 ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeExistingImage(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                          {image.thumbnail && (
-                            <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
-                              썸네일
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                {/* 모든 이미지를 같은 줄에 표시 */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {/* 기존 이미지들 */}
+                  {existingImages.map((image, index) => (
+                    <div key={image.imageId} className="relative group">
+                      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
+                        <img
+                          src={image.imageUrl}
+                          alt={`기존 이미지 ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeExistingImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                      <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                        기존
+                      </div>
                     </div>
-                  </div>
-                )}
-
-                {/* 새로운 이미지들 */}
-                {newImages.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-gray-700">새로 추가된 이미지</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                      {newImages.map((image, index) => (
-                        <div key={index} className="relative group">
-                          <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
-                            <img
-                              src={URL.createObjectURL(image)}
-                              alt={`새 이미지 ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeNewImage(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
+                  ))}
+                  
+                  {/* 새로운 이미지들 */}
+                  {newImages.map((image, index) => (
+                    <div key={`new-${index}`} className="relative group">
+                      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
+                        <img
+                          src={URL.createObjectURL(image)}
+                          alt={`새 이미지 ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeNewImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                      <div className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-1 rounded">
+                        새로추가
+                      </div>
                     </div>
-                  </div>
-                )}
+                  ))}
+                </div>
 
                 {/* 이미지 업로드 */}
-                <div className="space-y-4">
-                  {totalImages < 5 && (
-                    <label
-                      htmlFor="image-upload"
-                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
-                    >
-                      <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                      <span className="text-sm font-medium text-gray-600">추가 이미지 선택하기</span>
-                      <span className="text-xs text-gray-500 mt-1">
-                        {totalImages}/5개 선택됨
-                      </span>
-                    </label>
-                  )}
+                {totalImages < 5 && (
+                  <label
+                    htmlFor="image-upload"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                  >
+                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm font-medium text-gray-600">추가 이미지 선택하기</span>
+                    <span className="text-xs text-gray-500 mt-1">
+                      {totalImages}/5개 선택됨
+                    </span>
+                  </label>
+                )}
 
-                  <input
-                    id="image-upload"
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleNewImageUpload}
-                    className="hidden"
-                    disabled={totalImages >= 5}
-                  />
-                </div>
+                <input
+                  id="image-upload"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleNewImageUpload}
+                  className="hidden"
+                  disabled={totalImages >= 5}
+                />
               </div>
 
               {/* 버튼 */}
