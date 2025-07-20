@@ -129,10 +129,10 @@ const BoardCard = ({ post }: BoardCardProps) => {
               <User className="w-3 h-3" />
               <span>{post.author}</span>
             </div>
-            <div className="flex items-center space-x-1">
-              <Calendar className="w-3 h-3" />
-              <span>{post.date}</span>
-            </div>
+          <div className="flex items-center space-x-1">
+            <Calendar className="w-3 h-3" />
+            <span>{post.date.includes('T') ? new Date(post.date).toLocaleDateString('ko-KR').replace(/\./g, '.').replace(/ /g, '') : post.date}</span>
+          </div>
           </div>
           <div className="flex items-center space-x-1">
             <Eye className="w-3 h-3" />

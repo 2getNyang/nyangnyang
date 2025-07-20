@@ -58,7 +58,8 @@ const App = () => (
            <Route path="/create-missing-post" element={<CreateMissingPost />} />
            <Route path="/sns-post/:id" element={<SNSPostDetail />} />
            <Route path="/edit-sns-post/:boardId" element={<EditSNSPost />} />
-          <Route path="/adoption-review/:id" element={<AdoptionReviewDetail />} />
+        <Route path="/adoption-review/:id" element={<AdoptionReviewDetail />} />
+        <Route path="/adoption-review/edit/:id" element={<div>입양후기 수정 페이지</div>} />
            <Route path="/animal/:id" element={<AnimalDetail />} />
            <Route path="/adoption-form/:desertionNo" element={<AdoptionFormPage />} />
            <Route path="/adoption-form/:desertionNo/:formId" element={<AdoptionFormPage />} />
