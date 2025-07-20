@@ -1,11 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, X } from 'lucide-react';
+import { Camera, X, Upload, Loader2 } from 'lucide-react';
+import AppHeader from '@/components/AppHeader';
+import LoginModal from '@/components/LoginModal';
+import { useAuth } from '@/context/AuthContext';
 
 interface PetApplicationDTO {
   formId: number;
@@ -37,6 +42,7 @@ const EditAdoptionReviewPost = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isLoggedIn } = useAuth();
   
   const [formData, setFormData] = useState<EditFormData | null>(null);
   const [title, setTitle] = useState('');
@@ -44,6 +50,23 @@ const EditAdoptionReviewPost = () => {
   const [newImages, setNewImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const handleLoginClick = () => {
+    setIsLoginModalOpen(true);
+  };
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      toast({
+        title: "로그인 필요",
+        description: "게시글 수정을 위해 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      navigate('/board?category=adoption-review');
+    }
+  }, [isLoggedIn, navigate]);
 
   useEffect(() => {
     if (id) {
@@ -54,6 +77,7 @@ const EditAdoptionReviewPost = () => {
   const fetchEditForm = async () => {
     try {
       console.log('수정 폼 데이터 요청:', `/api/v1/boards/review/${id}/form`);
+      setLoading(true);
       
       const response = await fetch(`http://localhost:8080/api/v1/boards/review/${id}/form`, {
         headers: {
@@ -69,14 +93,19 @@ const EditAdoptionReviewPost = () => {
         setTitle(result.data.boardTitle);
         setContent(result.data.boardContent);
         setExistingImages(result.data.images);
+      } else {
+        throw new Error(result.message || '데이터를 불러오는데 실패했습니다.');
       }
     } catch (error) {
       console.error('수정 폼 데이터 로딩 실패:', error);
-      toast({
-        title: "오류",
-        description: "수정 폼 데이터를 불러오는데 실패했습니다.",
-        variant: "destructive",
-      });
+      // null-safe 처리: petApplicationDTO가 null인 경우도 정상 처리
+      if (error instanceof Error && !error.message.includes('NullPointerException')) {
+        toast({
+          title: "오류",
+          description: "수정 폼 데이터를 불러오는데 실패했습니다.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -84,6 +113,16 @@ const EditAdoptionReviewPost = () => {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    const totalImages = existingImages.length + newImages.length + files.length;
+    
+    if (totalImages > 5) {
+      toast({
+        title: "이미지 업로드 제한",
+        description: "최대 5개의 이미지만 업로드할 수 있습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
     setNewImages(prev => [...prev, ...files]);
   };
 
@@ -98,6 +137,15 @@ const EditAdoptionReviewPost = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!isLoggedIn || !user) {
+      toast({
+        title: "로그인 필요",
+        description: "게시글 수정을 위해 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (!title.trim() || !content.trim()) {
       toast({
         title: "입력 오류",
@@ -106,6 +154,8 @@ const EditAdoptionReviewPost = () => {
       });
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const formDataToSend = new FormData();
@@ -162,6 +212,8 @@ const EditAdoptionReviewPost = () => {
         description: "게시글 수정에 실패했습니다.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -179,160 +231,207 @@ const EditAdoptionReviewPost = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">로딩 중...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AppHeader onLoginClick={handleLoginClick} />
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin" />
+            <span className="ml-2">게시글 정보를 불러오는 중...</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!formData) {
-    return <div className="flex justify-center items-center min-h-screen">데이터를 불러올 수 없습니다.</div>;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AppHeader onLoginClick={handleLoginClick} />
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <div className="flex justify-center items-center min-h-screen">데이터를 불러올 수 없습니다.</div>
+        </div>
+      </div>
+    );
   }
 
+  const totalImages = existingImages.length + newImages.length;
+
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">입양 후기 수정</h1>
+    <div className="min-h-screen bg-gray-50">
+      <AppHeader onLoginClick={handleLoginClick} />
       
-      {formData.petApplicationDTO && (
-        <Card className="mb-6">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">입양 후기 수정</h1>
+          <p className="text-gray-600">입양 경험을 공유하고 다른 분들에게 도움이 되는 후기를 작성해주세요.</p>
+        </div>
+
+        <Card>
           <CardHeader>
-            <CardTitle>입양 신청 정보</CardTitle>
+            <CardTitle>입양 후기 수정</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-4">
-              <img 
-                src={formData.petApplicationDTO.profile1} 
-                alt="반려동물"
-                className="w-24 h-24 object-cover rounded-lg"
-              />
-              <div className="flex-1">
-                <div className="font-semibold text-lg mb-1">
-                  {formData.petApplicationDTO.noticeNo}
-                </div>
-                <div className="text-muted-foreground mb-1">
-                  {formData.petApplicationDTO.kindFullNm}
-                </div>
-                <div className="text-muted-foreground mb-1">
-                  {getSexDisplay(formData.petApplicationDTO.sexCd)}
-                </div>
-                <div className="text-muted-foreground mb-1">
-                  {formData.petApplicationDTO.regionName} {formData.petApplicationDTO.subRegionName}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  신청일: {formatDate(formData.petApplicationDTO.formCreateAt)}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">제목</label>
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="제목을 입력하세요"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">내용</label>
-          <Textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="내용을 입력하세요"
-            rows={10}
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">이미지</label>
-          
-          {/* 기존 이미지 */}
-          {existingImages.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium mb-2">기존 이미지</h3>
-              <div className="flex flex-wrap gap-2">
-                {existingImages.map((image) => (
-                  <div key={image.imageId} className="relative">
-                    <img
-                      src={image.imageUrl}
-                      alt="기존 이미지"
-                      className="w-20 h-20 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeExistingImage(image.imageId)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 새 이미지 업로드 */}
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
-            <div className="text-center">
-              <Camera className="mx-auto h-12 w-12 text-gray-400" />
-              <div className="mt-4">
-                <label htmlFor="image-upload" className="cursor-pointer">
-                  <span className="mt-2 block text-sm font-medium text-gray-900">
-                    새 이미지 업로드
-                  </span>
-                  <input
-                    id="image-upload"
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            </div>
-
-            {/* 새 이미지 미리보기 */}
-            {newImages.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {newImages.map((file, index) => (
-                  <div key={index} className="relative">
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt={`새 이미지 ${index + 1}`}
-                      className="w-20 h-20 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeNewImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
+            {formData.petApplicationDTO && (
+              <div className="mb-6">
+                <Label className="text-base font-medium mb-4 block">입양 신청 정보</Label>
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
+                      <img 
+                        src={formData.petApplicationDTO.profile1} 
+                        alt="반려동물"
+                        className="w-24 h-24 object-cover rounded-lg"
+                      />
+                      <div className="flex-1">
+                        <div className="font-semibold text-lg mb-1">
+                          {formData.petApplicationDTO.noticeNo}
+                        </div>
+                        <div className="text-muted-foreground mb-1">
+                          {formData.petApplicationDTO.kindFullNm}
+                        </div>
+                        <div className="text-muted-foreground mb-1">
+                          {getSexDisplay(formData.petApplicationDTO.sexCd)}
+                        </div>
+                        <div className="text-muted-foreground mb-1">
+                          {formData.petApplicationDTO.regionName} {formData.petApplicationDTO.subRegionName}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          신청일: {formatDate(formData.petApplicationDTO.formCreateAt)}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
-          </div>
-        </div>
 
-        <div className="flex gap-4 pt-6">
-          <Button type="submit" className="flex-1">
-            수정하기
-          </Button>
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={() => navigate(`/adoption-review/${id}`)}
-            className="flex-1"
-          >
-            취소
-          </Button>
-        </div>
-      </form>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="title" className="text-base font-medium">제목</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="제목을 입력하세요"
+                  className="text-base"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="content" className="text-base font-medium">내용</Label>
+                <Textarea
+                  id="content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="입양 후기를 자세히 작성해주세요"
+                  className="min-h-[200px] text-base resize-none"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Label className="text-base font-medium">이미지 (최대 5개)</Label>
+                
+                {/* 기존 이미지와 새 이미지를 함께 표시 */}
+                {(existingImages.length > 0 || newImages.length > 0) && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
+                    {/* 기존 이미지들 */}
+                    {existingImages.map((image) => (
+                      <div key={`existing-${image.imageId}`} className="relative group">
+                        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
+                          <img
+                            src={image.imageUrl}
+                            alt="기존 이미지"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(image.imageId)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        {image.thumbnail && (
+                          <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                            썸네일
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* 새로운 이미지들 */}
+                    {newImages.map((image, index) => (
+                      <div key={`new-${index}`} className="relative group">
+                        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
+                          <img
+                            src={URL.createObjectURL(image)}
+                            alt={`새 이미지 ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeNewImage(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        <div className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-1 rounded">
+                          새 이미지
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 이미지 업로드 */}
+                {totalImages < 5 && (
+                  <label
+                    htmlFor="image-upload"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                  >
+                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm font-medium text-gray-600">이미지 선택하기</span>
+                    <span className="text-xs text-gray-500 mt-1">
+                      {totalImages}/5개 선택됨
+                    </span>
+                  </label>
+                )}
+
+                <input
+                  id="image-upload"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={totalImages >= 5}
+                />
+              </div>
+
+              <div className="flex gap-4 pt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate(`/adoption-review/${id}`)}
+                  className="flex-1"
+                >
+                  취소
+                </Button>
+                <Button type="submit" className="flex-1" disabled={isSubmitting || !isLoggedIn}>
+                  {isSubmitting ? '수정 중...' : '입양 후기 수정'}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+
+      <LoginModal 
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </div>
   );
 };
