@@ -27,6 +27,7 @@ interface PetApplicationDTO {
   sexCd: string;
   happenDt: string;
   subRegionName: string;
+  regionName: string;
   careName: string;
   noticeNo: string;
   profile1: string;
@@ -63,6 +64,7 @@ const AdoptionReviewDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // 날짜 포맷 함수
   const formatDate = (dateString: string) => {
@@ -203,6 +205,55 @@ const AdoptionReviewDetail = () => {
     }
   };
 
+  // 삭제 처리 함수
+  const handleDelete = async () => {
+    if (!isLoggedIn || !user || !id) {
+      toast({
+        title: "삭제 실패",
+        description: "로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:8080/api/v1/boards/review/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        toast({
+          title: "게시글 삭제 완료",
+          description: "게시글이 성공적으로 삭제되었습니다.",
+        });
+        navigate('/board?category=adoption');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast({
+          title: "게시글 삭제 실패",
+          description: errorData.message || "게시글 삭제 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('게시글 삭제 오류:', error);
+      toast({
+        title: "게시글 삭제 실패",
+        description: "네트워크 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -259,17 +310,17 @@ const AdoptionReviewDetail = () => {
                     variant="outline" 
                     size="sm" 
                     className="text-gray-600 hover:text-gray-800"
-                    onClick={() => navigate(`/adoption-review/edit/${id}`)}
+                    onClick={() => navigate(`/edit-adoption-review/${id}`)}
                   >
                     <Edit className="w-4 h-4 mr-1" />
                     수정
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-red-600 hover:text-red-800 hover:bg-red-50">
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        삭제
-                      </Button>
+                       <Button variant="outline" size="sm" className="text-red-600 hover:text-red-800 hover:bg-red-50" disabled={isDeleting}>
+                         <Trash2 className="w-4 h-4 mr-1" />
+                         {isDeleting ? '삭제 중...' : '삭제'}
+                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
@@ -280,7 +331,7 @@ const AdoptionReviewDetail = () => {
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>취소</AlertDialogCancel>
-                        <AlertDialogAction className="bg-red-600 hover:bg-red-700">
+                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                           삭제
                         </AlertDialogAction>
                       </AlertDialogFooter>
@@ -418,24 +469,47 @@ const AdoptionReviewDetail = () => {
             </h3>
             
             <div className="space-y-6">
-              {postDetail.comments.map((comment) => (
-                <div key={comment.id} className="space-y-4">
-                  <div className="flex space-x-4">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-gray-500" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-gray-800">{comment.commentNickname}</span>
-                          <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
+              {postDetail.comments
+                .filter(comment => comment.parentId === null)
+                .map((comment) => (
+                  <div key={comment.id} className="space-y-4">
+                    {/* 주 댓글 */}
+                    <div className="flex space-x-4">
+                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-gray-500" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-gray-800">{comment.commentNickname}</span>
+                            <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
+                          </div>
+                          <p className="text-gray-700 leading-relaxed">{comment.commnetContent}</p>
                         </div>
-                        <p className="text-gray-700 leading-relaxed">{comment.commnetContent}</p>
                       </div>
                     </div>
+
+                    {/* 대댓글 */}
+                    {postDetail.comments
+                      .filter(reply => reply.parentId === comment.id)
+                      .map((reply) => (
+                        <div key={reply.id} className="flex space-x-4 ml-14">
+                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4 text-gray-500" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="bg-blue-50 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-gray-800">{reply.commentNickname}</span>
+                                <span className="text-xs text-gray-500">{formatDate(reply.createdAt)}</span>
+                              </div>
+                              <p className="text-gray-700 leading-relaxed">{reply.commnetContent}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         </div>

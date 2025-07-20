@@ -16,6 +16,7 @@ import CreateMissingPost from "./pages/CreateMissingPost";
 import EditMissingPost from "./pages/EditMissingPost";
 import SNSPostDetail from "./pages/SNSPostDetail";
 import EditSNSPost from "./pages/EditSNSPost";
+import EditAdoptionReviewPost from "./pages/EditAdoptionReviewPost";
 import AdoptionReviewDetail from "./pages/AdoptionReviewDetail";
 import Shelters from "./pages/Shelters";
 import ShelterDetail from "./pages/ShelterDetail";
@@ -59,6 +60,7 @@ const App = () => (
            <Route path="/sns-post/:id" element={<SNSPostDetail />} />
            <Route path="/edit-sns-post/:boardId" element={<EditSNSPost />} />
         <Route path="/adoption-review/:id" element={<AdoptionReviewDetail />} />
+        <Route path="/edit-adoption-review/:id" element={<EditAdoptionReviewPost />} />
         <Route path="/adoption-review/edit/:id" element={<div>입양후기 수정 페이지</div>} />
            <Route path="/animal/:id" element={<AnimalDetail />} />
            <Route path="/adoption-form/:desertionNo" element={<AdoptionFormPage />} />

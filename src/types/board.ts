@@ -1,4 +1,19 @@
 
+export interface PetApplicationDTO {
+  desertionNo: string;
+  formId: number;
+  kindFullNm: string;
+  age: string;
+  sexCd: string;
+  happenDt: string;
+  subRegionName: string;
+  regionName: string;
+  careName: string;
+  noticeNo: string;
+  profile1: string;
+  formCreateAt: string;
+}
+
 export interface Post {
   id: string;
   title: string;

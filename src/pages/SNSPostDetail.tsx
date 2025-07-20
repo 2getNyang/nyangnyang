@@ -19,6 +19,14 @@ declare global {
   }
 }
 
+interface Comment {
+  id: number;
+  commentContent: string;
+  createdAt: string;
+  commentNickname: string;
+  parentId: number | null;
+}
+
 interface SNSPostDetail {
   id: number;
   category: number;
@@ -31,9 +39,10 @@ interface SNSPostDetail {
   modifiedAt: string | null;
   deletedAt: string | null;
   likeCount: number | null;
-  comments: any[] | null;
+  comments: Comment[];
   userId: number;
   nickname: string;
+  isLiked?: boolean;
 }
 
 interface APIResponse {
@@ -50,30 +59,81 @@ const SNSPostDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     const fetchPostDetail = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:8080/api/v1/boards/sns/${id}`);
+        console.log('SNS 게시글 상세 요청:', `/api/v1/boards/sns/${id}`);
+        
+        const response = await fetch(`http://localhost:8080/api/v1/boards/sns/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
         
         if (!response.ok) {
           throw new Error('게시글을 불러오는데 실패했습니다.');
         }
 
         const data: APIResponse = await response.json();
+        console.log('SNS 게시글 상세 응답:', data);
         setPostDetail(data.data);
+        
+        // 좋아요 수와 상태 초기화
+        if (data.data.likeCount !== null) {
+          setLikeCount(data.data.likeCount);
+        }
+        if (data.data.isLiked !== undefined) {
+          setIsLiked(data.data.isLiked);
+        }
       } catch (err) {
+        console.error('SNS 게시글 상세 로딩 실패:', err);
         setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
       } finally {
         setLoading(false);
       }
     };
 
+    const fetchLikeInfo = async () => {
+      if (!id || !isLoggedIn) return;
+      
+      try {
+        // 좋아요 수 조회
+        const likeCountResponse = await fetch(`http://localhost:8080/api/v1/like/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
+        if (likeCountResponse.ok) {
+          const likeCountData = await likeCountResponse.json();
+          console.log('좋아요 수 응답:', likeCountData);
+          setLikeCount(likeCountData.data);
+        }
+
+        // 좋아요 상태 조회
+        const likeStatusResponse = await fetch(`http://localhost:8080/api/v1/like/${id}/me`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
+        if (likeStatusResponse.ok) {
+          const likeStatusData = await likeStatusResponse.json();
+          console.log('좋아요 상태 응답:', likeStatusData);
+          setIsLiked(likeStatusData.data);
+        }
+      } catch (err) {
+        console.error('좋아요 정보 로딩 실패:', err);
+      }
+    };
+
     if (id) {
       fetchPostDetail();
+      fetchLikeInfo();
     }
-  }, [id]);
+  }, [id, isLoggedIn]);
 
   // Instagram embed.js 동적 로딩
   useEffect(() => {
@@ -104,6 +164,42 @@ const SNSPostDetail = () => {
     navigate('/board?category=sns');
   };
 
+  const handleLikeClick = async () => {
+    if (!isLoggedIn || !id) {
+      toast({
+        title: "로그인 필요",
+        description: "좋아요 기능을 사용하려면 로그인해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const method = isLiked ? 'DELETE' : 'POST';
+      const response = await fetch(`http://localhost:8080/api/v1/like/${id}`, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('좋아요 응답:', result);
+        setLikeCount(result.data.likeCount);
+        setIsLiked(result.data.liked);
+      }
+    } catch (error) {
+      console.error('좋아요 처리 실패:', error);
+      toast({
+        title: "오류",
+        description: "좋아요 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDelete = async () => {
     if (!isLoggedIn || !user || !id) {
       toast({
@@ -118,7 +214,7 @@ const SNSPostDetail = () => {
 
     try {
       const accessToken = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/boards/lost/${id}`, {
+      const response = await fetch(`http://localhost:8080/api/v1/boards/sns/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -153,12 +249,7 @@ const SNSPostDetail = () => {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
+    return dateString.split('T')[0].replace(/-/g, '.');
   };
 
   if (loading) {
@@ -325,22 +416,80 @@ const SNSPostDetail = () => {
 
           <div className="px-8 py-6 bg-gray-50 border-t border-gray-100">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50">
-                  <Heart className="w-5 h-5 mr-2" />
-                  좋아요 {postDetail.likeCount || 0}
-                </Button>
-                <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  댓글 {postDetail.comments?.length || 0}
-                </Button>
-              </div>
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`${isLiked ? 'text-red-500 bg-red-50' : 'text-red-500'} hover:text-red-600 hover:bg-red-50`}
+                onClick={handleLikeClick}
+              >
+                <Heart className={`w-5 h-5 mr-2 ${isLiked ? 'fill-current' : ''}`} />
+                좋아요 {likeCount}
+              </Button>
+              <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
+                <MessageCircle className="w-5 h-5 mr-2" />
+                댓글 {postDetail.comments?.length || 0}
+              </Button>
+            </div>
               <div className="flex items-center space-x-2 text-sm text-gray-500">
                 <Eye className="w-4 h-4" />
                 <span>조회 {postDetail.viewCount}</span>
               </div>
             </div>
           </div>
+
+          {/* 댓글 섹션 */}
+          {postDetail.comments && postDetail.comments.length > 0 && (
+            <div className="px-8 py-6 border-t border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-800 mb-6">
+                댓글 {postDetail.comments.length}개
+              </h3>
+              
+              <div className="space-y-6">
+                {postDetail.comments
+                  .filter(comment => comment.parentId === null)
+                  .map((comment) => (
+                    <div key={comment.id} className="space-y-4">
+                      {/* 주 댓글 */}
+                      <div className="flex space-x-4">
+                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-gray-500" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-gray-800">{comment.commentNickname}</span>
+                              <span className="text-sm text-gray-500">{formatDate(comment.createdAt)}</span>
+                            </div>
+                            <p className="text-gray-700 leading-relaxed">{comment.commentContent}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 대댓글 */}
+                      {postDetail.comments
+                        .filter(reply => reply.parentId === comment.id)
+                        .map((reply) => (
+                          <div key={reply.id} className="flex space-x-4 ml-14">
+                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                              <User className="w-4 h-4 text-gray-500" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="bg-blue-50 rounded-lg p-3">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="font-medium text-gray-800">{reply.commentNickname}</span>
+                                  <span className="text-sm text-gray-500">{formatDate(reply.createdAt)}</span>
+                                </div>
+                                <p className="text-gray-700 leading-relaxed">{reply.commentContent}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
