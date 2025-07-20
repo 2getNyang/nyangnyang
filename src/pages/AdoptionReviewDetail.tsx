@@ -1,168 +1,202 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Eye, User, Calendar, Edit, Trash2, Reply, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import AppHeader from '@/components/AppHeader';
-import CommentSection from '@/components/CommentSection';
 
 interface Comment {
   id: number;
-  commentContent: string;
+  commnetContent: string;
   createdAt: string;
   commentNickname: string;
   parentId: number | null;
 }
 
-interface AdoptionReviewDetail {
-  id: number;
-  category: number;
-  boardTitle: string;
-  boardContent: string;
-  viewCount: number;
-  images: string[];
-  createdAt: string;
-  modifiedAt: string | null;
-  deletedAt: string | null;
-  likeItCount: number | null;
-  comments: Comment[];
-  userId: number;
-  nickname: string;
-  isLiked?: boolean;
+interface PetApplicationDTO {
+  desertionNo: string;
+  formId: number;
+  kindFullNm: string;
+  age: string;
+  sexCd: string;
+  happenDt: string;
+  subRegionName: string;
+  regionName: string;
+  careName: string;
+  noticeNo: string;
+  profile1: string;
+  formCreateAt: string;
 }
 
-interface APIResponse {
-  code: number;
-  data: AdoptionReviewDetail;
-  message: string;
+interface Image {
+  thumbnailIs: string;
+  s3Url: string;
+  originFileName: string;
+}
+
+interface PostDetail {
+  id: number;
+  nickname: string;
+  userId: number;
+  boardTitle: string;
+  boardContent: string;
+  createdAt: string;
+  boardViewCount: number;
+  likeItCount: number;
+  isLiked: boolean;
+  petApplicationDTO: PetApplicationDTO | null;
+  comments: Comment[];
+  images: Image[];
 }
 
 const AdoptionReviewDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isLoggedIn } = useAuth();
-  const [postDetail, setPostDetail] = useState<AdoptionReviewDetail | null>(null);
+  const [postDetail, setPostDetail] = useState<PostDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
-  const [commentsData, setCommentsData] = useState<Comment[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
+  // 날짜 포맷 함수
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR').replace(/\./g, '.').replace(/ /g, '');
+  };
+
+  // 성별 변환 함수
+  const formatGender = (sexCd: string) => {
+    switch (sexCd) {
+      case 'F': return '암컷';
+      case 'M': return '수컷';
+      case 'Q': return '모름';
+      default: return sexCd;
+    }
+  };
+
+  // 게시글 상세 조회
   useEffect(() => {
     const fetchPostDetail = async () => {
       try {
-        console.log('입양 후기 상세 요청:', `/api/v1/boards/review/${id}`);
+        setLoading(true);
+        console.log(`🔍 입양후기 게시글 상세 조회 시작 - ID: ${id}`);
+        const response = await fetch(`http://localhost:8080/api/v1/boards/review/${id}`);
+        const result = await response.json();
         
-        const response = await fetch(`http://localhost:8080/api/v1/boards/review/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
+        console.log('📋 게시글 상세 조회 응답:', result);
         
-        if (!response.ok) {
-          throw new Error('게시글을 불러오는데 실패했습니다.');
+        if (result.code === 200) {
+          setPostDetail(result.data);
+          setLiked(result.data.isLiked);
+          setLikeCount(result.data.likeItCount);
+          console.log('✅ 게시글 데이터 로드 완료');
+          
+          // 좋아요 상태 별도 확인
+          fetchLikeStatus();
+          fetchLikeCount();
+        } else {
+          setError('게시글을 불러올 수 없습니다.');
         }
-
-        const data: APIResponse = await response.json();
-        console.log('입양 후기 상세 응답:', data);
-        setPostDetail(data.data);
-        setCommentsData(data.data.comments || []);
-        
-        // 좋아요 수와 상태 초기화
-        if (data.data.likeItCount !== null) {
-          setLikeCount(data.data.likeItCount);
-        }
-        if (data.data.isLiked !== undefined) {
-          setIsLiked(data.data.isLiked);
-        }
-      } catch (err) {
-        console.error('입양 후기 상세 로딩 실패:', err);
-        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      } catch (error) {
+        console.error('❌ 게시글 조회 실패:', error);
+        setError('게시글을 불러오는 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);
       }
     };
 
-    const fetchLikeInfo = async () => {
-      if (!id || !isLoggedIn) return;
-      
-      try {
-        // 좋아요 수 조회
-        const likeCountResponse = await fetch(`http://localhost:8080/api/v1/like/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
-        if (likeCountResponse.ok) {
-          const likeCountData = await likeCountResponse.json();
-          console.log('좋아요 수 응답:', likeCountData);
-          setLikeCount(likeCountData.data);
-        }
-
-        // 좋아요 상태 조회
-        const likeStatusResponse = await fetch(`http://localhost:8080/api/v1/like/${id}/me`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
-        if (likeStatusResponse.ok) {
-          const likeStatusData = await likeStatusResponse.json();
-          console.log('좋아요 상태 응답:', likeStatusData);
-          setIsLiked(likeStatusData.data);
-        }
-      } catch (err) {
-        console.error('좋아요 정보 로딩 실패:', err);
-      }
-    };
-
     if (id) {
       fetchPostDetail();
-      fetchLikeInfo();
     }
-  }, [id, isLoggedIn]);
+  }, [id]);
 
-  // 댓글 추가 후 새로고침
-  const handleCommentAdded = () => {
-    fetchPostDetail();
+  // 좋아요 수 조회
+  const fetchLikeCount = async () => {
+    try {
+      console.log(`❤️ 좋아요 수 조회 시작 - boardId: ${id}`);
+      const response = await fetch(`http://localhost:8080/api/v1/like/${id}`);
+      const result = await response.json();
+      
+      console.log('📊 좋아요 수 조회 응답:', result);
+      
+      if (result.code === 200) {
+        setLikeCount(result.data);
+        console.log(`✅ 좋아요 수: ${result.data}`);
+      }
+    } catch (error) {
+      console.error('❌ 좋아요 수 조회 실패:', error);
+    }
   };
 
-  const handleBack = () => {
-    navigate('/board?category=adoption-review');
+  // 좋아요 상태 확인
+  const fetchLikeStatus = async () => {
+    if (!isLoggedIn) return;
+    
+    try {
+      console.log(`💖 좋아요 상태 확인 시작 - boardId: ${id}`);
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:8080/api/v1/like/${id}/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const result = await response.json();
+      
+      console.log('📍 좋아요 상태 조회 응답:', result);
+      
+      if (result.code === 200) {
+        setLiked(result.data);
+        console.log(`✅ 좋아요 상태: ${result.data ? '좋아요함' : '좋아요 안함'}`);
+      }
+    } catch (error) {
+      console.error('❌ 좋아요 상태 확인 실패:', error);
+    }
   };
 
-  const handleLikeClick = async () => {
-    if (!isLoggedIn || !id) {
+  // 좋아요 토글
+  const handleLikeToggle = async () => {
+    if (!isLoggedIn) {
       toast({
         title: "로그인 필요",
-        description: "좋아요 기능을 사용하려면 로그인해주세요.",
+        description: "좋아요 기능을 사용하려면 로그인이 필요합니다.",
         variant: "destructive",
       });
       return;
     }
 
     try {
-      const method = isLiked ? 'DELETE' : 'POST';
-      const response = await fetch(`http://localhost:8080/api/v1/like/${id}`, {
+      const token = localStorage.getItem('accessToken');
+      const url = `http://localhost:8080/api/v1/like/${id}`;
+      const method = liked ? 'DELETE' : 'POST';
+      
+      console.log(`${liked ? '💔' : '❤️'} 좋아요 ${liked ? '삭제' : '추가'} 시작`);
+      
+      const response = await fetch(url, {
         method,
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          'Content-Type': 'application/json'
-        }
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('좋아요 응답:', result);
+      
+      const result = await response.json();
+      console.log(`📝 좋아요 ${liked ? '삭제' : '추가'} 응답:`, result);
+      
+      if (result.code === 200) {
+        setLiked(result.data.liked);
         setLikeCount(result.data.likeCount);
-        setIsLiked(result.data.liked);
+        console.log(`✅ 좋아요 ${liked ? '삭제' : '추가'} 완료 - 새 상태: ${result.data.liked}, 개수: ${result.data.likeCount}`);
       }
     } catch (error) {
-      console.error('좋아요 처리 실패:', error);
+      console.error(`❌ 좋아요 ${liked ? '삭제' : '추가'} 실패:`, error);
       toast({
         title: "오류",
         description: "좋아요 처리 중 오류가 발생했습니다.",
@@ -171,6 +205,7 @@ const AdoptionReviewDetail = () => {
     }
   };
 
+  // 삭제 처리 함수
   const handleDelete = async () => {
     if (!isLoggedIn || !user || !id) {
       toast({
@@ -198,7 +233,7 @@ const AdoptionReviewDetail = () => {
           title: "게시글 삭제 완료",
           description: "게시글이 성공적으로 삭제되었습니다.",
         });
-        navigate('/board?category=adoption-review');
+        navigate('/board?category=adoption');
       } else {
         const errorData = await response.json().catch(() => ({}));
         toast({
@@ -219,15 +254,11 @@ const AdoptionReviewDetail = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return dateString.split('T')[0].replace(/-/g, '.');
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-gray-600">게시글을 불러오는 중...</p>
         </div>
       </div>
@@ -241,7 +272,7 @@ const AdoptionReviewDetail = () => {
           <h1 className="text-2xl font-bold text-gray-800 mb-4">
             {error || '게시글을 찾을 수 없습니다'}
           </h1>
-          <Button onClick={handleBack} variant="outline">
+          <Button onClick={() => navigate('/board?category=adoption')} variant="outline">
             입양 후기 게시판으로 돌아가기
           </Button>
         </div>
@@ -258,7 +289,7 @@ const AdoptionReviewDetail = () => {
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <Button
           variant="ghost"
-          onClick={handleBack}
+          onClick={() => navigate('/board?category=adoption')}
           className="mb-6 hover:bg-gray-100"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -286,10 +317,10 @@ const AdoptionReviewDetail = () => {
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-red-600 hover:text-red-800 hover:bg-red-50" disabled={isDeleting}>
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        {isDeleting ? '삭제 중...' : '삭제'}
-                      </Button>
+                       <Button variant="outline" size="sm" className="text-red-600 hover:text-red-800 hover:bg-red-50" disabled={isDeleting}>
+                         <Trash2 className="w-4 h-4 mr-1" />
+                         {isDeleting ? '삭제 중...' : '삭제'}
+                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
@@ -327,9 +358,46 @@ const AdoptionReviewDetail = () => {
               </div>
               <div className="flex items-center space-x-1 text-gray-500">
                 <Eye className="w-4 h-4" />
-                <span>{postDetail.viewCount}</span>
+                <span>{postDetail.boardViewCount}</span>
               </div>
             </div>
+
+            {/* 입양 동물 정보 카드 */}
+            {postDetail.petApplicationDTO && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">입양한 동물 정보</h3>
+                <Card className="border border-gray-200 hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex space-x-4">
+                      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                        <img 
+                          src={postDetail.petApplicationDTO.profile1} 
+                          alt="입양 동물" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <h4 className="font-semibold text-gray-800">
+                          {postDetail.petApplicationDTO.noticeNo}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {postDetail.petApplicationDTO.kindFullNm}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {formatGender(postDetail.petApplicationDTO.sexCd)}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {postDetail.petApplicationDTO.regionName} {postDetail.petApplicationDTO.subRegionName}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          신청일: {formatDate(postDetail.petApplicationDTO.formCreateAt)}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* 첨부 이미지 */}
             {postDetail.images && postDetail.images.length > 0 && (
@@ -337,7 +405,7 @@ const AdoptionReviewDetail = () => {
                 {postDetail.images.length === 1 ? (
                   <div className="rounded-xl overflow-hidden">
                     <img
-                      src={postDetail.images[0]}
+                      src={postDetail.images[0].s3Url}
                       alt="첨부 이미지"
                       className="w-full h-80 object-cover"
                     />
@@ -350,7 +418,7 @@ const AdoptionReviewDetail = () => {
                           <div className="p-1">
                             <div className="aspect-square rounded-lg overflow-hidden">
                               <img
-                                src={image}
+                                src={image.s3Url}
                                 alt={`첨부 이미지 ${index + 1}`}
                                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                               />
@@ -373,38 +441,76 @@ const AdoptionReviewDetail = () => {
             </div>
           </div>
 
+          {/* 하단 인터랙션 섹션 */}
           <div className="px-8 py-6 bg-gray-50 border-t border-gray-100">
             <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={`${isLiked ? 'text-red-500 bg-red-50' : 'text-red-500'} hover:text-red-600 hover:bg-red-50`}
-                onClick={handleLikeClick}
-              >
-                <Heart className={`w-5 h-5 mr-2 ${isLiked ? 'fill-current' : ''}`} />
-                좋아요 {likeCount}
-              </Button>
-              <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
-                <MessageCircle className="w-5 h-5 mr-2" />
-                댓글 {postDetail.comments?.length || 0}
-              </Button>
-            </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Eye className="w-4 h-4" />
-                <span>조회 {postDetail.viewCount}</span>
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className={`${liked ? 'text-red-500 bg-red-50' : 'text-red-500'} hover:text-red-600 hover:bg-red-50`}
+                  onClick={handleLikeToggle}
+                >
+                  <Heart className={`w-5 h-5 mr-2 ${liked ? 'fill-current' : ''}`} />
+                  좋아요 {likeCount}
+                </Button>
+                <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  댓글 {postDetail.comments.length}
+                </Button>
               </div>
             </div>
           </div>
 
           {/* 댓글 섹션 */}
           <div className="px-8 py-6 border-t border-gray-100">
-            <CommentSection
-              comments={commentsData}
-              boardId={id!}
-              boardType="review"
-              onCommentAdded={handleCommentAdded}
-            />
+            <h3 className="text-lg font-semibold text-gray-800 mb-6">
+              댓글 {postDetail.comments.length}개
+            </h3>
+            
+            <div className="space-y-6">
+              {postDetail.comments
+                .filter(comment => comment.parentId === null)
+                .map((comment) => (
+                  <div key={comment.id} className="space-y-4">
+                    {/* 주 댓글 */}
+                    <div className="flex space-x-4">
+                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-gray-500" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-gray-800">{comment.commentNickname}</span>
+                            <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
+                          </div>
+                          <p className="text-gray-700 leading-relaxed">{comment.commnetContent}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 대댓글 */}
+                    {postDetail.comments
+                      .filter(reply => reply.parentId === comment.id)
+                      .map((reply) => (
+                        <div key={reply.id} className="flex space-x-4 ml-14">
+                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4 text-gray-500" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="bg-blue-50 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-gray-800">{reply.commentNickname}</span>
+                                <span className="text-xs text-gray-500">{formatDate(reply.createdAt)}</span>
+                              </div>
+                              <p className="text-gray-700 leading-relaxed">{reply.commnetContent}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ))}
+            </div>
           </div>
         </div>
       </div>
