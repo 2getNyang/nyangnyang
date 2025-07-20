@@ -1,67 +1,62 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 interface ChatRoom {
-  id: string;
-  otherUserName: string;
-  lastMessage: string;
-  lastMessageTime: Date;
+  roomId: string;
+  opponentNickname: string;
+  lastMessageContent: string;
+  lastMessageTime: string;
   unreadCount: number;
 }
 
-// Mock 데이터
-const mockChatRooms: ChatRoom[] = [
-  {
-    id: '1',
-    otherUserName: '김동물친구',
-    lastMessage: '안녕하세요! 실종된 강아지 보셨나요? 어제 오후 3시쯤 공원 근처에서 사라졌어요. 혹시 목격하셨다면 연락 부탁드립니다.',
-    lastMessageTime: new Date(2025, 6, 15, 14, 30),
-    unreadCount: 2
-  },
-  {
-    id: '2',
-    otherUserName: '박보호소장',
-    lastMessage: '입양 절차 관련해서 문의드렸는데요, 언제 방문 가능하신지 알려주세요.',
-    lastMessageTime: new Date(2025, 6, 14, 16, 45),
-    unreadCount: 0
-  },
-  {
-    id: '3',
-    otherUserName: '이멍멍이',
-    lastMessage: '감사합니다! 덕분에 우리 강아지를 찾았어요 ㅠㅠ',
-    lastMessageTime: new Date(2025, 6, 13, 10, 20),
-    unreadCount: 15
-  }
-];
-
 const ChatList = () => {
   const navigate = useNavigate();
+  const { isLoggedIn, user } = useAuth();
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const formatTime = (date: Date) => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    
-    if (messageDate.getTime() === today.getTime()) {
-      // 오늘이면 오전/오후 시:분
-      const hours = date.getHours();
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      const ampm = hours < 12 ? '오전' : '오후';
-      const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-      return `${ampm} ${displayHours}:${minutes}`;
-    } else {
-      // 오늘이 아니면 MM월 dd일
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
-      return `${month}월 ${day}일`;
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/');
+      return;
     }
+    fetchChatRooms();
+  }, [isLoggedIn, navigate]);
+
+  const fetchChatRooms = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8080/api/v1/chat/rooms', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setChatRooms(data);
+      }
+    } catch (error) {
+      console.error('채팅 목록 가져오기 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}월 ${day}일`;
   };
 
   const formatUnreadCount = (count: number) => {
     if (count === 0) return null;
-    if (count <= 9) return count.toString();
+    if (count <= 10) return count.toString();
     return '10+';
   };
 
@@ -72,15 +67,49 @@ const ChatList = () => {
     return message.substring(0, maxChars) + '...';
   };
 
-  const handleChatRoomClick = (chatRoomId: string, otherUserName: string) => {
-    navigate(`/chat/${chatRoomId}?name=${encodeURIComponent(otherUserName)}`);
+  const handleChatRoomClick = async (roomId: string, opponentNickname: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}/messages`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        navigate(`/chat/${roomId}?name=${encodeURIComponent(opponentNickname)}`);
+      }
+    } catch (error) {
+      console.error('채팅방 접근 실패:', error);
+    }
   };
 
   const handleBack = () => {
     navigate(-1);
   };
 
-  if (mockChatRooms.length === 0) {
+  if (loading) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#F5F5F5' }}>
+        <div className="bg-white border-b px-4 py-3 flex items-center">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleBack}
+            className="p-2 mr-2"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h1 className="text-lg font-semibold">채팅</h1>
+        </div>
+        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+          <p className="text-gray-500">채팅 목록을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (chatRooms.length === 0) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#F5F5F5' }}>
         {/* Header */}
@@ -126,10 +155,10 @@ const ChatList = () => {
 
       {/* Chat Room List */}
       <div className="bg-white">
-        {mockChatRooms.map((room) => (
+        {chatRooms.map((room) => (
           <div
-            key={room.id}
-            onClick={() => handleChatRoomClick(room.id, room.otherUserName)}
+            key={room.roomId}
+            onClick={() => handleChatRoomClick(room.roomId, room.opponentNickname)}
             className="px-4 py-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer active:bg-gray-100 transition-colors"
           >
             <div className="flex justify-between items-start">
@@ -137,7 +166,7 @@ const ChatList = () => {
                 {/* 상대방 닉네임 */}
                 <div className="flex items-center justify-between mb-1">
                   <h3 className="font-medium text-gray-900 truncate">
-                    {room.otherUserName}
+                    {room.opponentNickname}
                   </h3>
                   <div className="flex flex-col items-end ml-2">
                     {/* 시간 */}
@@ -158,7 +187,7 @@ const ChatList = () => {
                 
                 {/* 마지막 메시지 */}
                 <p className="text-sm text-gray-500 leading-5 whitespace-pre-wrap">
-                  {truncateMessage(room.lastMessage)}
+                  {truncateMessage(room.lastMessageContent)}
                 </p>
               </div>
             </div>
