@@ -11,9 +11,10 @@ interface MyBoardTabsProps {
   currentPosts: Post[];
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  onSearch: () => void;
 }
 
-const MyBoardTabs = ({ activeTab, onTabChange, currentPosts, searchTerm, onSearchChange }: MyBoardTabsProps) => {
+const MyBoardTabs = ({ activeTab, onTabChange, currentPosts, searchTerm, onSearchChange, onSearch }: MyBoardTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
       <div className="flex flex-col gap-6 mb-8">
@@ -23,6 +24,8 @@ const MyBoardTabs = ({ activeTab, onTabChange, currentPosts, searchTerm, onSearc
             <BoardSearch 
               searchTerm={searchTerm}
               onSearchChange={onSearchChange}
+              onSearch={onSearch}
+              currentCategory={activeTab}
             />
           </div>
         </div>

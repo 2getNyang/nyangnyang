@@ -14,8 +14,10 @@ import CommentSection from '@/components/CommentSection';
 interface Comment {
   id: number;
   commnetContent: string;
+  commentContent?: string;
   createdAt: string;
   commentNickname: string;
+  commentUserId: number;
   parentId: number | null;
 }
 
@@ -466,6 +468,55 @@ const AdoptionReviewDetail = () => {
           <CommentSection 
             comments={postDetail.comments}
             isLoggedIn={isLoggedIn}
+            currentUserId={user?.id}
+            onSubmitComment={async (content, parentId) => {
+              // 댓글 작성 API 호출
+              const token = localStorage.getItem('accessToken');
+              const response = await fetch(`http://localhost:8080/api/v1/comments`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  boardId: parseInt(id!),
+                  commentContent: content,
+                  parentId: parentId
+                }),
+              });
+              if (response.ok) {
+                // 게시글 새로고침
+                window.location.reload();
+              }
+            }}
+            onEditComment={async (commentId, content) => {
+              const token = localStorage.getItem('accessToken');
+              const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  commentContent: content
+                }),
+              });
+              if (response.ok) {
+                window.location.reload();
+              }
+            }}
+            onDeleteComment={async (commentId) => {
+              const token = localStorage.getItem('accessToken');
+              const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+              if (response.ok) {
+                window.location.reload();
+              }
+            }}
           />
         </div>
       </div>

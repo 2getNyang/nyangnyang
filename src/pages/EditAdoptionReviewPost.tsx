@@ -116,7 +116,7 @@ const EditAdoptionReviewPost = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title.trim() || !content.trim()) {
+    if (!title.trim() || !content.trim() || (existingImages.length === 0 && newImages.length === 0)) {
       toast({
         title: "입력 오류",
         description: "모든 항목을 기재해주세요.",
@@ -131,7 +131,7 @@ const EditAdoptionReviewPost = () => {
       const boardDTO = {
         boardTitle: title,
         boardContent: content,
-        existingImageIds: existingImages.map(img => img.imageId)
+        remainImageIds: existingImages.map(img => img.imageId)
       };
       
       const boardBlob = new Blob([JSON.stringify(boardDTO)], {
@@ -141,10 +141,8 @@ const EditAdoptionReviewPost = () => {
       
       if (newImages.length > 0) {
         newImages.forEach(file => {
-          formDataToSend.append('images', file);
+          formDataToSend.append('newImages', file);
         });
-      } else {
-        formDataToSend.append('images', new Blob(), '');
       }
 
       console.log('수정 요청 데이터:', {

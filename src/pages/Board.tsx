@@ -94,6 +94,61 @@ const Board = () => {
     setIsLoginModalOpen(true);
   };
 
+  // 검색 기능
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+    
+    setLoading(true);
+    try {
+      let searchEndpoint = '';
+      switch (activeTab) {
+        case 'adoption':
+          searchEndpoint = 'review';
+          break;
+        case 'sns':
+          searchEndpoint = 'sns';
+          break;
+        case 'missing':
+          searchEndpoint = 'lost';
+          break;
+        default:
+          searchEndpoint = activeTab;
+      }
+      
+      const response = await fetch(
+        `http://localhost:8080/api/v1/boards/${searchEndpoint}/elasticsearch?keyword=${encodeURIComponent(searchTerm)}&page=0&size=12`
+      );
+      const result = await response.json();
+      
+      const data: any[] = result.data?.content || [];
+      const convertedPosts: Post[] = data.map((item) => ({
+        id: item.id.toString(),
+        title: item.boardTitle || `${item.kindName || '게시글'} - ${item.lostType || ''}`,
+        content: item.boardContent || '',
+        imageUrl: item.imageUrl || item.thumbnailUrl || (item.images && item.images[0]) || '',
+        author: item.nickname || item.nickName || '익명',
+        date: item.createdAt,
+        category: activeTab === 'adoption' ? 'adoption' : activeTab === 'missing' ? 'missing' : activeTab,
+        views: item.boardViewCount || item.viewCount || 0,
+        breed: item.kindName,
+        gender: item.gender,
+        age: item.age?.toString(),
+        furColor: item.furColor,
+        missingLocation: item.missingLocation,
+        missingDate: item.missingDate,
+        missingType: item.lostType === '실종' ? 'MS' : item.lostType === '목격' ? 'WT' : undefined,
+        instagramLink: item.instagramLink,
+        images: item.images
+      }));
+      
+      setBoardData(convertedPosts);
+    } catch (error) {
+      console.error('검색 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeader 
@@ -107,6 +162,7 @@ const Board = () => {
           currentPosts={currentPosts}
           searchTerm={searchTerm}
           onSearchChange={handleSearchChange}
+          onSearch={handleSearch}
           loading={loading}
         />
 

@@ -14,10 +14,11 @@ interface BoardTabsProps {
   currentPosts: Post[];
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  onSearch: () => void;
   loading?: boolean;
 }
 
-const BoardTabs = ({ activeTab, onTabChange, currentPosts, searchTerm, onSearchChange, loading }: BoardTabsProps) => {
+const BoardTabs = ({ activeTab, onTabChange, currentPosts, searchTerm, onSearchChange, onSearch, loading }: BoardTabsProps) => {
   const navigate = useNavigate();
 
 const handleCreatePost = () => {
@@ -47,6 +48,8 @@ const handleCreatePost = () => {
             <BoardSearch 
               searchTerm={searchTerm}
               onSearchChange={onSearchChange}
+              onSearch={onSearch}
+              currentCategory={activeTab}
             />
           </div>
         </div>

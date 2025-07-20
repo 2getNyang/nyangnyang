@@ -138,7 +138,7 @@ const EditSNSPost = () => {
       return;
     }
 
-    if (!title.trim() || !content.trim() || !instagramLink.trim()) {
+    if (!title.trim() || !content.trim() || !instagramLink.trim() || (existingImages.length === 0 && newImages.length === 0)) {
       toast({
         title: "입력 오류",
         description: "모든 항목을 기재해주세요.",

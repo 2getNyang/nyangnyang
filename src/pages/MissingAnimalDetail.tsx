@@ -12,8 +12,10 @@ import CommentSection from '@/components/CommentSection';
 interface Comment {
   id: number;
   commnetContent: string;
+  commentContent?: string;
   createdAt: string;
   commentNickname: string;
+  commentUserId: number;
   parentId: number | null;
 }
 
@@ -45,6 +47,7 @@ const MissingPostDetail = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
   const [postDetail, setPostDetail] = useState<PostDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +66,11 @@ const MissingPostDetail = () => {
         
         if (result.code === 200) {
           setPostDetail(result.data);
+          setLikeCount(result.data.likeCount);
+          // 좋아요 상태 확인
+          if (currentUserId) {
+            fetchLikeStatus();
+          }
         } else {
           setError('게시글을 불러올 수 없습니다.');
         }
@@ -77,7 +85,63 @@ const MissingPostDetail = () => {
     if (id) {
       fetchPostDetail();
     }
-  }, [id]);
+  }, [id, currentUserId]);
+
+  // 좋아요 상태 확인
+  const fetchLikeStatus = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:8080/api/v1/like/${id}/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const result = await response.json();
+      if (result.code === 200) {
+        setLiked(result.data);
+      }
+    } catch (error) {
+      console.error('좋아요 상태 확인 실패:', error);
+    }
+  };
+
+  // 좋아요 토글
+  const handleLikeToggle = async () => {
+    if (!currentUserId) {
+      toast({
+        title: "로그인 필요",
+        description: "좋아요 기능을 사용하려면 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const method = liked ? 'DELETE' : 'POST';
+      
+      const response = await fetch(`http://localhost:8080/api/v1/like/${id}`, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const result = await response.json();
+      if (result.code === 200) {
+        setLiked(result.data.liked);
+        setLikeCount(result.data.likeCount);
+      }
+    } catch (error) {
+      console.error('좋아요 처리 실패:', error);
+      toast({
+        title: "오류",
+        description: "좋아요 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -413,10 +477,10 @@ const MissingPostDetail = () => {
                   variant="ghost" 
                   size="sm" 
                   className={`${liked ? 'text-red-500 bg-red-50' : 'text-red-500'} hover:text-red-600 hover:bg-red-50`}
-                  onClick={() => setLiked(!liked)}
+                  onClick={handleLikeToggle}
                 >
                   <Heart className={`w-5 h-5 mr-2 ${liked ? 'fill-current' : ''}`} />
-                  좋아요 {postDetail.likeCount + (liked ? 1 : 0)}
+                  좋아요 {likeCount}
                 </Button>
                 <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
                   <MessageCircle className="w-5 h-5 mr-2" />
@@ -430,6 +494,53 @@ const MissingPostDetail = () => {
           <CommentSection 
             comments={postDetail.comments}
             isLoggedIn={!!currentUserId}
+            currentUserId={currentUserId}
+            onSubmitComment={async (content, parentId) => {
+              const token = localStorage.getItem('accessToken');
+              const response = await fetch(`http://localhost:8080/api/v1/comments`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  boardId: parseInt(id!),
+                  commentContent: content,
+                  parentId: parentId
+                }),
+              });
+              if (response.ok) {
+                window.location.reload();
+              }
+            }}
+            onEditComment={async (commentId, content) => {
+              const token = localStorage.getItem('accessToken');
+              const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  commentContent: content
+                }),
+              });
+              if (response.ok) {
+                window.location.reload();
+              }
+            }}
+            onDeleteComment={async (commentId) => {
+              const token = localStorage.getItem('accessToken');
+              const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+              if (response.ok) {
+                window.location.reload();
+              }
+            }}
           />
         </div>
       </div>

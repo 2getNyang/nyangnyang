@@ -28,6 +28,11 @@ const MyPosts = () => {
     postsPerPage: 12,
   });
 
+  const handleSearch = () => {
+    // MyPosts에서는 로컬 필터링으로 검색 처리
+    console.log('내 게시글 검색:', searchTerm);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeader 
@@ -70,6 +75,7 @@ const MyPosts = () => {
               currentPosts={currentPosts}
               searchTerm={searchTerm}
               onSearchChange={handleSearchChange}
+              onSearch={handleSearch}
             />
 
             <BoardPagination
