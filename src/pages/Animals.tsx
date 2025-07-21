@@ -60,6 +60,8 @@ const Animals = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [selectedAnimalType, setSelectedAnimalType] = useState('all');
+  const [selectedAge, setSelectedAge] = useState('all');
+  const [selectedGender, setSelectedGender] = useState('all');
 
   const animalsPerPage = 12;
 
@@ -223,12 +225,12 @@ const Animals = () => {
 
         {/* 검색 및 필터링 */}
         <div className="mb-8 bg-white rounded-lg p-6 shadow-sm border">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             {/* 검색어 입력 */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="품종, 지역 등을 검색해보세요"
+                placeholder="동물 이름, 품종, 지역으로 검색하세요"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -238,10 +240,10 @@ const Animals = () => {
             {/* 지역 선택 */}
             <Select value={selectedRegion} onValueChange={setSelectedRegion}>
               <SelectTrigger>
-                <SelectValue placeholder="지역 선택" />
+                <SelectValue placeholder="전체" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">전체 지역</SelectItem>
+                <SelectItem value="all">전체</SelectItem>
                 <SelectItem value="서울">서울특별시</SelectItem>
                 <SelectItem value="부산">부산광역시</SelectItem>
                 <SelectItem value="대구">대구광역시</SelectItem>
@@ -264,7 +266,7 @@ const Animals = () => {
             {/* 동물 종류 선택 */}
             <Select value={selectedAnimalType} onValueChange={setSelectedAnimalType}>
               <SelectTrigger>
-                <SelectValue placeholder="동물 종류" />
+                <SelectValue placeholder="전체" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체</SelectItem>
@@ -274,49 +276,47 @@ const Animals = () => {
               </SelectContent>
             </Select>
 
-            {/* 검색 버튼 */}
-            <Button className="w-full">
-              <Search className="w-4 h-4 mr-2" />
-              검색
+            {/* 나이 선택 */}
+            <Select value={selectedAge} onValueChange={setSelectedAge}>
+              <SelectTrigger>
+                <SelectValue placeholder="전체" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="어린">어린</SelectItem>
+                <SelectItem value="성인">성인</SelectItem>
+                <SelectItem value="노령">노령</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* 성별 선택 */}
+            <Select value={selectedGender} onValueChange={setSelectedGender}>
+              <SelectTrigger>
+                <SelectValue placeholder="전체" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="M">수컷</SelectItem>
+                <SelectItem value="F">암컷</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* 필터 초기화 버튼 */}
+            <Button 
+              variant="outline"
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedRegion('all');
+                setSelectedAnimalType('all');
+                setSelectedAge('all');
+                setSelectedGender('all');
+              }}
+              className="flex items-center gap-2"
+            >
+              <X className="w-4 h-4" />
+              필터 초기화
             </Button>
           </div>
-
-          {/* 검색 결과 초기화 */}
-          {(searchTerm || (selectedRegion && selectedRegion !== 'all') || (selectedAnimalType && selectedAnimalType !== 'all')) && (
-            <div className="flex items-center gap-2 mt-4">
-              <span className="text-sm text-gray-600">활성 필터:</span>
-              {searchTerm && (
-                <div className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                  <span>"{searchTerm}"</span>
-                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchTerm('')} />
-                </div>
-              )}
-              {selectedRegion && selectedRegion !== 'all' && (
-                <div className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                  <span>{selectedRegion}</span>
-                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedRegion('all')} />
-                </div>
-              )}
-              {selectedAnimalType && selectedAnimalType !== 'all' && (
-                <div className="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                  <span>{selectedAnimalType}</span>
-                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedAnimalType('all')} />
-                </div>
-              )}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedRegion('all');
-                  setSelectedAnimalType('all');
-                }}
-                className="text-gray-500"
-              >
-                전체 초기화
-              </Button>
-            </div>
-          )}
         </div>
 
         {/* 검색 결과 카운트 */}
