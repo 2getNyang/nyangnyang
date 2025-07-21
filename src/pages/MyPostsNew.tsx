@@ -72,6 +72,8 @@ const MyPostsNew = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
+      console.log('🔑 토큰 확인:', token ? '토큰 존재' : '토큰 없음');
+      
       let endpoint = '';
       
       switch (activeTab) {
@@ -86,31 +88,41 @@ const MyPostsNew = () => {
           break;
       }
 
+      console.log('📡 API 호출:', activeTab, endpoint);
+
       const response = await fetch(endpoint, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
+      console.log('📡 응답 상태:', response.status, response.statusText);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('📦 받은 데이터:', activeTab, data);
         
         switch (activeTab) {
           case 'review':
             setReviewPosts(data.data.content);
+            console.log('✅ 입양후기 설정됨:', data.data.content.length, '개');
             break;
           case 'sns':
             setSNSPosts(data.data.content);
+            console.log('✅ SNS홍보 설정됨:', data.data.content.length, '개');
             break;
           case 'missing':
             setMissingPosts(data.data.content);
+            console.log('✅ 실종목격 설정됨:', data.data.content.length, '개');
             break;
         }
         
         setTotalPages(data.data.totalPages);
+      } else {
+        console.error('❌ API 응답 실패:', response.status, await response.text());
       }
     } catch (error) {
-      console.error('게시글 조회 실패:', error);
+      console.error('❌ 게시글 조회 실패:', error);
     } finally {
       setLoading(false);
     }

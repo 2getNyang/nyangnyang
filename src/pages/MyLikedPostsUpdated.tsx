@@ -38,19 +38,30 @@ const MyLikedPostsUpdated = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/my/likes?page=${currentPage}&size=${itemsPerPage}`, {
+      console.log('🔑 토큰 확인 (좋아요 글):', token ? '토큰 존재' : '토큰 없음');
+      
+      const endpoint = `http://localhost:8080/api/v1/my/likes?page=${currentPage}&size=${itemsPerPage}`;
+      console.log('📡 API 호출 (좋아요 글):', endpoint);
+      
+      const response = await fetch(endpoint, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
+      console.log('📡 응답 상태 (좋아요 글):', response.status, response.statusText);
+      
       if (response.ok) {
         const result = await response.json();
+        console.log('📦 받은 데이터 (좋아요 글):', result);
         setLikedPosts(result.data.content);
         setTotalPages(result.data.totalPages);
+        console.log('✅ 좋아요 글 설정됨:', result.data.content.length, '개');
+      } else {
+        console.error('❌ API 응답 실패 (좋아요 글):', response.status, await response.text());
       }
     } catch (error) {
-      console.error('좋아요한 게시글 조회 실패:', error);
+      console.error('❌ 좋아요한 게시글 조회 실패:', error);
     } finally {
       setLoading(false);
     }
