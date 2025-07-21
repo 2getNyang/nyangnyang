@@ -43,6 +43,7 @@ interface AnimalDTO {
   shelterName: string;
   shelterAddress: string;
   shelterTel: string;
+  careRegNumber?: string;
 }
 
 interface AnimalDetailCardProps {
@@ -133,7 +134,7 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
   };
 
   const handleAdoptionForm = () => {
-    navigate(`/adoption-form/${animal.desertionNo}`);
+    navigate(`/adoption-form/${animal.desertionNo}?careRegNumber=${encodeURIComponent(animal.careRegNumber || '')}&noticeNo=${encodeURIComponent(animal.noticeNo || '')}`);
   };
 
   const formatDate = (dateStr: string) => {

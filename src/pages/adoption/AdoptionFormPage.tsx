@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import AppHeader from '@/components/AppHeader';
@@ -18,9 +18,15 @@ import { useAuth } from '@/context/AuthContext';
 
 const AdoptionFormPage: React.FC = () => {
   const { desertionNo, formId } = useParams<{ desertionNo: string; formId?: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isLoggedIn } = useAuth();
+
+  // URL 파라미터에서 careRegNumber와 noticeNo 추출
+  const searchParams = new URLSearchParams(location.search);
+  const careRegNumber = searchParams.get('careRegNumber') || '';
+  const noticeNo = searchParams.get('noticeNo') || '';
 
   // Form state
   const [userName, setUserName] = useState('');
@@ -224,7 +230,9 @@ const AdoptionFormPage: React.FC = () => {
         allConsent,
         hasAllergy,
         consentForCheck,
-        applicationReason
+        applicationReason,
+        careRegNumber,
+        noticeNo
       };
 
       const response = await fetch(`http://localhost:8080/api/v1/adoptions/${desertionNo}`, {
