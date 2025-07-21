@@ -363,7 +363,10 @@ const Animals = () => {
                     <div className="mb-3">
                       <h3 className="font-bold text-gray-800 mb-1">{animal.noticeNo}</h3>
                       <p className="text-sm text-gray-600 mb-1">{animal.kindFullNm}</p>
-                      <p className="text-sm text-gray-500">{getSexDisplay(animal.sexCd)}</p>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <User className="w-3 h-3" />
+                        <span>{getSexDisplay(animal.sexCd)}</span>
+                      </div>
                     </div>
                     
                     <div className="space-y-2 text-sm text-gray-600 mb-3">
