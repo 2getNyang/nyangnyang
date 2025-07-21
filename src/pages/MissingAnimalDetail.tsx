@@ -414,7 +414,7 @@ const MissingPostDetail = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="font-medium text-gray-600">나이:</span>
-                  <span className="text-gray-800">{postDetail.age}세</span>
+                  <span className="text-gray-800">{postDetail.age}살</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="font-medium text-gray-600">털색:</span>

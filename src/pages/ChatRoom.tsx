@@ -87,7 +87,7 @@ const ChatRoom = () => {
         // API 응답에서 메시지 데이터 추출
         const messagesData = result.data || [];
         
-        // 메시지에서 상대방 닉네임 찾기
+        // 메시지에서 상대방 닉네임 찾기 또는 상대방 정보 API 호출
         let otherUserNickname = '상대방';
         if (Array.isArray(messagesData) && messagesData.length > 0) {
           const otherMessage = messagesData.find((msg: any) => 
@@ -95,6 +95,20 @@ const ChatRoom = () => {
           );
           if (otherMessage && otherMessage.senderName) {
             otherUserNickname = otherMessage.senderName;
+          } else {
+            // 메시지에서 상대방 닉네임을 찾을 수 없으면 사용자 정보 API 호출
+            const otherUserId = otherMessage?.senderId;
+            if (otherUserId) {
+              try {
+                const userResponse = await fetch(`http://localhost:8080/api/v1/user/${otherUserId}`);
+                const userResult = await userResponse.json();
+                if (userResult.code === 200 && userResult.data?.nickname) {
+                  otherUserNickname = userResult.data.nickname;
+                }
+              } catch (error) {
+                console.error('상대방 정보 조회 실패:', error);
+              }
+            }
           }
         }
         

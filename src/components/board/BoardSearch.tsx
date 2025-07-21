@@ -30,13 +30,6 @@ const BoardSearch = ({ searchTerm, onSearchChange, onSearch, currentCategory }: 
           className="pl-10 pr-4 py-3 w-full rounded-xl border-gray-200 text-base"
         />
       </div>
-      <Button 
-        onClick={onSearch}
-        className="px-6 py-3 rounded-xl"
-      >
-        <Search className="w-4 h-4 mr-2" />
-        검색
-      </Button>
     </div>
   );
 };

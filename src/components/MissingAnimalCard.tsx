@@ -7,10 +7,19 @@ import { Post } from '@/types/board';
 
 interface MissingAnimalCardProps {
   post: Post;
+  onClick?: () => void;
 }
 
-const MissingAnimalCard = ({ post }: MissingAnimalCardProps) => {
+const MissingAnimalCard = ({ post, onClick }: MissingAnimalCardProps) => {
   const navigate = useNavigate();
+  
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      navigate(`/missing-post/${post.id}`);
+    }
+  };
   
   // missingType에 따라 라벨과 색상 결정
   const getMissingTypeLabel = () => {
@@ -26,7 +35,7 @@ const MissingAnimalCard = ({ post }: MissingAnimalCardProps) => {
   return (
     <Card 
       className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02] cursor-pointer"
-      onClick={() => navigate(`/missing-post/${post.id}`)}
+      onClick={handleClick}
     >
       <div className="aspect-[4/3] overflow-hidden">
         <img 
@@ -56,7 +65,7 @@ const MissingAnimalCard = ({ post }: MissingAnimalCardProps) => {
         <div className="text-sm text-gray-600 mb-3 flex flex-wrap gap-1">
           <span>{post.gender}</span>
           <span className="text-gray-400">|</span>
-          <span>{post.age}</span>
+          <span>{post.age}살</span>
           <span className="text-gray-400">|</span>
           <span>{post.furColor}</span>
         </div>

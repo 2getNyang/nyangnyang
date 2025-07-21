@@ -22,20 +22,25 @@ interface Post {
 
 interface BoardCardProps {
   post: Post;
+  onClick?: () => void;
 }
 
-const BoardCard = ({ post }: BoardCardProps) => {
+const BoardCard = ({ post, onClick }: BoardCardProps) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    if (post.category === 'sns') {
-      navigate(`/sns-post/${post.id}`);
-    } else if (post.category === 'adoption') {
-      navigate(`/adoption-review/${post.id}`);
-    } else if (post.category === 'missing') {
-      navigate(`/missing-post/${post.id}`);
+    if (onClick) {
+      onClick();
     } else {
-      console.log('Navigate to general post detail:', post.id);
+      if (post.category === 'sns') {
+        navigate(`/sns-post/${post.id}`);
+      } else if (post.category === 'adoption') {
+        navigate(`/adoption-review/${post.id}`);
+      } else if (post.category === 'missing') {
+        navigate(`/missing-post/${post.id}`);
+      } else {
+        console.log('Navigate to general post detail:', post.id);
+      }
     }
   };
 

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import MissingAnimalCard from '@/components/MissingAnimalCard';
 
 interface ReviewPost {
@@ -50,6 +51,7 @@ const MyPostsNew = () => {
   console.log('🔥 MyPostsNew 페이지 로드됨');
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>('review');
   const [reviewPosts, setReviewPosts] = useState<ReviewPost[]>([]);
   const [snsPosts, setSNSPosts] = useState<SNSPost[]>([]);
@@ -126,6 +128,43 @@ const MyPostsNew = () => {
       console.error('❌ 게시글 조회 실패:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 게시글 클릭 핸들러
+  const handlePostClick = async (postId: number, type: TabType) => {
+    try {
+      let url = '';
+      let redirectUrl = '';
+      
+      if (type === 'review') {
+        url = `http://localhost:8080/api/v1/boards/review/${postId}`;
+        redirectUrl = `/adoption-review/${postId}`;
+      } else if (type === 'sns') {
+        url = `http://localhost:8080/api/v1/boards/sns/${postId}`;
+        redirectUrl = `/sns-post/${postId}`;
+      } else if (type === 'missing') {
+        url = `http://localhost:8080/api/v1/boards/lost/${postId}`;
+        redirectUrl = `/missing-post/${postId}`;
+      }
+      
+      // 게시글 존재 여부 확인
+      const response = await fetch(url);
+      if (response.ok) {
+        navigate(redirectUrl);
+      } else {
+        toast({
+          title: "게시글 없음",
+          description: "게시글이 없습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "게시글 없음", 
+        description: "게시글이 없습니다.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -279,7 +318,11 @@ const MyPostsNew = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {reviewPosts.map((post) => (
-                  <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                  <Card 
+                    key={post.id} 
+                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => handlePostClick(post.id, 'review')}
+                  >
                     <div className="aspect-video relative overflow-hidden">
                       <img 
                         src={post.imageUrl} 
@@ -323,7 +366,11 @@ const MyPostsNew = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {snsPosts.map((post) => (
-                  <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                  <Card 
+                    key={post.id} 
+                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => handlePostClick(post.id, 'sns')}
+                  >
                     <div className="aspect-video relative overflow-hidden">
                       <img 
                         src={post.imageUrl} 
@@ -367,7 +414,11 @@ const MyPostsNew = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {missingPosts.map((post) => (
-                  <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                  <Card 
+                    key={post.id} 
+                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => handlePostClick(post.id, 'missing')}
+                  >
                     <div className="aspect-video relative overflow-hidden">
                       <img 
                         src={post.imageUrl} 
