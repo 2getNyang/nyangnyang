@@ -83,36 +83,34 @@ const AppHeaderWithModal = () => {
                              </Button>
                            )}
                           </div>
-                             {notifications.length > 0 ? (
-                              notifications.map((notification) => {
-                                // 디버깅을 위한 콘솔 출력
-                                console.log('알림 isRead 상태:', notification.notyId, notification.isRead);
-                               
-                               return (
-                                 <div key={notification.notyId} className="relative p-2 hover:bg-gray-50 rounded text-xs border-b last:border-b-0">
-                                   <div className="flex items-start justify-between gap-2">
-                                     <div className="flex-1 min-w-0">
-                                       <p className="text-gray-600 text-xs">{notification.notyContent}</p>
-                                       <p className="text-gray-400 text-xs mt-1">{new Date(notification.notyCreatedAt).toLocaleString()}</p>
-                                     </div>
-                                     {!notification.isRead && (
-                                       <Button
-                                         variant="ghost"
-                                         size="sm"
-                                         onClick={(e) => {
-                                           e.stopPropagation();
-                                           console.log('X 버튼 클릭됨 - 알림 ID:', notification.notyId);
-                                           markAsRead(notification.notyId);
-                                         }}
-                                         className="flex-shrink-0 p-1 h-auto min-w-[24px] text-gray-400 hover:text-gray-600 hover:bg-gray-200"
-                                       >
-                                         <X className="w-3 h-3" />
-                                       </Button>
-                                     )}
-                                   </div>
-                                 </div>
-                               );
-                             })
+                              {notifications.filter(n => !n.isRead).length > 0 ? (
+                               notifications.filter(n => !n.isRead).map((notification) => {
+                                 // 디버깅을 위한 콘솔 출력
+                                 console.log('알림 isRead 상태:', notification.notyId, notification.isRead);
+                                
+                                return (
+                                  <div key={notification.notyId} className="relative p-2 hover:bg-gray-50 rounded text-xs border-b last:border-b-0">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-gray-600 text-xs">{notification.notyContent}</p>
+                                        <p className="text-gray-400 text-xs mt-1">{new Date(notification.notyCreatedAt).toLocaleString()}</p>
+                                      </div>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          console.log('X 버튼 클릭됨 - 알림 ID:', notification.notyId);
+                                          markAsRead(notification.notyId);
+                                        }}
+                                        className="flex-shrink-0 p-1 h-auto min-w-[24px] text-gray-400 hover:text-gray-600 hover:bg-gray-200"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                );
+                              })
                            ) : (
                             <p className="text-gray-500 text-xs p-2">새 알림이 없습니다.</p>
                           )}
