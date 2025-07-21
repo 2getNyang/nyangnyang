@@ -19,7 +19,7 @@ const AppHeaderWithModal = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { user, isLoggedIn, logout } = useAuth();
-  const { notifications, hasUnreadNotifications } = useNotification();
+  const { notifications, hasUnreadNotifications, markAsRead, markAllAsRead } = useNotification();
   
   // 로그인 상태 콘솔 출력
   console.log('헤더 상태 - 로그인 여부:', isLoggedIn, '사용자:', user);
@@ -61,21 +61,47 @@ const AppHeaderWithModal = () => {
                          )}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-80">
-                      <div className="p-2">
-                        <p className="font-semibold text-sm mb-2">알림</p>
-                         {notifications.length > 0 ? (
-                           notifications.map((notification) => (
-                             <div key={notification.notyId} className="p-2 hover:bg-gray-50 rounded text-xs border-b last:border-b-0">
-                               <p className="text-gray-600 text-xs">{notification.notyContent}</p>
-                               <p className="text-gray-400 text-xs mt-1">{new Date(notification.notyCreatedAt).toLocaleString()}</p>
-                             </div>
-                           ))
-                         ) : (
-                           <p className="text-gray-500 text-xs p-2">새 알림이 없습니다.</p>
-                         )}
-                      </div>
-                    </DropdownMenuContent>
+                     <DropdownMenuContent align="end" className="w-80">
+                       <div className="p-2">
+                         <div className="flex items-center justify-between mb-2">
+                           <p className="font-semibold text-sm">알림</p>
+                           {notifications.some(n => !n.isRead) && (
+                             <Button
+                               variant="ghost"
+                               size="sm"
+                               onClick={markAllAsRead}
+                               className="text-xs text-blue-600 hover:text-blue-700"
+                             >
+                               전체 읽음
+                             </Button>
+                           )}
+                         </div>
+                          {notifications.length > 0 ? (
+                            notifications.map((notification) => (
+                              <div key={notification.notyId} className="relative p-2 hover:bg-gray-50 rounded text-xs border-b last:border-b-0">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <p className="text-gray-600 text-xs">{notification.notyContent}</p>
+                                    <p className="text-gray-400 text-xs mt-1">{new Date(notification.notyCreatedAt).toLocaleString()}</p>
+                                  </div>
+                                  {!notification.isRead && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => markAsRead(notification.notyId)}
+                                      className="ml-2 p-1 h-auto text-gray-400 hover:text-gray-600"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-gray-500 text-xs p-2">새 알림이 없습니다.</p>
+                          )}
+                       </div>
+                     </DropdownMenuContent>
                   </DropdownMenu>
 
                   {/* 사용자 드롭다운 */}

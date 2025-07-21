@@ -17,6 +17,7 @@ interface NotificationContextType {
   notifications: Notification[];
   hasUnreadNotifications: boolean;
   markAsRead: (notyId: number) => void;
+  markAllAsRead: () => void;
   clearNotifications: () => void;
 }
 
@@ -42,10 +43,73 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
 
   const hasUnreadNotifications = notifications.some(n => !n.isRead);
 
-  const markAsRead = (notyId: number) => {
-    setNotifications(prev => 
-      prev.map(n => n.notyId === notyId ? { ...n, isRead: true } : n)
-    );
+  // 안읽은 알림 목록 가져오기
+  const fetchUnreadNotifications = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:8080/api/v1/notifications/unread', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const unreadNotifications = await response.json();
+        // notyCreatedAt 내림차순으로 정렬
+        const sortedNotifications = unreadNotifications.sort((a: Notification, b: Notification) => 
+          new Date(b.notyCreatedAt).getTime() - new Date(a.notyCreatedAt).getTime()
+        );
+        setNotifications(sortedNotifications);
+      }
+    } catch (error) {
+      console.error('안읽은 알림 가져오기 실패:', error);
+    }
+  };
+
+  const markAsRead = async (notyId: number) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const response = await fetch(`http://localhost:8080/api/v1/notifications/${notyId}/read`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setNotifications(prev => 
+          prev.map(n => n.notyId === notyId ? { ...n, isRead: true } : n)
+        );
+      }
+    } catch (error) {
+      console.error('알림 읽음 처리 실패:', error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:8080/api/v1/notifications/read-all', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setNotifications(prev => 
+          prev.map(n => ({ ...n, isRead: true }))
+        );
+      }
+    } catch (error) {
+      console.error('전체 알림 읽음 처리 실패:', error);
+    }
   };
 
   const clearNotifications = () => {
@@ -121,10 +185,18 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     };
   }, [isLoggedIn, user?.id, toast]);
 
+  // 로그인 시 안읽은 알림 목록 가져오기
+  useEffect(() => {
+    if (isLoggedIn && user?.id) {
+      fetchUnreadNotifications();
+    }
+  }, [isLoggedIn, user?.id]);
+
   const value = {
     notifications,
     hasUnreadNotifications,
     markAsRead,
+    markAllAsRead,
     clearNotifications
   };
 
