@@ -29,7 +29,7 @@ const ChatList = () => {
   const fetchChatRooms = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken');
       const response = await fetch('http://localhost:8080/api/v1/chat/rooms', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -69,7 +69,7 @@ const ChatList = () => {
 
   const handleChatRoomClick = async (roomId: string, opponentNickname: string) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken');
       const response = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}/messages`, {
         headers: {
           'Authorization': `Bearer ${token}`

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, User } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import AppHeader from '@/components/AppHeader';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -19,42 +19,39 @@ interface AdoptionApplication {
 }
 
 const MyAdoptionApplications = () => {
+  const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
   const [applications, setApplications] = useState<AdoptionApplication[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const itemsPerPage = 12;
 
   useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/');
+      return;
+    }
     fetchApplications();
-  }, [currentPage]);
+  }, [currentPage, isLoggedIn, navigate]);
 
   const fetchApplications = async () => {
     setLoading(true);
     try {
-      // API 호출 (실제 구현 시)
-      // const response = await fetch(`/api/v1/user/adoption-applications?page=${currentPage}&size=${itemsPerPage}`);
-      // const data = await response.json();
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:8080/api/v1/my/adoption?page=${currentPage}&size=${itemsPerPage}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
-      // Mock 데이터
-      const mockData = {
-        content: Array.from({ length: itemsPerPage }, (_, index) => ({
-          formId: index + 1 + (currentPage - 1) * itemsPerPage,
-          processState: ['심사 중', '승인됨', '거절됨', '대기 중'][Math.floor(Math.random() * 4)],
-          sexCd: Math.random() > 0.5 ? 'M' : 'F',
-          kindFullNm: ['코리안 숏헤어', '포메라니안', '리트리버', '페르시안'][Math.floor(Math.random() * 4)],
-          noticeNo: `20250719-${String(index + 1).padStart(3, '0')}`,
-          happenPlace: ['서울시 강남구', '경기도 수원시', '부산시 해운대구', '대구시 중구'][Math.floor(Math.random() * 4)],
-          popfile1: `https://images.unsplash.com/photo-${1582562124811 + index}?w=400&h=300&fit=crop`,
-          formCreatedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        })),
-        totalPages: 5
-      };
-      
-      setApplications(mockData.content);
-      setTotalPages(mockData.totalPages);
+      if (response.ok) {
+        const result = await response.json();
+        setApplications(result.data.content);
+        setTotalPages(result.data.totalPages);
+      }
     } catch (error) {
-      console.error('Failed to fetch adoption applications:', error);
+      console.error('입양 신청 내역 조회 실패:', error);
     } finally {
       setLoading(false);
     }
@@ -64,58 +61,42 @@ const MyAdoptionApplications = () => {
     switch (sexCd) {
       case 'M': return '수컷';
       case 'F': return '암컷';
-      case 'Q': return '미상';
+      case 'Q': return '모름';
       default: return sexCd;
     }
   };
 
-  const getProcessStateStyle = (processState: string) => {
-    if (processState === '심사 중' || processState === '대기 중') {
-      return {
-        className: 'bg-yellow-100 text-yellow-800 border-yellow-200 rounded-full',
-        text: processState
-      };
-    } else if (processState === '승인됨') {
-      return {
-        className: 'bg-green-100 text-green-800 border-green-200 rounded-full',
-        text: processState
-      };
-    } else if (processState === '거절됨') {
-      return {
-        className: 'bg-red-100 text-red-800 border-red-200 rounded-full',
-        text: processState
-      };
-    }
-    
-    return {
-      className: 'bg-blue-100 text-blue-800 border-blue-200 rounded-full',
-      text: processState
-    };
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
   };
 
   const renderPagination = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    let startPage = Math.max(0, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
 
     if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      startPage = Math.max(0, endPage - maxVisiblePages + 1);
     }
 
-    if (startPage > 1) {
+    if (startPage > 0) {
       pages.push(
         <Button
-          key={1}
+          key={0}
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage(1)}
+          onClick={() => setCurrentPage(0)}
           className="h-8 w-8 p-0"
         >
           1
         </Button>
       );
-      if (startPage > 2) {
+      if (startPage > 1) {
         pages.push(<span key="start-ellipsis" className="px-2">...</span>);
       }
     }
@@ -129,21 +110,21 @@ const MyAdoptionApplications = () => {
           onClick={() => setCurrentPage(i)}
           className="h-8 w-8 p-0"
         >
-          {i}
+          {i + 1}
         </Button>
       );
     }
 
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
+    if (endPage < totalPages - 1) {
+      if (endPage < totalPages - 2) {
         pages.push(<span key="end-ellipsis" className="px-2">...</span>);
       }
       pages.push(
         <Button
-          key={totalPages}
+          key={totalPages - 1}
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage(totalPages)}
+          onClick={() => setCurrentPage(totalPages - 1)}
           className="h-8 w-8 p-0"
         >
           {totalPages}
@@ -190,103 +171,92 @@ const MyAdoptionApplications = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {applications.map((application) => {
-                  const processStyle = getProcessStateStyle(application.processState);
-                  
-                  return (
-                    <Card 
-                      key={application.formId} 
-                      className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02]"
-                    >
-                      <div className="aspect-[4/3] overflow-hidden">
-                        <img 
-                          src={application.popfile1}
-                          alt={application.noticeNo}
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
-                          }}
-                        />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                {applications.map((application) => (
+                  <Card 
+                    key={application.formId} 
+                    className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02]"
+                  >
+                    <div className="aspect-[4/3] overflow-hidden">
+                      <img 
+                        src={application.popfile1}
+                        alt={application.noticeNo}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
+                        }}
+                      />
+                    </div>
+                    
+                    <CardContent className="p-5">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800 mb-1">
+                            {application.noticeNo}
+                          </h3>
+                          <p className="text-gray-600 text-sm">
+                            {application.kindFullNm}
+                          </p>
+                        </div>
                       </div>
                       
-                      <CardContent className="p-5">
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-800 mb-1">
-                              {application.noticeNo}
-                            </h3>
-                            <p className="text-gray-600 text-sm">
-                              {application.kindFullNm}
-                            </p>
-                          </div>
+                      <div className="space-y-2 mb-3">
+                        <div className="flex items-center space-x-2 text-gray-600">
+                          <User className="w-4 h-4" />
+                          <span className="text-sm">
+                            {getGenderText(application.sexCd)}
+                          </span>
                         </div>
                         
-                        <div className="space-y-2 mb-3">
-                          <div className="flex items-center space-x-2 text-gray-600">
-                            <User className="w-4 h-4" />
-                            <span className="text-sm">
-                              {getGenderText(application.sexCd)}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2 text-gray-600">
-                            <Calendar className="w-4 h-4" />
-                            <span className="text-sm">신청일: {application.formCreatedAt}</span>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2 text-gray-600">
-                            <MapPin className="w-4 h-4" />
-                            <span className="text-sm">{application.happenPlace}</span>
-                          </div>
+                        <div className="flex items-center space-x-2 text-gray-600">
+                          <Calendar className="w-4 h-4" />
+                          <span className="text-sm">신청일: {formatDate(application.formCreatedAt)}</span>
                         </div>
                         
-                        <div className="mb-4">
-                          <Badge 
-                            className={`text-xs ${processStyle.className}`}
-                            variant="outline"
-                          >
-                            {processStyle.text}
-                          </Badge>
+                        <div className="flex items-center space-x-2 text-gray-600">
+                          <MapPin className="w-4 h-4" />
+                          <span className="text-sm">{application.happenPlace}</span>
                         </div>
-                      </CardContent>
-                      
-                      <CardFooter className="p-5 pt-0">
-                        <Link to={`/adoption-form/${application.noticeNo}/${application.formId}`} className="w-full">
-                          <button className="w-full golden hover:bg-yellow-500 text-gray-800 font-medium py-3 px-4 rounded-xl transition-all duration-200 hover:shadow-md">
-                            신청서 보기
-                          </button>
-                        </Link>
-                      </CardFooter>
-                    </Card>
-                  );
-                })}
+                      </div>
+                    </CardContent>
+                    
+                    <CardFooter className="p-5 pt-0">
+                      <Link to={`/adoption-form/${application.formId}`} className="w-full">
+                        <button className="w-full golden hover:bg-yellow-500 text-gray-800 font-medium py-3 px-4 rounded-xl transition-all duration-200 hover:shadow-md">
+                          신청서 보기
+                        </button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                ))}
               </div>
 
               {/* 페이지네이션 */}
-              <div className="flex justify-center items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="h-8 px-3"
-                >
-                  이전
-                </Button>
-                
-                {renderPagination()}
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className="h-8 px-3"
-                >
-                  다음
-                </Button>
-              </div>
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                    disabled={currentPage === 0}
+                    className="h-8 px-3"
+                  >
+                    이전
+                  </Button>
+                  
+                  {renderPagination()}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                    disabled={currentPage === totalPages - 1}
+                    className="h-8 px-3"
+                  >
+                    다음
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </div>

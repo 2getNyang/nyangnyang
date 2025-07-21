@@ -96,7 +96,6 @@ const MyPage = () => {
             <User className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">마이페이지</h1>
-          <p className="text-gray-600">{userName}님, 안녕하세요!</p>
         </div>
 
         {/* 메뉴 카드들 */}

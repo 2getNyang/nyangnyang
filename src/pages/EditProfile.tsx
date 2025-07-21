@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,20 +6,57 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import AppHeader from '@/components/AppHeader';
 import Footer from '@/components/Footer';
 
 const EditProfile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isLoggedIn, user } = useAuth();
   
-  // 초기 사용자 정보 (실제로는 전역 상태나 API에서 가져와야 함)
   const [formData, setFormData] = useState({
-    nickname: '김철수',
-    email: 'kimcs@example.com'
+    nickname: '',
+    email: ''
   });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/');
+      return;
+    }
+    fetchUserInfo();
+  }, [isLoggedIn, navigate]);
+
+  const fetchUserInfo = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('http://localhost:8080/api/v1/user/info', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setFormData({
+          nickname: result.data.nickname || '',
+          email: result.data.email || ''
+        });
+      }
+    } catch (error) {
+      console.error('사용자 정보 조회 실패:', error);
+      toast({
+        title: "정보 로드 실패",
+        description: "사용자 정보를 불러올 수 없습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -30,44 +67,49 @@ const EditProfile = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.nickname.trim()) {
+      toast({
+        title: "입력 오류",
+        description: "모든 항목을 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
-      // 실제로는 API 호출로 중복 체크
-      const checkDuplicate = () => {
-        // 임시 중복 체크 로직 (실제로는 서버에서 확인)
-        const existingNicknames = ['admin', '관리자', 'test', '김영희'];
-        const existingEmails = ['admin@example.com', 'test@example.com', 'kimyh@example.com'];
-        
-        if (existingNicknames.includes(formData.nickname)) {
-          return { isDuplicate: true, field: 'nickname' };
-        }
-        if (existingEmails.includes(formData.email)) {
-          return { isDuplicate: true, field: 'email' };
-        }
-        return { isDuplicate: false };
-      };
-
-      const duplicateCheck = checkDuplicate();
-      
-      if (duplicateCheck.isDuplicate) {
-        const fieldName = duplicateCheck.field === 'nickname' ? '닉네임' : '이메일';
-        toast({
-          title: `${fieldName} 중복`,
-          description: `이미 사용 중인 ${fieldName}입니다. 다른 ${fieldName}을 입력해주세요.`,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // 실제 저장 로직 (API 호출)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "프로필 수정 완료",
-        description: "회원 정보가 성공적으로 수정되었습니다.",
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('http://localhost:8080/api/v1/user/info', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          nickname: formData.nickname,
+          email: formData.email
+        })
       });
+      
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "프로필 수정 완료",
+          description: "회원 정보가 성공적으로 수정되었습니다.",
+        });
+        
+        // 업데이트된 정보로 폼 데이터 갱신
+        setFormData({
+          nickname: result.data.nickname || '',
+          email: result.data.email || ''
+        });
+      } else {
+        throw new Error('수정 실패');
+      }
     } catch (error) {
+      console.error('프로필 수정 실패:', error);
       toast({
         title: "수정 실패",
         description: "프로필 수정 중 오류가 발생했습니다. 다시 시도해 주세요.",
@@ -78,11 +120,21 @@ const EditProfile = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AppHeader onLoginClick={() => {}} />
+        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+          <p className="text-gray-500">사용자 정보를 불러오는 중...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader 
-        onLoginClick={() => {}}
-      />
+      <AppHeader onLoginClick={() => {}} />
       
       <div className="container mx-auto px-4 py-8">
         {/* 뒤로가기 & 헤더 */}
@@ -118,7 +170,7 @@ const EditProfile = () => {
                 <div className="space-y-2">
                   <Label htmlFor="nickname" className="text-sm font-medium text-gray-700 flex items-center">
                     <User className="w-4 h-4 mr-2" />
-                    닉네임
+                    닉네임 *
                   </Label>
                   <Input
                     id="nickname"
@@ -142,9 +194,8 @@ const EditProfile = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="이메일을 입력해주세요"
+                    placeholder="이메일을 입력해주세요 (선택사항)"
                     className="w-full"
-                    required
                   />
                 </div>
 
