@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, Menu, X, User, LogOut, Settings, FileText, MessageCircle, Heart as HeartIcon, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,13 @@ const AppHeaderWithModal = () => {
   
   // 로그인 상태 콘솔 출력
   console.log('헤더 상태 - 로그인 여부:', isLoggedIn, '사용자:', user);
+  
+  // 알림 상태 디버깅
+  useEffect(() => {
+    console.log('전체 알림 배열:', notifications);
+    console.log('hasUnreadNotifications:', hasUnreadNotifications);
+    console.log('notifications.some(n => !n.isRead):', notifications.some(n => !n.isRead));
+  }, [notifications, hasUnreadNotifications]);
 
   return (
     <>
@@ -75,11 +82,11 @@ const AppHeaderWithModal = () => {
                                전체 읽음
                              </Button>
                            )}
-                         </div>
-                           {notifications.length > 0 ? (
-                             notifications.map((notification) => {
-                               // 디버깅을 위한 콘솔 출력
-                               console.log('알림 isRead 상태:', notification.notyId, notification.isRead);
+                          </div>
+                             {notifications.length > 0 ? (
+                              notifications.map((notification) => {
+                                // 디버깅을 위한 콘솔 출력
+                                console.log('알림 isRead 상태:', notification.notyId, notification.isRead);
                                
                                return (
                                  <div key={notification.notyId} className="relative p-2 hover:bg-gray-50 rounded text-xs border-b last:border-b-0">
