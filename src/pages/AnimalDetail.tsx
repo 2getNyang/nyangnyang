@@ -30,6 +30,7 @@ interface AnimalDetailResponse {
     shelterName: string;
     shelterAddress: string;
     shelterTel: string;
+    careRegNumber: string;
   };
   message: string;
 }
