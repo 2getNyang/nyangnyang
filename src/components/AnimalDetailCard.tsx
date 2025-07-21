@@ -33,12 +33,14 @@ interface AnimalDTO {
   noticeSdt: string;
   noticeEdt: string;
   specialMark: string;
-  careRegNumber: string;
   bookmarked: boolean;
   popfile1?: string;
   popfile2?: string;
   popfile3?: string;
   comments: AnimalCommentDTO[];
+  shelterName: string;
+  shelterAddress: string;
+  shelterTel: string;
 }
 
 interface AnimalDetailCardProps {
@@ -58,8 +60,9 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
   // 성별 변환
   const getSexDisplay = (sexCd: string) => {
     switch (sexCd) {
-      case 'M': return '남아';
-      case 'F': return '여아';
+      case 'M': return '수컷';
+      case 'F': return '암컷';
+      case 'Q': return '모름';
       default: return '성별 정보 없음';
     }
   };
@@ -68,23 +71,18 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
   const getNeuterDisplay = (neuterYn: string) => {
     switch (neuterYn) {
       case 'Y': return '중성화 완료';
-      case 'N': return '중성화 안됨';
-      default: return '미상';
+      case 'N': return '중성화 미완료';
+      case 'U': return '불명';
+      default: return '불명';
     }
   };
 
   // 보호 상태 변환 및 스타일
   const getProcessStateDisplay = (processState: string) => {
-    switch (processState) {
-      case 'NOTICE':
-        return { text: '입양 가능', variant: 'default' as const, className: 'bg-green-500 text-white' };
-      case 'PROTECT':
-        return { text: '임시 보호 중', variant: 'secondary' as const, className: 'bg-blue-500 text-white' };
-      case 'FINISH':
-        return { text: '입양 완료', variant: 'outline' as const, className: 'bg-gray-500 text-white' };
-      default:
-        return { text: processState, variant: 'outline' as const, className: '' };
+    if (processState === '보호중') {
+      return { text: '보호중', className: 'bg-yellow-500 text-white' };
     }
+    return { text: processState, className: 'bg-gray-500 text-white' };
   };
 
   const processStateInfo = getProcessStateDisplay(animal.processState);
@@ -239,28 +237,28 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
           </div>
 
           {/* 동물 정보 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
               <h3 className="font-semibold text-lg">동물 정보</h3>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">나이:</span>
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">나이:</span>
                   <span>{animal.age}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">성별:</span>
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">성별:</span>
                   <span>{getSexDisplay(animal.sexCd)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">중성화:</span>
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">중성화여부:</span>
                   <span>{getNeuterDisplay(animal.neuterYn)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">털색:</span>
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">털색:</span>
                   <span>{animal.colorCd}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">무게:</span>
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">무게:</span>
                   <span>{animal.weight}</span>
                 </div>
               </div>
@@ -270,18 +268,12 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
               <h3 className="font-semibold text-lg">발견 정보</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex items-start gap-2">
-                  <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div>
-                    <span className="text-muted-foreground">발견일:</span>
-                    <span className="ml-2">{formatDate(animal.happenDt)}</span>
-                  </div>
+                  <span className="text-muted-foreground w-20">발견일:</span>
+                  <span>{formatDate(animal.happenDt)}</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div>
-                    <span className="text-muted-foreground">발견장소:</span>
-                    <span className="ml-2">{animal.happenPlace}</span>
-                  </div>
+                  <span className="text-muted-foreground w-20">발견장소:</span>
+                  <span>{animal.happenPlace}</span>
                 </div>
               </div>
             </div>
@@ -326,10 +318,20 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
           <Separator />
           <div className="space-y-3">
             <h3 className="font-semibold text-lg">보호소 정보</h3>
-            <p className="text-sm">
-              <span className="text-muted-foreground">보호소 번호:</span>
-              <span className="ml-2 font-mono">{animal.careRegNumber}</span>
-            </p>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground w-24">보호소 이름:</span>
+                <span>{animal.shelterName}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground w-24">보호소 주소:</span>
+                <span>{animal.shelterAddress}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-muted-foreground w-24">보호소 전화번호:</span>
+                <span>{animal.shelterTel}</span>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -374,9 +376,9 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
         <Button
           onClick={handleAdoptionForm}
           className="w-full h-12 text-lg font-semibold"
-          disabled={animal.processState === 'FINISH'}
+          disabled={animal.processState !== '보호중'}
         >
-          {animal.processState === 'FINISH' ? '입양 완료된 동물입니다' : '입양 신청서 작성하기'}
+          {animal.processState !== '보호중' ? '입양 완료된 동물입니다' : '입양 신청서 작성하기'}
         </Button>
       </div>
     </div>
