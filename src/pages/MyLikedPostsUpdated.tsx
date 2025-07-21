@@ -9,13 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Heart, Eye } from 'lucide-react';
 
 interface LikedPost {
-  id: string;
-  title: string;
-  author: string;
-  date: string;
-  category: string;
+  id: number;
+  boardTitle: string;
+  nickname: string;
+  createdAt: string;
+  categoryName: string;
   imageUrl: string;
-  viewCount?: number;
 }
 
 const MyLikedPostsUpdated = () => {
@@ -57,45 +56,75 @@ const MyLikedPostsUpdated = () => {
     }
   };
 
-  const getCategoryLabel = (category: string): string => {
-    switch (category) {
-      case 'adoption': return '입양후기';
-      case 'sns': return 'SNS홍보';
-      case 'missing': return '실종/목격';
-      default: return '기타';
+  const getCategoryLabel = (categoryName: string): string => {
+    switch (categoryName) {
+      case '입양후기': return '입양후기';
+      case 'SNS홍보': return 'SNS홍보';
+      case '실종/목격': return '실종/목격';
+      default: return categoryName;
     }
   };
 
-  const getCategoryColor = (category: string): string => {
-    switch (category) {
-      case 'adoption': return 'bg-green-100 text-green-700';
-      case 'sns': return 'bg-blue-100 text-blue-700';
-      case 'missing': return 'bg-red-100 text-red-700';
+  const getCategoryColor = (categoryName: string): string => {
+    switch (categoryName) {
+      case '입양후기': return 'bg-green-100 text-green-700';
+      case 'SNS홍보': return 'bg-blue-100 text-blue-700';
+      case '실종/목격': return 'bg-red-100 text-red-700';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
 
-  const handleCardClick = (post: LikedPost) => {
+  const handleCardClick = async (post: LikedPost) => {
     try {
-      if (post.category === 'sns') {
-        navigate(`/sns-post/${post.id}`);
-      } else if (post.category === 'adoption') {
-        navigate(`/adoption-review/${post.id}`);
-      } else if (post.category === 'missing') {
-        navigate(`/missing-post/${post.id}`);
+      // 게시글이 존재하는지 확인
+      const token = localStorage.getItem('accessToken');
+      let endpoint = '';
+      
+      switch (post.categoryName) {
+        case '입양후기':
+          endpoint = `http://localhost:8080/api/v1/boards/review/${post.id}`;
+          break;
+        case 'SNS홍보':
+          endpoint = `http://localhost:8080/api/v1/boards/sns/${post.id}`;
+          break;
+        case '실종/목격':
+          endpoint = `http://localhost:8080/api/v1/boards/lost/${post.id}`;
+          break;
+        default:
+          console.error('알 수 없는 카테고리:', post.categoryName);
+          return;
+      }
+      
+      const response = await fetch(endpoint, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        switch (post.categoryName) {
+          case '입양후기':
+            navigate(`/adoption-review/${post.id}`);
+            break;
+          case 'SNS홍보':
+            navigate(`/sns-post/${post.id}`);
+            break;
+          case '실종/목격':
+            navigate(`/missing-animal/${post.id}`);
+            break;
+        }
+      } else {
+        alert('삭제된 게시글입니다.');
       }
     } catch (error) {
-      // 삭제된 게시글인 경우
+      console.error('게시글 확인 실패:', error);
       alert('삭제된 게시글입니다.');
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    const date = new Date(dateString);
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   };
 
   const renderPagination = () => {
@@ -211,7 +240,7 @@ const MyLikedPostsUpdated = () => {
                     <div className="relative">
                       <img 
                         src={post.imageUrl} 
-                        alt={post.title}
+                        alt={post.boardTitle}
                         className="w-full h-48 object-cover rounded-t-lg"
                         onError={(e) => {
                           e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
@@ -226,8 +255,8 @@ const MyLikedPostsUpdated = () => {
                       </div>
                       {/* 카테고리 뱃지 */}
                       <div className="absolute top-2 right-2">
-                        <Badge className={getCategoryColor(post.category)}>
-                          {getCategoryLabel(post.category)}
+                        <Badge className={getCategoryColor(post.categoryName)}>
+                          {getCategoryLabel(post.categoryName)}
                         </Badge>
                       </div>
                     </div>
@@ -235,20 +264,12 @@ const MyLikedPostsUpdated = () => {
                     {/* 콘텐츠 영역 */}
                     <div className="p-4">
                       <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
-                        {post.title}
+                        {post.boardTitle}
                       </h3>
                       
                       <div className="flex items-center justify-between text-sm text-gray-600">
-                        <span className="font-medium">{post.author}</span>
-                        <div className="flex items-center gap-2">
-                          {post.viewCount && (
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-3 h-3" />
-                              <span>{post.viewCount}</span>
-                            </div>
-                          )}
-                          <span>{formatDate(post.date)}</span>
-                        </div>
+                        <span className="font-medium">{post.nickname}</span>
+                        <span>{formatDate(post.createdAt)}</span>
                       </div>
                     </div>
                   </CardContent>

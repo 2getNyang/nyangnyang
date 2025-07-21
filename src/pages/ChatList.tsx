@@ -30,18 +30,38 @@ const ChatList = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
+      console.log('채팅방 토큰:', token);
+      
       const response = await fetch('http://localhost:8080/api/v1/chat/rooms', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
+      console.log('채팅방 응답 상태:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
-        setChatRooms(data);
+        console.log('채팅방 데이터:', data);
+        
+        // API 응답이 배열인지 확인하고 적절히 처리
+        if (Array.isArray(data)) {
+          setChatRooms(data);
+        } else if (data && Array.isArray(data.data)) {
+          setChatRooms(data.data);
+        } else if (data && Array.isArray(data.content)) {
+          setChatRooms(data.content);
+        } else {
+          console.error('예상치 못한 데이터 구조:', data);
+          setChatRooms([]);
+        }
+      } else {
+        console.error('채팅방 응답 실패:', response.status);
+        setChatRooms([]);
       }
     } catch (error) {
       console.error('채팅 목록 가져오기 실패:', error);
+      setChatRooms([]);
     } finally {
       setLoading(false);
     }

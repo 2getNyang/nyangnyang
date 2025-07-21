@@ -9,17 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Heart, MapPin, Calendar } from 'lucide-react';
 
 interface FavoriteAdoption {
-  id: string;
-  name: string;
-  species: string;
-  breed: string;
-  age: string;
-  gender: string;
-  location: string;
-  rescueDate: string;
-  imageUrl: string;
-  personality: string[];
-  isUrgent?: boolean;
+  desertionNo: string;
+  processState: string;
+  sexCd: string;
+  kindFullNm: string;
+  noticeNo: string;
+  happenDt: string;
+  happenPlace: string;
+  popfile1: string;
 }
 
 const MyFavoriteAdoptionsUpdated = () => {
@@ -61,11 +58,23 @@ const MyFavoriteAdoptionsUpdated = () => {
     }
   };
 
-  const handleCardClick = (animal: FavoriteAdoption) => {
+  const handleCardClick = async (animal: FavoriteAdoption) => {
     try {
-      navigate(`/animal/${animal.id}`);
+      // 해당 공고가 여전히 존재하는지 확인
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:8080/api/v1/animals/${animal.desertionNo}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        navigate(`/animal/${animal.desertionNo}`);
+      } else {
+        alert('이미 종료된 공고입니다.');
+      }
     } catch (error) {
-      // 이미 종료된 공고인 경우
+      console.error('공고 확인 실패:', error);
       alert('이미 종료된 공고입니다.');
     }
   };
@@ -182,7 +191,7 @@ const MyFavoriteAdoptionsUpdated = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {favorites.map((animal) => (
                 <Card 
-                  key={animal.id}
+                  key={animal.desertionNo}
                   className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 border-0 shadow-md"
                   onClick={() => handleCardClick(animal)}
                 >
@@ -190,8 +199,8 @@ const MyFavoriteAdoptionsUpdated = () => {
                     {/* 이미지 영역 */}
                     <div className="relative">
                       <img 
-                        src={animal.imageUrl} 
-                        alt={animal.name}
+                        src={animal.popfile1} 
+                        alt={animal.kindFullNm}
                         className="w-full h-48 object-cover rounded-t-lg"
                         onError={(e) => {
                           e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
@@ -204,52 +213,19 @@ const MyFavoriteAdoptionsUpdated = () => {
                           찜한 공고
                         </Badge>
                       </div>
-                      {/* 긴급 뱃지 (필요한 경우) */}
-                      {animal.isUrgent && (
-                        <div className="absolute top-2 right-2">
-                          <Badge className="bg-red-600 text-white">
-                            긴급
-                          </Badge>
-                        </div>
-                      )}
                     </div>
 
                     {/* 콘텐츠 영역 */}
                     <div className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-bold text-gray-800">{animal.name}</h3>
-                        <Badge variant="outline" className="text-xs">
-                          {animal.species}
-                        </Badge>
-                      </div>
+                      <h3 className="text-lg font-bold text-gray-800 mb-2">{animal.kindFullNm}</h3>
                       
-                      <p className="text-sm text-gray-600 mb-2">
-                        {animal.breed} • {animal.age} • {animal.gender}
-                      </p>
-
-                      <div className="space-y-1 text-xs text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          <span>{animal.location}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>구조일: {formatDate(animal.rescueDate)}</span>
-                        </div>
-                      </div>
-
-                      {/* 성격 태그 */}
-                      <div className="flex flex-wrap gap-1 mt-3">
-                        {animal.personality.slice(0, 2).map((trait: string, index: number) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {trait}
-                          </Badge>
-                        ))}
-                        {animal.personality.length > 2 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{animal.personality.length - 2}
-                          </Badge>
-                        )}
+                      {/* 동물 정보 */}
+                      <div className="space-y-1 text-sm mb-3">
+                        <p><span className="text-gray-600">공고번호:</span> {animal.noticeNo}</p>
+                        <p><span className="text-gray-600">품종:</span> {animal.kindFullNm}</p>
+                        <p><span className="text-gray-600">성별:</span> {animal.sexCd === 'F' ? '암컷' : animal.sexCd === 'M' ? '수컷' : '모름'}</p>
+                        <p><span className="text-gray-600">발견일:</span> {animal.happenDt}</p>
+                        <p><span className="text-gray-600">발견장소:</span> {animal.happenPlace}</p>
                       </div>
                     </div>
                   </CardContent>
