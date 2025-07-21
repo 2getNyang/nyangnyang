@@ -18,6 +18,7 @@ interface LikedPost {
 }
 
 const MyLikedPostsUpdated = () => {
+  console.log('🔥 MyLikedPostsUpdated 페이지 로드됨');
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const [likedPosts, setLikedPosts] = useState<LikedPost[]>([]);

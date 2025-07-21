@@ -47,6 +47,7 @@ interface MissingPost {
 type TabType = 'review' | 'sns' | 'missing';
 
 const MyPostsNew = () => {
+  console.log('🔥 MyPostsNew 페이지 로드됨');
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('review');

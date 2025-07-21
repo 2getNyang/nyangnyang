@@ -20,6 +20,7 @@ interface FavoriteAdoption {
 }
 
 const MyFavoriteAdoptionsUpdated = () => {
+  console.log('🔥 MyFavoriteAdoptionsUpdated 페이지 로드됨');
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const [favorites, setFavorites] = useState<FavoriteAdoption[]>([]);
