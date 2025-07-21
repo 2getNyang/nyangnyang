@@ -30,6 +30,26 @@ interface Animal {
   subRegionName: string;
 }
 
+interface Region {
+  regionCode: string | null;
+  regionName: string;
+}
+
+interface SubRegion {
+  subRegionName: string;
+  subRegionCode: string | null;
+}
+
+interface UpKind {
+  upKindCd: string | null;
+  upKindName: string;
+}
+
+interface Kind {
+  kindCd: string | null;
+  kindName: string;
+}
+
 interface AnimalsResponse {
   code: number;
   data: {
@@ -62,6 +82,12 @@ const Animals = () => {
   const [selectedSigungu, setSelectedSigungu] = useState('all');
   const [selectedSpecies, setSelectedSpecies] = useState('all');
   const [selectedBreed, setSelectedBreed] = useState('all');
+
+  // select box 데이터 상태
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [subRegions, setSubRegions] = useState<SubRegion[]>([]);
+  const [upKinds, setUpKinds] = useState<UpKind[]>([]);
+  const [kinds, setKinds] = useState<Kind[]>([]);
 
   const animalsPerPage = 12;
 
@@ -174,8 +200,86 @@ const Animals = () => {
     }
   };
 
+  // 시/도 정보 가져오기
+  const fetchRegions = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/v1/regions');
+      if (response.ok) {
+        const data: Region[] = await response.json();
+        setRegions(data);
+      }
+    } catch (error) {
+      console.error('Error fetching regions:', error);
+    }
+  };
+
+  // 시/군/구 정보 가져오기
+  const fetchSubRegions = async (regionName: string) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/regions/${encodeURIComponent(regionName)}`);
+      if (response.ok) {
+        const data: SubRegion[] = await response.json();
+        setSubRegions(data);
+      }
+    } catch (error) {
+      console.error('Error fetching sub regions:', error);
+      setSubRegions([]);
+    }
+  };
+
+  // 축종 정보 가져오기
+  const fetchUpKinds = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/v1/upKinds');
+      if (response.ok) {
+        const data: UpKind[] = await response.json();
+        setUpKinds(data);
+      }
+    } catch (error) {
+      console.error('Error fetching up kinds:', error);
+    }
+  };
+
+  // 품종 정보 가져오기
+  const fetchKinds = async (kindName: string) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/upKinds/${encodeURIComponent(kindName)}`);
+      if (response.ok) {
+        const data: Kind[] = await response.json();
+        setKinds(data);
+      }
+    } catch (error) {
+      console.error('Error fetching kinds:', error);
+      setKinds([]);
+    }
+  };
+
+  // 시/도 변경 핸들러
+  const handleSidoChange = (value: string) => {
+    setSelectedSido(value);
+    setSelectedSigungu('all');
+    if (value !== 'all') {
+      fetchSubRegions(value);
+    } else {
+      setSubRegions([]);
+    }
+  };
+
+  // 축종 변경 핸들러
+  const handleSpeciesChange = (value: string) => {
+    setSelectedSpecies(value);
+    setSelectedBreed('all');
+    if (value !== 'all') {
+      fetchKinds(value);
+    } else {
+      setKinds([]);
+    }
+  };
+
   useEffect(() => {
     fetchAnimals();
+    fetchRegions();
+    fetchUpKinds();
   }, []);
 
   useEffect(() => {
@@ -241,28 +345,17 @@ const Animals = () => {
           {/* 두 번째 줄: 4개 셀렉트 박스 */}
           <div className="grid grid-cols-4 gap-4 mb-4">
             {/* 시/도 선택 */}
-            <Select value={selectedSido} onValueChange={setSelectedSido}>
+            <Select value={selectedSido} onValueChange={handleSidoChange}>
               <SelectTrigger>
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="서울">서울특별시</SelectItem>
-                <SelectItem value="부산">부산광역시</SelectItem>
-                <SelectItem value="대구">대구광역시</SelectItem>
-                <SelectItem value="인천">인천광역시</SelectItem>
-                <SelectItem value="광주">광주광역시</SelectItem>
-                <SelectItem value="대전">대전광역시</SelectItem>
-                <SelectItem value="울산">울산광역시</SelectItem>
-                <SelectItem value="세종">세종특별자치시</SelectItem>
-                <SelectItem value="경기">경기도</SelectItem>
-                <SelectItem value="충북">충청북도</SelectItem>
-                <SelectItem value="충남">충청남도</SelectItem>
-                <SelectItem value="전북">전북특별자치도</SelectItem>
-                <SelectItem value="전남">전라남도</SelectItem>
-                <SelectItem value="경북">경상북도</SelectItem>
-                <SelectItem value="경남">경상남도</SelectItem>
-                <SelectItem value="제주">제주특별자치도</SelectItem>
+                {regions.map((region) => (
+                  <SelectItem key={region.regionName} value={region.regionName}>
+                    {region.regionName}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
@@ -273,19 +366,26 @@ const Animals = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체</SelectItem>
+                {subRegions.map((subRegion) => (
+                  <SelectItem key={subRegion.subRegionName} value={subRegion.subRegionName}>
+                    {subRegion.subRegionName}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
             {/* 축종 선택 */}
-            <Select value={selectedSpecies} onValueChange={setSelectedSpecies}>
+            <Select value={selectedSpecies} onValueChange={handleSpeciesChange}>
               <SelectTrigger>
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="개">개</SelectItem>
-                <SelectItem value="고양이">고양이</SelectItem>
-                <SelectItem value="기타">기타</SelectItem>
+                {upKinds.map((upKind) => (
+                  <SelectItem key={upKind.upKindName} value={upKind.upKindName}>
+                    {upKind.upKindName}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
@@ -296,6 +396,11 @@ const Animals = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체</SelectItem>
+                {kinds.map((kind) => (
+                  <SelectItem key={kind.kindName} value={kind.kindName}>
+                    {kind.kindName}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -310,6 +415,8 @@ const Animals = () => {
                 setSelectedSigungu('all');
                 setSelectedSpecies('all');
                 setSelectedBreed('all');
+                setSubRegions([]);
+                setKinds([]);
               }}
               className="flex items-center gap-2"
             >
