@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import {KAKAO_JS_KEY} from "@/config/kakao.ts";
 
 declare global {
   interface Window {
@@ -111,7 +110,7 @@ const KakaoMap: React.FC<KakaoMapProps> = ({ latitude, longitude, address, name 
         console.log('카카오맵 스크립트 새로 로드');
         
         const script = document.createElement('script');
-        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false`;
+        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_APP_KEY&autoload=false`;
         script.type = 'text/javascript';
         
         script.onload = () => {

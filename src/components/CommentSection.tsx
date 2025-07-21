@@ -119,13 +119,38 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           </div>
         )}
         
-        <div className="space-y-6">
+        <div className="space-y-4">
           {organizedComments.map((comment) => (
-            <div key={comment.id} className="space-y-4">
+            <div key={comment.id} className="space-y-3">
               {/* 주 댓글 */}
-              <div className="bg-gray-50 rounded-xl p-6">
-                <div className="mb-3">
-                  <span className="font-bold text-gray-900 text-lg">{comment.commentNickname}</span>
+              <div className="bg-white border rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <span className="font-medium text-gray-900 text-sm">{comment.commentNickname}</span>
+                  </div>
+                  {currentUserId === comment.commentUserId && (
+                    <div className="flex space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditClick(comment.id, comment.commnetContent || comment.commentContent || '')}
+                        className="text-gray-500 hover:text-gray-700 px-2 py-1 h-7 text-xs"
+                      >
+                        수정
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteClick(comment.id)}
+                        className="text-red-500 hover:text-red-700 px-2 py-1 h-7 text-xs"
+                      >
+                        삭제
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 
                 {editingCommentId === comment.id ? (
@@ -133,7 +158,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                     <Textarea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
-                      className="resize-none"
+                      className="resize-none text-sm"
                       rows={3}
                     />
                     <div className="flex justify-end space-x-2">
@@ -141,6 +166,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                         variant="ghost"
                         size="sm"
                         onClick={handleEditCancel}
+                        className="h-7 px-3 text-xs"
                       >
                         취소
                       </Button>
@@ -148,6 +174,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                         onClick={() => handleEditSubmit(comment.id)}
                         disabled={!editContent.trim()}
                         size="sm"
+                        className="h-7 px-3 text-xs"
                       >
                         수정
                       </Button>
@@ -155,55 +182,35 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                   </div>
                 ) : (
                   <div>
-                    <p className="text-gray-800 leading-relaxed mb-3 text-lg">
+                    <p className="text-gray-800 leading-relaxed mb-3 text-sm">
                       {comment.commnetContent || comment.commentContent}
                     </p>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <span className="text-sm text-gray-500">{formatDate(comment.createdAt)}</span>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-xs text-gray-400">{formatDate(comment.createdAt)}</span>
                         {isLoggedIn && !comment.parentId && (
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}
-                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1"
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 h-6 text-xs"
                           >
                             답글달기
                           </Button>
                         )}
                       </div>
-                      {currentUserId === comment.commentUserId && (
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditClick(comment.id, comment.commnetContent || comment.commentContent || '')}
-                            className="text-gray-600 hover:text-gray-800 px-3 py-1"
-                          >
-                            수정
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteClick(comment.id)}
-                            className="text-red-600 hover:text-red-800 px-3 py-1"
-                          >
-                            삭제
-                          </Button>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}
                 
                 {/* 답글 입력창 */}
                 {replyTo === comment.id && (
-                  <div className="mt-4 bg-white rounded-lg p-4 border">
+                  <div className="mt-4 bg-gray-50 rounded-lg p-3 border">
                     <Textarea
                       value={replyContent}
                       onChange={(e) => setReplyContent(e.target.value)}
                       placeholder="답글을 입력하세요..."
-                      className="mb-3 resize-none"
+                      className="mb-3 resize-none text-sm"
                       rows={2}
                     />
                     <div className="flex justify-end space-x-2">
@@ -211,6 +218,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                         variant="ghost"
                         size="sm"
                         onClick={() => setReplyTo(null)}
+                        className="h-7 px-3 text-xs"
                       >
                         취소
                       </Button>
@@ -218,6 +226,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                         onClick={() => handleSubmitReply(comment.id)}
                         disabled={!replyContent.trim()}
                         size="sm"
+                        className="h-7 px-3 text-xs"
                       >
                         답글 작성
                       </Button>
@@ -228,9 +237,34 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
               {/* 대댓글 */}
               {comment.replies && comment.replies.map((reply) => (
-                <div key={reply.id} className="ml-8 bg-gray-50 rounded-xl p-6">
-                  <div className="mb-3">
-                    <span className="font-bold text-gray-900 text-lg">{reply.commentNickname}</span>
+                <div key={reply.id} className="ml-6 bg-gray-50 border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 bg-gray-300 rounded-full flex items-center justify-center">
+                        <User className="w-3 h-3 text-gray-600" />
+                      </div>
+                      <span className="font-medium text-gray-900 text-sm">{reply.commentNickname}</span>
+                    </div>
+                    {currentUserId === reply.commentUserId && (
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditClick(reply.id, reply.commnetContent || reply.commentContent || '')}
+                          className="text-gray-500 hover:text-gray-700 px-2 py-1 h-7 text-xs"
+                        >
+                          수정
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(reply.id)}
+                          className="text-red-500 hover:text-red-700 px-2 py-1 h-7 text-xs"
+                        >
+                          삭제
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   
                   {editingCommentId === reply.id ? (
@@ -238,7 +272,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                       <Textarea
                         value={editContent}
                         onChange={(e) => setEditContent(e.target.value)}
-                        className="resize-none"
+                        className="resize-none text-sm"
                         rows={3}
                       />
                       <div className="flex justify-end space-x-2">
@@ -246,6 +280,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                           variant="ghost"
                           size="sm"
                           onClick={handleEditCancel}
+                          className="h-7 px-3 text-xs"
                         >
                           취소
                         </Button>
@@ -253,6 +288,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                           onClick={() => handleEditSubmit(reply.id)}
                           disabled={!editContent.trim()}
                           size="sm"
+                          className="h-7 px-3 text-xs"
                         >
                           수정
                         </Button>
@@ -260,32 +296,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                     </div>
                   ) : (
                     <div>
-                      <p className="text-gray-800 leading-relaxed mb-3 text-lg">
+                      <p className="text-gray-800 leading-relaxed mb-2 text-sm">
                         {reply.commnetContent || reply.commentContent}
                       </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-500">{formatDate(reply.createdAt)}</span>
-                        {currentUserId === reply.commentUserId && (
-                          <div className="flex space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditClick(reply.id, reply.commnetContent || reply.commentContent || '')}
-                              className="text-gray-600 hover:text-gray-800 px-3 py-1"
-                            >
-                              수정
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteClick(reply.id)}
-                              className="text-red-600 hover:text-red-800 px-3 py-1"
-                            >
-                              삭제
-                            </Button>
-                          </div>
-                        )}
-                      </div>
+                      <span className="text-xs text-gray-400">{formatDate(reply.createdAt)}</span>
                     </div>
                   )}
                 </div>

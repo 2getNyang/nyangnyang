@@ -144,24 +144,6 @@ const AppHeaderWithModal = () => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/edit-profile" className="flex items-center space-x-2">
-                          <Settings className="w-4 h-4" />
-                          <span>프로필 수정</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/my-posts" className="flex items-center space-x-2">
-                          <FileText className="w-4 h-4" />
-                          <span>내 게시글</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/my-liked-posts" className="flex items-center space-x-2">
-                          <HeartIcon className="w-4 h-4" />
-                          <span>좋아요 한 글</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
                         <Link to="/chat-list" className="flex items-center space-x-2">
                           <MessageCircle className="w-4 h-4" />
                           <span>채팅 목록</span>

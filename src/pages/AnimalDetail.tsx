@@ -1,75 +1,110 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import AnimalDetailCard from '@/components/AnimalDetailCard';
-import AppHeader from '@/components/AppHeader';
+import AppHeaderWithModal from '@/components/AppHeaderWithModal';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
-// Mock data for testing - replace with actual API call
-const mockAnimal = {
-  desertionNo: "241205-015",
-  kindFullNm: "[개] 리트리버",
-  age: "2024(년생)",
-  sexCd: "M",
-  neuterYn: "Y",
-  colorCd: "갈색",
-  weight: "15(Kg)",
-  happenDt: "20241201",
-  happenPlace: "서울시 강남구 테헤란로",
-  processState: "NOTICE",
-  noticeNo: "서울-2024-12-001",
-  noticeSdt: "20241205",
-  noticeEdt: "20241219",
-  specialMark: "사람을 매우 좋아하며 활발한 성격입니다. 산책을 좋아하고 다른 강아지들과도 잘 어울립니다.",
-  careRegNumber: "410000201912001",
-  bookmarked: false,
-  popfile1: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=500&h=400&fit=crop",
-  popfile2: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=500&h=400&fit=crop",
-  popfile3: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=500&h=400&fit=crop",
-  comments: [
-    {
-      id: 1,
-      authorName: "김철수",
-      content: "정말 귀여운 강아지네요! 입양을 고려해보고 있습니다.",
-      createdAt: "2024.12.05 14:30",
-      isAuthor: false,
-      replies: [
-        {
-          id: 2,
-          authorName: "보호소관리자",
-          content: "안녕하세요! 입양 문의 감사드립니다. 자세한 상담은 전화로 연락 부탁드려요.",
-          createdAt: "2024.12.05 15:15",
-          isAuthor: false
-        }
-      ]
-    },
-    {
-      id: 3,
-      authorName: "이영희",
-      content: "혹시 다른 강아지들과 함께 지낼 수 있나요?",
-      createdAt: "2024.12.06 09:20",
-      isAuthor: true
-    }
-  ]
-};
+interface AnimalDetailResponse {
+  code: number;
+  data: {
+    desertionNo: string;
+    happenDt: string;
+    happenPlace: string;
+    colorCd: string;
+    age: string;
+    weight: string;
+    noticeNo: string;
+    noticeSdt: string;
+    noticeEdt: string;
+    popfile1?: string;
+    popfile2?: string;
+    popfile3?: string;
+    processState: string;
+    sexCd: string;
+    neuterYn: string;
+    specialMark: string;
+    kindFullNm: string;
+    comments: any[];
+    bookmarked: boolean;
+    shelterName: string;
+    shelterAddress: string;
+    shelterTel: string;
+  };
+  message: string;
+}
 
 const AnimalDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const [animal, setAnimal] = useState<AnimalDetailResponse['data'] | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // TODO: Replace with actual API call
-  // const { data: animal, isLoading } = useQuery({
-  //   queryKey: ['animal', id],
-  //   queryFn: () => fetchAnimal(id),
-  // });
+  useEffect(() => {
+    const fetchAnimalDetail = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`http://localhost:8080/api/v1/animals/${id}`, {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+          }
+        });
+        
+        if (response.ok) {
+          const result: AnimalDetailResponse = await response.json();
+          setAnimal(result.data);
+        } else {
+          toast({
+            title: "데이터 로드 실패",
+            description: "동물 정보를 불러오는데 실패했습니다.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching animal detail:', error);
+        toast({
+          title: "네트워크 오류",
+          description: "서버와 연결할 수 없습니다.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleLoginClick = () => {
-    // TODO: Implement login modal
-    console.log('Login clicked');
-  };
+    fetchAnimalDetail();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <AppHeaderWithModal />
+        <main className="pt-20 flex items-center justify-center">
+          <p className="text-lg">데이터를 불러오는 중...</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (!animal) {
+    return (
+      <div className="min-h-screen bg-background">
+        <AppHeaderWithModal />
+        <main className="pt-20 flex items-center justify-center">
+          <p className="text-lg">동물 정보를 찾을 수 없습니다.</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader onLoginClick={handleLoginClick} />
+      <AppHeaderWithModal />
       <main className="pt-20">
-        <AnimalDetailCard animal={mockAnimal} />
+        <AnimalDetailCard animal={animal} />
       </main>
     </div>
   );
