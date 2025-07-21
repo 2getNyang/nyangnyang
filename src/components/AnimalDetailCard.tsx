@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Heart, Calendar, MapPin, Info, MessageSquare, Reply, Edit, Trash2, User, Scissors, Palette, Weight } from 'lucide-react';
+import { Heart, Calendar, MapPin, Info, MessageSquare, Reply, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 // AnimalDTO 타입 정의
@@ -59,13 +59,13 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
   const images = [animal.popfile1, animal.popfile2, animal.popfile3].filter(Boolean);
   const hasImages = images.length > 0;
 
-  // 성별 변환 (이모티콘 포함)
+  // 성별 변환
   const getSexDisplay = (sexCd: string) => {
     switch (sexCd) {
-      case 'M': return { text: '수컷', emoji: '♂️', color: 'text-blue-600' };
-      case 'F': return { text: '암컷', emoji: '♀️', color: 'text-pink-600' };
-      case 'Q': return { text: '모름', emoji: '❓', color: 'text-gray-600' };
-      default: return { text: '모름', emoji: '❓', color: 'text-gray-600' };
+      case 'M': return '수컷';
+      case 'F': return '암컷';
+      case 'Q': return '모름';
+      default: return '성별 정보 없음';
     }
   };
 
@@ -242,65 +242,40 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
               <h3 className="font-semibold text-lg">동물 정보</h3>
-              <div className="space-y-4 text-sm">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <User className="w-4 h-4 text-gray-600" />
-                  <div className="flex-1">
-                    <span className="text-gray-600">나이</span>
-                    <p className="font-medium">{animal.age}</p>
-                  </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">나이:</span>
+                  <span>{animal.age}</span>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className={`text-lg ${getSexDisplay(animal.sexCd).color}`}>
-                    {getSexDisplay(animal.sexCd).emoji}
-                  </div>
-                  <div className="flex-1">
-                    <span className="text-gray-600">성별</span>
-                    <p className={`font-medium ${getSexDisplay(animal.sexCd).color}`}>
-                      {getSexDisplay(animal.sexCd).text}
-                    </p>
-                  </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">성별:</span>
+                  <span>{getSexDisplay(animal.sexCd)}</span>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Scissors className="w-4 h-4 text-gray-600" />
-                  <div className="flex-1">
-                    <span className="text-gray-600">중성화여부</span>
-                    <p className="font-medium">{getNeuterDisplay(animal.neuterYn)}</p>
-                  </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">중성화여부:</span>
+                  <span>{getNeuterDisplay(animal.neuterYn)}</span>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Palette className="w-4 h-4 text-gray-600" />
-                  <div className="flex-1">
-                    <span className="text-gray-600">털색</span>
-                    <p className="font-medium">{animal.colorCd}</p>
-                  </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">털색:</span>
+                  <span>{animal.colorCd}</span>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Weight className="w-4 h-4 text-gray-600" />
-                  <div className="flex-1">
-                    <span className="text-gray-600">무게</span>
-                    <p className="font-medium">{animal.weight}</p>
-                  </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">무게:</span>
+                  <span>{animal.weight}</span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-3">
               <h3 className="font-semibold text-lg">발견 정보</h3>
-              <div className="space-y-4 text-sm">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Calendar className="w-4 h-4 text-gray-600" />
-                  <div className="flex-1">
-                    <span className="text-gray-600">발견일</span>
-                    <p className="font-medium">{formatDate(animal.happenDt)}</p>
-                  </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">발견일:</span>
+                  <span>{formatDate(animal.happenDt)}</span>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <MapPin className="w-4 h-4 text-gray-600" />
-                  <div className="flex-1">
-                    <span className="text-gray-600">발견장소</span>
-                    <p className="font-medium">{animal.happenPlace}</p>
-                  </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground w-20">발견장소:</span>
+                  <span>{animal.happenPlace}</span>
                 </div>
               </div>
             </div>
