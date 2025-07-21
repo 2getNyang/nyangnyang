@@ -17,6 +17,17 @@ import {
 import { Search, MapPin, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// API 응답 타입 정의
+interface RegionData {
+  regionCode: string | null;
+  regionName: string;
+}
+
+interface SubRegionData {
+  subRegionName: string;
+  subRegionCode: string | null;
+}
+
 
 interface ShelterData {
   careRegNumber: string;
@@ -43,6 +54,10 @@ const Shelters = () => {
   const [shelters, setShelters] = useState<ShelterData[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
+  
+  // API로부터 가져올 지역 데이터
+  const [provinces, setProvinces] = useState<RegionData[]>([]);
+  const [subRegions, setSubRegions] = useState<SubRegionData[]>([]);
   
   const navigate = useNavigate();
   
@@ -106,78 +121,44 @@ const Shelters = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // 시/도 API 호출
+  const fetchProvinces = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/v1/regions');
+      const data: RegionData[] = await response.json();
+      setProvinces(data);
+    } catch (error) {
+      console.error('시/도 데이터 가져오기 실패:', error);
+    }
+  };
+
+  // 시/군/구 API 호출
+  const fetchSubRegions = async (regionName: string) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/regions/${encodeURIComponent(regionName)}`);
+      const data: SubRegionData[] = await response.json();
+      setSubRegions(data);
+    } catch (error) {
+      console.error('시/군/구 데이터 가져오기 실패:', error);
+    }
+  };
+
   const handleProvinceChange = (value: string) => {
     setSelectedProvince(value);
     setSelectedCity(''); // 시/도 변경시 시/군/구 초기화
+    
+    // 시/도가 선택되면 해당 시/군/구 데이터 가져오기
+    if (value && value !== 'all') {
+      fetchSubRegions(value);
+    } else {
+      setSubRegions([]);
+    }
   };
 
-  // 지역 데이터 (하드코딩된 옵션)
-  const provinces = [
-    { code: '서울특별시', name: '서울특별시' },
-    { code: '부산광역시', name: '부산광역시' },
-    { code: '대구광역시', name: '대구광역시' },
-    { code: '인천광역시', name: '인천광역시' },
-    { code: '광주광역시', name: '광주광역시' },
-    { code: '대전광역시', name: '대전광역시' },
-    { code: '울산광역시', name: '울산광역시' },
-    { code: '세종특별자치시', name: '세종특별자치시' },
-    { code: '경기도', name: '경기도' },
-    { code: '강원도', name: '강원도' },
-    { code: '충청북도', name: '충청북도' },
-    { code: '충청남도', name: '충청남도' },
-    { code: '전라북도', name: '전라북도' },
-    { code: '전라남도', name: '전라남도' },
-    { code: '경상북도', name: '경상북도' },
-    { code: '경상남도', name: '경상남도' },
-    { code: '제주특별자치도', name: '제주특별자치도' }
-  ];
-
-  const cities = [
-    // 서울 구
-    { code: '종로구', name: '종로구', provinceCode: '서울특별시' },
-    { code: '중구', name: '중구', provinceCode: '서울특별시' },
-    { code: '용산구', name: '용산구', provinceCode: '서울특별시' },
-    { code: '성동구', name: '성동구', provinceCode: '서울특별시' },
-    { code: '광진구', name: '광진구', provinceCode: '서울특별시' },
-    { code: '동대문구', name: '동대문구', provinceCode: '서울특별시' },
-    { code: '중랑구', name: '중랑구', provinceCode: '서울특별시' },
-    { code: '성북구', name: '성북구', provinceCode: '서울특별시' },
-    { code: '강북구', name: '강북구', provinceCode: '서울특별시' },
-    { code: '도봉구', name: '도봉구', provinceCode: '서울특별시' },
-    { code: '노원구', name: '노원구', provinceCode: '서울특별시' },
-    { code: '은평구', name: '은평구', provinceCode: '서울특별시' },
-    { code: '서대문구', name: '서대문구', provinceCode: '서울특별시' },
-    { code: '마포구', name: '마포구', provinceCode: '서울특별시' },
-    { code: '양천구', name: '양천구', provinceCode: '서울특별시' },
-    { code: '강서구', name: '강서구', provinceCode: '서울특별시' },
-    { code: '구로구', name: '구로구', provinceCode: '서울특별시' },
-    { code: '금천구', name: '금천구', provinceCode: '서울특별시' },
-    { code: '영등포구', name: '영등포구', provinceCode: '서울특별시' },
-    { code: '동작구', name: '동작구', provinceCode: '서울특별시' },
-    { code: '관악구', name: '관악구', provinceCode: '서울특별시' },
-    { code: '서초구', name: '서초구', provinceCode: '서울특별시' },
-    { code: '강남구', name: '강남구', provinceCode: '서울특별시' },
-    { code: '송파구', name: '송파구', provinceCode: '서울특별시' },
-    { code: '강동구', name: '강동구', provinceCode: '서울특별시' },
-    // 경기도 주요 시
-    { code: '수원시', name: '수원시', provinceCode: '경기도' },
-    { code: '성남시', name: '성남시', provinceCode: '경기도' },
-    { code: '고양시', name: '고양시', provinceCode: '경기도' },
-    { code: '용인시', name: '용인시', provinceCode: '경기도' },
-    { code: '부천시', name: '부천시', provinceCode: '경기도' },
-    { code: '안산시', name: '안산시', provinceCode: '경기도' },
-    { code: '안양시', name: '안양시', provinceCode: '경기도' },
-    { code: '남양주시', name: '남양주시', provinceCode: '경기도' },
-    { code: '화성시', name: '화성시', provinceCode: '경기도' },
-    { code: '평택시', name: '평택시', provinceCode: '경기도' },
-    { code: '의정부시', name: '의정부시', provinceCode: '경기도' },
-    { code: '시흥시', name: '시흥시', provinceCode: '경기도' }
-  ];
-
-  // 선택된 시/도에 따른 시/군/구 필터링
-  const filteredCities = selectedProvince && selectedProvince !== 'all'
-    ? cities.filter(city => city.provinceCode === selectedProvince)
-    : [];
+  // 초기 시/도 데이터 로드
+  useEffect(() => {
+    fetchProvinces();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -214,14 +195,14 @@ const Shelters = () => {
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="전체 지역" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체 지역</SelectItem>
-                    {provinces.map((province) => (
-                      <SelectItem key={province.code} value={province.code}>
-                        {province.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                   <SelectContent>
+                     <SelectItem value="all">전체 지역</SelectItem>
+                     {provinces.map((province) => (
+                       <SelectItem key={province.regionName} value={province.regionName}>
+                         {province.regionName}
+                       </SelectItem>
+                     ))}
+                   </SelectContent>
                 </Select>
               </div>
 
@@ -235,14 +216,14 @@ const Shelters = () => {
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="시/군/구 선택" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">전체</SelectItem>
-                      {filteredCities.map((city) => (
-                        <SelectItem key={city.code} value={city.code}>
-                          {city.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                     <SelectContent>
+                       <SelectItem value="all">전체</SelectItem>
+                       {subRegions.map((subRegion) => (
+                         <SelectItem key={subRegion.subRegionName} value={subRegion.subRegionName}>
+                           {subRegion.subRegionName}
+                         </SelectItem>
+                       ))}
+                     </SelectContent>
                   </Select>
                 </div>
               )}
