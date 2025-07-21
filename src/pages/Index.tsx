@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import AppHeader from '@/components/AppHeader';
+import AppHeaderWithModal from '@/components/AppHeaderWithModal';
 import AppHeroSection from '@/components/AppHeroSection';
 import AppAnimalCard from '@/components/AppAnimalCard';
 import LoginModal from '@/components/LoginModal';
@@ -19,7 +19,6 @@ interface RecommendedAnimal {
 }
 
 const Index = () => {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { isLoggedIn } = useAuth();
   const [recommendedAnimals, setRecommendedAnimals] = useState<RecommendedAnimal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,9 +74,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader 
-        onLoginClick={() => setIsLoginModalOpen(true)}
-      />
+      <AppHeaderWithModal />
       <AppHeroSection />
       
       <section className="py-12 px-4 bg-white">
@@ -128,10 +125,6 @@ const Index = () => {
       
       <Footer />
       
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)}
-      />
       
     </div>
   );
