@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Heart, Calendar, MapPin, Info, MessageSquare, Reply, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 // AnimalDTO 타입 정의
 interface AnimalCommentDTO {
@@ -50,7 +51,7 @@ interface AnimalDetailCardProps {
 
 const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   const [isBookmarked, setIsBookmarked] = useState(animal.bookmarked);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [editingComment, setEditingComment] = useState<number | null>(null);
@@ -89,9 +90,46 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
 
   const processStateInfo = getProcessStateDisplay(animal.processState);
 
-  const handleBookmarkToggle = () => {
-    setIsBookmarked(!isBookmarked);
-    // TODO: 백엔드 API 호출
+  const handleBookmarkToggle = async () => {
+    if (!isLoggedIn) {
+      toast({
+        title: "로그인 필요",
+        description: "찜하기 기능은 로그인 후 이용 가능합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    const method = isBookmarked ? 'DELETE' : 'POST';
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/bookmark/${animal.desertionNo}`, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setIsBookmarked(result.data.liked);
+        
+        toast({
+          title: result.data.liked ? "찜 추가됨" : "찜 해제됨",
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      toast({
+        title: "오류 발생",
+        description: "찜하기 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAdoptionForm = () => {

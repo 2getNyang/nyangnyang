@@ -158,7 +158,7 @@ const EditSNSPost = () => {
         boardContent: content.trim(),
         instagramLink: instagramLink.trim(),
         userId: user.id,
-        existingImageIds: existingImages.map(img => img.imageId)
+        remainImageIds: existingImages.map(img => img.imageId)
       };
       
       const dtoBlob = new Blob([JSON.stringify(dtoData)], { 
