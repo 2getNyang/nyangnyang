@@ -267,7 +267,7 @@ const AppAnimalCard = ({ animal }: AppAnimalCardProps) => {
       
       <CardFooter className="p-5 pt-0">
         {isApiData ? (
-          <Link to={`/animal/${animal.desertionNo}`} className="w-full">
+          <Link to={`/animals/${animal.desertionNo}`} className="w-full">
             <button className="w-full golden hover:bg-yellow-500 text-gray-800 font-medium py-3 px-4 rounded-xl transition-all duration-200 hover:shadow-md">
               자세히 보기
             </button>
