@@ -58,8 +58,8 @@ const Animals = () => {
   
   // 검색 상태
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState('');
-  const [selectedAnimalType, setSelectedAnimalType] = useState('');
+  const [selectedRegion, setSelectedRegion] = useState('all');
+  const [selectedAnimalType, setSelectedAnimalType] = useState('all');
 
   const animalsPerPage = 12;
 
@@ -241,7 +241,7 @@ const Animals = () => {
                 <SelectValue placeholder="지역 선택" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체 지역</SelectItem>
+                <SelectItem value="all">전체 지역</SelectItem>
                 <SelectItem value="서울">서울특별시</SelectItem>
                 <SelectItem value="부산">부산광역시</SelectItem>
                 <SelectItem value="대구">대구광역시</SelectItem>
@@ -267,7 +267,7 @@ const Animals = () => {
                 <SelectValue placeholder="동물 종류" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
+                <SelectItem value="all">전체</SelectItem>
                 <SelectItem value="개">개</SelectItem>
                 <SelectItem value="고양이">고양이</SelectItem>
                 <SelectItem value="기타">기타</SelectItem>
@@ -282,7 +282,7 @@ const Animals = () => {
           </div>
 
           {/* 검색 결과 초기화 */}
-          {(searchTerm || selectedRegion || selectedAnimalType) && (
+          {(searchTerm || (selectedRegion && selectedRegion !== 'all') || (selectedAnimalType && selectedAnimalType !== 'all')) && (
             <div className="flex items-center gap-2 mt-4">
               <span className="text-sm text-gray-600">활성 필터:</span>
               {searchTerm && (
@@ -291,16 +291,16 @@ const Animals = () => {
                   <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchTerm('')} />
                 </div>
               )}
-              {selectedRegion && (
+              {selectedRegion && selectedRegion !== 'all' && (
                 <div className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
                   <span>{selectedRegion}</span>
-                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedRegion('')} />
+                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedRegion('all')} />
                 </div>
               )}
-              {selectedAnimalType && (
+              {selectedAnimalType && selectedAnimalType !== 'all' && (
                 <div className="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
                   <span>{selectedAnimalType}</span>
-                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedAnimalType('')} />
+                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedAnimalType('all')} />
                 </div>
               )}
               <Button 
@@ -308,8 +308,8 @@ const Animals = () => {
                 size="sm" 
                 onClick={() => {
                   setSearchTerm('');
-                  setSelectedRegion('');
-                  setSelectedAnimalType('');
+                  setSelectedRegion('all');
+                  setSelectedAnimalType('all');
                 }}
                 className="text-gray-500"
               >
