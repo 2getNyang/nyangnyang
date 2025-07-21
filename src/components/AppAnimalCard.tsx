@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Heart, MapPin, Calendar, User } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 interface Animal {
   // API 데이터 (추천 동물)
@@ -35,8 +37,11 @@ interface AppAnimalCardProps {
 }
 
 const AppAnimalCard = ({ animal }: AppAnimalCardProps) => {
+  const { isLoggedIn } = useAuth();
   // API 데이터인지 확인 (desertionNo가 있으면 API 데이터)
   const isApiData = animal.desertionNo !== undefined;
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // 성별 변환 함수
   const getGenderText = (sexCd?: string) => {
@@ -73,6 +78,84 @@ const AppAnimalCard = ({ animal }: AppAnimalCardProps) => {
 
   const processStyle = getProcessStateStyle(animal.processState);
 
+  // 찜 상태 확인
+  useEffect(() => {
+    const checkBookmarkStatus = async () => {
+      if (!isLoggedIn || !isApiData || !animal.desertionNo) return;
+      
+      try {
+        const accessToken = localStorage.getItem('accessToken');
+        const response = await fetch(`http://localhost:8080/api/v1/bookmark/${animal.desertionNo}`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          setIsBookmarked(result.data === true);
+        }
+      } catch (error) {
+        console.error('찜 상태 확인 오류:', error);
+      }
+    };
+
+    checkBookmarkStatus();
+  }, [isLoggedIn, isApiData, animal.desertionNo]);
+
+  // 찜 추가/삭제 핸들러
+  const handleBookmarkToggle = async () => {
+    if (!isLoggedIn) {
+      toast({
+        title: "로그인 필요",
+        description: "찜 기능을 사용하려면 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isApiData || !animal.desertionNo) return;
+
+    setIsLoading(true);
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const method = isBookmarked ? 'DELETE' : 'POST';
+      
+      const response = await fetch(`http://localhost:8080/api/v1/bookmark/${animal.desertionNo}`, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setIsBookmarked(result.data.liked);
+        toast({
+          title: result.data.liked ? "찜하기 성공" : "찜 취소 성공",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "오류",
+          description: "찜 처리 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('찜 처리 오류:', error);
+      toast({
+        title: "오류",
+        description: "네트워크 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Card className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02]">
       <div className="aspect-[4/3] overflow-hidden">
@@ -101,7 +184,23 @@ const AppAnimalCard = ({ animal }: AppAnimalCardProps) => {
                 긴급
               </Badge>
             )}
-            <Heart className="w-5 h-5 text-gray-400 hover:text-red-500 cursor-pointer transition-colors" />
+            {isApiData ? (
+              <button 
+                onClick={handleBookmarkToggle}
+                disabled={isLoading}
+                className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <Heart 
+                  className={`w-5 h-5 transition-colors ${
+                    isBookmarked 
+                      ? 'text-red-500 fill-red-500' 
+                      : 'text-gray-400 hover:text-red-500'
+                  } ${isLoading ? 'opacity-50' : ''}`}
+                />
+              </button>
+            ) : (
+              <Heart className="w-5 h-5 text-gray-400 hover:text-red-500 cursor-pointer transition-colors" />
+            )}
           </div>
         </div>
         

@@ -164,12 +164,12 @@ const EditSNSPost = () => {
       const dtoBlob = new Blob([JSON.stringify(dtoData)], { 
         type: 'application/json' 
       });
-      formData.append('requestDTO', dtoBlob);
+      formData.append('dto', dtoBlob);
 
       // 새로운 이미지 파일들 추가
       if (newImages.length > 0) {
         newImages.forEach((image) => {
-          formData.append('newImages', image);
+          formData.append('images', image);
         });
       }
 
