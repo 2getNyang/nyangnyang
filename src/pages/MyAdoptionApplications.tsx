@@ -221,7 +221,7 @@ const MyAdoptionApplications = () => {
                     </CardContent>
                     
                     <CardFooter className="p-5 pt-0">
-                      <Link to={`/adoption-form/${application.formId}`} className="w-full">
+                      <Link to={`/adoption-form/view/${application.formId}`} className="w-full">
                         <button className="w-full golden hover:bg-yellow-500 text-gray-800 font-medium py-3 px-4 rounded-xl transition-all duration-200 hover:shadow-md">
                           신청서 보기
                         </button>

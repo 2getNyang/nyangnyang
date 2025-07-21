@@ -62,7 +62,7 @@ const App = () => (
         <Route path="/adoption-review/edit/:id" element={<div>입양후기 수정 페이지</div>} />
            <Route path="/animal/:id" element={<AnimalDetail />} />
            <Route path="/adoption-form/:desertionNo" element={<AdoptionFormPage />} />
-           <Route path="/adoption-form/:desertionNo/:formId" element={<AdoptionFormPage />} />
+           <Route path="/adoption-form/view/:formId" element={<AdoptionFormPage />} />
            <Route path="/missing-post/:id" element={<MissingAnimalDetail />} />
            <Route path="/missing-post/edit/:id" element={<EditMissingPost />} />
            <Route path="/chat/:userId" element={<Chat />} />

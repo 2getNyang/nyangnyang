@@ -20,7 +20,7 @@ const AdoptionFormPage: React.FC = () => {
   const { desertionNo, formId } = useParams<{ desertionNo: string; formId?: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
 
   // Form state
   const [userName, setUserName] = useState('');
@@ -60,58 +60,46 @@ const AdoptionFormPage: React.FC = () => {
   }, [formId]);
 
   const fetchApplicationData = async () => {
+    if (!isLoggedIn) {
+      navigate('/');
+      return;
+    }
+
     setLoading(true);
     try {
-      // API 호출 (실제 구현 시)
-      // const response = await fetch(`/api/v1/adoption-applications/${formId}`);
-      // const data = await response.json();
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:8080/api/v1/my/adoption/${formId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
-      // Mock 데이터
-      const mockData = {
-        noticeNo: desertionNo,
-        userName: "홍길동",
-        userBirth: "1990-05-15",
-        userGender: "MALE",
-        userPhone: "010-1234-5678",
-        familyPhone: "010-9876-5432",
-        family: "어머니",
-        address: "서울특별시 강남구 강남대로 123",
-        detailAddress: "101동 202호",
-        housingType: "APARTMENT",
-        job: "디자이너",
-        experience: "YES",
-        hasOtherPets: "NO",
-        adultCount: 2,
-        childrenCount: 1,
-        allConsent: "YES",
-        hasAllergy: "NO",
-        consentForCheck: "YES",
-        formCreatedAt: "2024-07-01T15:00:00",
-        applicationReason: "아이와 함께 반려동물을 키우며 책임감을 가르치고 싶어요.",
-        resentAt: null
-      };
-
-      setApplicationData(mockData);
-      
-      // 폼 데이터 설정
-      setUserName(mockData.userName);
-      setUserBirth(new Date(mockData.userBirth));
-      setUserGender(mockData.userGender);
-      setUserPhone(mockData.userPhone);
-      setFamilyPhone(mockData.familyPhone);
-      setFamily(mockData.family);
-      setAddress(mockData.address);
-      setDetailAddress(mockData.detailAddress);
-      setHousingType(mockData.housingType);
-      setJob(mockData.job);
-      setExperience(mockData.experience);
-      setHasOtherPets(mockData.hasOtherPets);
-      setAdultCount(mockData.adultCount);
-      setChildrenCount(mockData.childrenCount);
-      setAllConsent(mockData.allConsent);
-      setHasAllergy(mockData.hasAllergy);
-      setConsentForCheck(mockData.consentForCheck);
-      setApplicationReason(mockData.applicationReason);
+      if (response.ok) {
+        const result = await response.json();
+        const data = result.data;
+        
+        setApplicationData(data);
+        
+        // 폼 데이터 설정
+        setUserName(data.userName);
+        setUserBirth(new Date(data.userBirth));
+        setUserGender(data.userGender);
+        setUserPhone(data.userPhone);
+        setFamilyPhone(data.familyPhone);
+        setFamily(data.family);
+        setAddress(data.address);
+        setDetailAddress(data.detailAddress);
+        setHousingType(data.housingType);
+        setJob(data.job);
+        setExperience(data.experience);
+        setHasOtherPets(data.hasOtherPets);
+        setAdultCount(data.adultCount);
+        setChildrenCount(data.childrenCount);
+        setAllConsent(data.allConsent);
+        setHasAllergy(data.hasAllergy);
+        setConsentForCheck(data.consentForCheck);
+        setApplicationReason(data.applicationReason);
+      }
     } catch (error) {
       console.error('Failed to fetch application data:', error);
       toast({
@@ -165,7 +153,7 @@ const AdoptionFormPage: React.FC = () => {
   };
 
   const getGenderText = (value: string) => {
-    return value === 'MALE' ? '남성' : value === 'FEMALE' ? '여성' : value;
+    return value === 'M' ? '남성' : value === 'F' ? '여성' : value;
   };
 
   const getYesNoText = (value: string) => {
@@ -180,7 +168,21 @@ const AdoptionFormPage: React.FC = () => {
            consentForCheck && applicationReason;
   };
 
+  // 버튼 활성화 조건 체크
+  const isSubmitEnabled = () => {
+    return isFormValid() && allConsent === 'YES' && consentForCheck === 'YES';
+  };
+
   const handleSubmit = async () => {
+    if (!isLoggedIn) {
+      toast({
+        title: "로그인 필요",
+        description: "입양 신청서 작성은 로그인 후 이용 가능합니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!isFormValid()) {
       toast({
         title: "입력 오류",
@@ -190,9 +192,19 @@ const AdoptionFormPage: React.FC = () => {
       return;
     }
 
+    if (!isSubmitEnabled()) {
+      toast({
+        title: "동의 필요",
+        description: "동거인 동의와 상태 확인 요청에 동의해야 입양 신청이 가능합니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      const token = localStorage.getItem('accessToken');
       const adoptionData = {
         userId: user?.id,
         userName,
@@ -205,20 +217,21 @@ const AdoptionFormPage: React.FC = () => {
         detailAddress,
         housingType,
         job,
-        experience: experience === 'YES' ? 'YES' : 'NO',
-        hasOtherPets: hasOtherPets === 'YES' ? 'YES' : 'NO',
+        experience,
+        hasOtherPets,
         adultCount,
         childrenCount,
-        allConsent: allConsent === 'YES' ? 'YES' : 'NO',
-        hasAllergy: hasAllergy === 'YES' ? 'YES' : 'NO',
-        consentForCheck: consentForCheck === 'YES' ? 'YES' : 'NO',
+        allConsent,
+        hasAllergy,
+        consentForCheck,
         applicationReason
       };
 
-      const response = await fetch(`/api/v1/adoptions/${desertionNo}`, {
+      const response = await fetch(`http://localhost:8080/api/v1/adoptions/${desertionNo}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(adoptionData),
       });
@@ -234,10 +247,10 @@ const AdoptionFormPage: React.FC = () => {
 
       if (response.ok) {
         toast({
-          title: "신청 완료",
+          title: "입양 신청서 작성이 완료되었습니다.",
           description: "입양 신청이 접수되었습니다."
         });
-        navigate('/mypage/applications');
+        navigate(`/animal/${desertionNo}`);
       } else {
         throw new Error('신청 처리 중 오류가 발생했습니다.');
       }
@@ -252,6 +265,22 @@ const AdoptionFormPage: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <AppHeader onLoginClick={handleLoginClick} />
+        <main className="pt-20 pb-8">
+          <div className="container mx-auto px-4 max-w-2xl">
+            <div className="text-center py-16">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">데이터를 불러오는 중...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader onLoginClick={handleLoginClick} />
@@ -265,19 +294,9 @@ const AdoptionFormPage: React.FC = () => {
                     {isReadOnly ? '입양 신청서 조회' : '입양 신청서'}
                   </CardTitle>
                   <p className="text-muted-foreground text-center">
-                    공고번호: {desertionNo}
+                    {isReadOnly && applicationData?.noticeNo ? `공고번호: ${applicationData.noticeNo}` : desertionNo ? `공고번호: ${desertionNo}` : ''}
                   </p>
                 </div>
-                {isReadOnly && (
-                  <Button
-                    onClick={handleResend}
-                    disabled={!canResend() || isResending}
-                    variant="outline"
-                    size="sm"
-                  >
-                    {isResending ? '재전송 중...' : '재전송'}
-                  </Button>
-                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -335,17 +354,17 @@ const AdoptionFormPage: React.FC = () => {
                      </div>
                    ) : (
                      <RadioGroup value={userGender} onValueChange={setUserGender}>
-                       <div className="flex items-center space-x-6">
-                         <div className="flex items-center space-x-2">
-                           <RadioGroupItem value="MALE" id="male" />
-                           <Label htmlFor="male">남성</Label>
-                         </div>
-                         <div className="flex items-center space-x-2">
-                           <RadioGroupItem value="FEMALE" id="female" />
-                           <Label htmlFor="female">여성</Label>
-                         </div>
-                       </div>
-                     </RadioGroup>
+                        <div className="flex items-center space-x-6">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="M" id="male" />
+                            <Label htmlFor="male">남성</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="F" id="female" />
+                            <Label htmlFor="female">여성</Label>
+                          </div>
+                        </div>
+                      </RadioGroup>
                    )}
                 </div>
 
@@ -641,19 +660,28 @@ const AdoptionFormPage: React.FC = () => {
                 </div>
               )}
 
-              {/* 제출 버튼 - read-only 모드에서는 숨김 */}
-              {!isReadOnly && (
-                <div className="pt-6">
+              {/* 제출/재발송 버튼 */}
+              <div className="pt-6">
+                {isReadOnly ? (
+                  <Button
+                    onClick={handleResend}
+                    disabled={!canResend() || isResending}
+                    className="w-48 mx-auto block"
+                    size="lg"
+                  >
+                    {isResending ? "재발송 중..." : "입양 신청서 재발송"}
+                  </Button>
+                ) : (
                   <Button
                     onClick={handleSubmit}
-                    disabled={!isFormValid() || isSubmitting}
+                    disabled={!isSubmitEnabled() || isSubmitting}
                     className="w-48 mx-auto block"
                     size="lg"
                   >
                     {isSubmitting ? "신청 중..." : "입양 신청서 제출"}
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
