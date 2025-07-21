@@ -14,10 +14,12 @@ import { Heart } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotification } from '@/context/NotificationContext';
 import LoginModal from '@/components/LoginModal';
+import ChatWidget from '@/components/ChatWidget';
 
 const AppHeaderWithModal = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isChatWidgetOpen, setIsChatWidgetOpen] = useState(false);
   const { user, isLoggedIn, logout } = useAuth();
   const { notifications, hasUnreadNotifications, markAsRead, markAllAsRead } = useNotification();
   
@@ -143,11 +145,12 @@ const AppHeaderWithModal = () => {
                           <span>마이페이지</span>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/chat-list" className="flex items-center space-x-2">
-                          <MessageCircle className="w-4 h-4" />
-                          <span>채팅 목록</span>
-                        </Link>
+                      <DropdownMenuItem 
+                        onClick={() => setIsChatWidgetOpen(true)}
+                        className="flex items-center space-x-2 cursor-pointer"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        <span>채팅목록</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
@@ -193,7 +196,12 @@ const AppHeaderWithModal = () => {
                 {isLoggedIn && (
                   <>
                     <Link to="/mypage" className="text-gray-600 hover:text-gray-800 transition-colors py-2 text-sm font-medium">마이페이지</Link>
-                    <Link to="/chat-list" className="text-gray-600 hover:text-gray-800 transition-colors py-2 text-sm font-medium">채팅 목록</Link>
+                    <button 
+                      onClick={() => setIsChatWidgetOpen(true)}
+                      className="text-gray-600 hover:text-gray-800 transition-colors py-2 text-sm font-medium text-left"
+                    >
+                      채팅목록
+                    </button>
                     <button 
                       onClick={logout}
                       className="text-red-600 hover:text-red-700 transition-colors py-2 text-sm font-medium text-left"
@@ -219,6 +227,11 @@ const AppHeaderWithModal = () => {
       <LoginModal 
         isOpen={isLoginModalOpen} 
         onClose={() => setIsLoginModalOpen(false)} 
+      />
+      
+      <ChatWidget
+        isOpen={isChatWidgetOpen}
+        onClose={() => setIsChatWidgetOpen(false)}
       />
     </>
   );

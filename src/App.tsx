@@ -29,8 +29,6 @@ import MyAdoptionApplications from "./pages/MyAdoptionApplications";
 import MissingAnimalDetail from "./pages/MissingAnimalDetail";
 import WithdrawalTerms from "./pages/WithdrawalTerms";
 import Chat from "./pages/Chat";
-import ChatList from "./pages/ChatList";
-import ChatRoom from "./pages/ChatRoom";
 import TestPage from "./pages/TestPage";
 import TestPage6 from "./pages/TestPage6";
 import TestPage7 from "./pages/TestPage7";
@@ -67,9 +65,7 @@ const App = () => (
            <Route path="/adoption-form/:desertionNo/:formId" element={<AdoptionFormPage />} />
            <Route path="/missing-post/:id" element={<MissingAnimalDetail />} />
            <Route path="/missing-post/edit/:id" element={<EditMissingPost />} />
-          <Route path="/chat/:userId" element={<Chat />} />
-          <Route path="/chat-list" element={<ChatList />} />
-          <Route path="/chat/room/:roomId" element={<ChatRoom />} />
+           <Route path="/chat/:userId" element={<Chat />} />
           <Route path="/shelters" element={<Shelters />} />
           <Route path="/shelter/:id" element={<ShelterDetail />} />
           <Route path="/mypage" element={<MyPage />} />
