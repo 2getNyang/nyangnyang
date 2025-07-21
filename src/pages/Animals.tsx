@@ -55,6 +55,11 @@ const Animals = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(false);
   const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
+  
+  // 검색 상태
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedRegion, setSelectedRegion] = useState('');
+  const [selectedAnimalType, setSelectedAnimalType] = useState('');
 
   const animalsPerPage = 12;
 
@@ -186,9 +191,18 @@ const Animals = () => {
 
   const getProcessStateBadge = (processState: string) => {
     if (processState === '보호중') {
-      return { text: '보호중', className: 'bg-yellow-500 text-white' };
+      return { text: '보호중', className: '' };
     }
-    return { text: processState, className: 'bg-gray-500 text-white' };
+    return { text: processState, className: '' };
+  };
+
+  const getSexDisplay = (sexCd: string) => {
+    switch (sexCd) {
+      case 'F': return '암컷';
+      case 'M': return '수컷';
+      case 'Q': return '모름';
+      default: return '모름';
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -205,6 +219,104 @@ const Animals = () => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">입양 동물 찾기</h1>
           <p className="text-gray-600">새로운 가족을 기다리는 아이들을 만나보세요</p>
+        </div>
+
+        {/* 검색 및 필터링 */}
+        <div className="mb-8 bg-white rounded-lg p-6 shadow-sm border">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* 검색어 입력 */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="품종, 지역 등을 검색해보세요"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* 지역 선택 */}
+            <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+              <SelectTrigger>
+                <SelectValue placeholder="지역 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">전체 지역</SelectItem>
+                <SelectItem value="서울">서울특별시</SelectItem>
+                <SelectItem value="부산">부산광역시</SelectItem>
+                <SelectItem value="대구">대구광역시</SelectItem>
+                <SelectItem value="인천">인천광역시</SelectItem>
+                <SelectItem value="광주">광주광역시</SelectItem>
+                <SelectItem value="대전">대전광역시</SelectItem>
+                <SelectItem value="울산">울산광역시</SelectItem>
+                <SelectItem value="세종">세종특별자치시</SelectItem>
+                <SelectItem value="경기">경기도</SelectItem>
+                <SelectItem value="충북">충청북도</SelectItem>
+                <SelectItem value="충남">충청남도</SelectItem>
+                <SelectItem value="전북">전북특별자치도</SelectItem>
+                <SelectItem value="전남">전라남도</SelectItem>
+                <SelectItem value="경북">경상북도</SelectItem>
+                <SelectItem value="경남">경상남도</SelectItem>
+                <SelectItem value="제주">제주특별자치도</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* 동물 종류 선택 */}
+            <Select value={selectedAnimalType} onValueChange={setSelectedAnimalType}>
+              <SelectTrigger>
+                <SelectValue placeholder="동물 종류" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">전체</SelectItem>
+                <SelectItem value="개">개</SelectItem>
+                <SelectItem value="고양이">고양이</SelectItem>
+                <SelectItem value="기타">기타</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* 검색 버튼 */}
+            <Button className="w-full">
+              <Search className="w-4 h-4 mr-2" />
+              검색
+            </Button>
+          </div>
+
+          {/* 검색 결과 초기화 */}
+          {(searchTerm || selectedRegion || selectedAnimalType) && (
+            <div className="flex items-center gap-2 mt-4">
+              <span className="text-sm text-gray-600">활성 필터:</span>
+              {searchTerm && (
+                <div className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                  <span>"{searchTerm}"</span>
+                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchTerm('')} />
+                </div>
+              )}
+              {selectedRegion && (
+                <div className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                  <span>{selectedRegion}</span>
+                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedRegion('')} />
+                </div>
+              )}
+              {selectedAnimalType && (
+                <div className="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                  <span>{selectedAnimalType}</span>
+                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedAnimalType('')} />
+                </div>
+              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedRegion('');
+                  setSelectedAnimalType('');
+                }}
+                className="text-gray-500"
+              >
+                전체 초기화
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* 검색 결과 카운트 */}
@@ -250,7 +362,8 @@ const Animals = () => {
                   <CardContent className="p-4">
                     <div className="mb-3">
                       <h3 className="font-bold text-gray-800 mb-1">{animal.noticeNo}</h3>
-                      <p className="text-sm text-gray-600">{animal.kindFullNm}</p>
+                      <p className="text-sm text-gray-600 mb-1">{animal.kindFullNm}</p>
+                      <p className="text-sm text-gray-500">{getSexDisplay(animal.sexCd)}</p>
                     </div>
                     
                     <div className="space-y-2 text-sm text-gray-600 mb-3">
@@ -265,7 +378,14 @@ const Animals = () => {
                     </div>
 
                     <div className="flex gap-2 mb-3">
-                      <Badge className={processState.className + " text-xs"}>
+                      <Badge 
+                        className="text-xs"
+                        style={{
+                          backgroundColor: animal.processState === '보호중' ? '#FEF9C3' : '#F3F4F6',
+                          color: animal.processState === '보호중' ? '#B79458' : '#1F2937',
+                          border: 'none'
+                        }}
+                      >
                         {processState.text}
                       </Badge>
                     </div>

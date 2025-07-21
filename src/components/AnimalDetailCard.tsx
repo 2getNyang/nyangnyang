@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Heart, Calendar, MapPin, Info, MessageSquare, Reply, Edit, Trash2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 // AnimalDTO 타입 정의
 interface AnimalCommentDTO {
@@ -49,6 +50,7 @@ interface AnimalDetailCardProps {
 
 const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isBookmarked, setIsBookmarked] = useState(animal.bookmarked);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [editingComment, setEditingComment] = useState<number | null>(null);
@@ -328,7 +330,7 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
                 <span>{animal.shelterAddress}</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-muted-foreground w-24">보호소 전화번호:</span>
+                <span className="text-muted-foreground w-24">전화번호:</span>
                 <span>{animal.shelterTel}</span>
               </div>
             </div>
@@ -359,8 +361,71 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
           {/* 댓글 목록 */}
           <div className="space-y-4">
             {animal.comments.length > 0 ? (
-              animal.comments.map((comment) => (
-                <CommentItem key={comment.id} comment={comment} />
+              animal.comments.map((comment: any) => (
+                <div key={comment.commentId} className="border-l-2 border-gray-100 pl-4">
+                  {/* 댓글 작성자와 내용 */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-medium text-sm">{comment.nickname}</span>
+                      </div>
+                      <p className="text-sm text-gray-700 mb-2">{comment.commentContent}</p>
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <span>{formatDate(comment.createdAt)}</span>
+                        {/* 댓글에만 답글달기 표시 (대댓글 아님) */}
+                        {!comment.parentId && (
+                          <button className="text-blue-500 hover:text-blue-700">
+                            답글달기
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {/* 댓글 작성자와 로그인한 사용자가 같으면 수정/삭제 버튼 */}
+                    {user && user.id === comment.userId && (
+                      <div className="flex items-center gap-2">
+                        <button className="text-xs text-gray-500 hover:text-gray-700">
+                          수정
+                        </button>
+                        <button className="text-xs text-gray-500 hover:text-red-500">
+                          삭제
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 대댓글 표시 */}
+                  {comment.childComments && comment.childComments.length > 0 && (
+                    <div className="ml-6 mt-3 space-y-3">
+                      {comment.childComments.map((reply: any) => (
+                        <div key={reply.commentId} className="border-l-2 border-blue-100 pl-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="font-medium text-sm">{reply.nickname}</span>
+                                <span className="text-xs text-gray-400">답글</span>
+                              </div>
+                              <p className="text-sm text-gray-700 mb-2">{reply.commentContent}</p>
+                              <div className="flex items-center gap-3 text-xs text-gray-500">
+                                <span>{formatDate(reply.createdAt)}</span>
+                              </div>
+                            </div>
+                            {/* 대댓글 작성자와 로그인한 사용자가 같으면 수정/삭제 버튼 */}
+                            {user && user.id === reply.userId && (
+                              <div className="flex items-center gap-2">
+                                <button className="text-xs text-gray-500 hover:text-gray-700">
+                                  수정
+                                </button>
+                                <button className="text-xs text-gray-500 hover:text-red-500">
+                                  삭제
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))
             ) : (
               <p className="text-center text-muted-foreground py-8">
