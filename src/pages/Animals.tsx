@@ -58,10 +58,10 @@ const Animals = () => {
   
   // 검색 상태
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState('all');
-  const [selectedAnimalType, setSelectedAnimalType] = useState('all');
-  const [selectedAge, setSelectedAge] = useState('all');
-  const [selectedGender, setSelectedGender] = useState('all');
+  const [selectedSido, setSelectedSido] = useState('all');
+  const [selectedSigungu, setSelectedSigungu] = useState('all');
+  const [selectedSpecies, setSelectedSpecies] = useState('all');
+  const [selectedBreed, setSelectedBreed] = useState('all');
 
   const animalsPerPage = 12;
 
@@ -225,8 +225,8 @@ const Animals = () => {
 
         {/* 검색 및 필터링 */}
         <div className="mb-8 bg-white rounded-lg p-6 shadow-sm border">
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-            {/* 검색어 입력 */}
+          {/* 첫 번째 줄: 검색창 */}
+          <div className="mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -236,9 +236,12 @@ const Animals = () => {
                 className="pl-10"
               />
             </div>
+          </div>
 
-            {/* 지역 선택 */}
-            <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+          {/* 두 번째 줄: 4개 셀렉트 박스 */}
+          <div className="grid grid-cols-4 gap-4 mb-4">
+            {/* 시/도 선택 */}
+            <Select value={selectedSido} onValueChange={setSelectedSido}>
               <SelectTrigger>
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
@@ -263,8 +266,18 @@ const Animals = () => {
               </SelectContent>
             </Select>
 
-            {/* 동물 종류 선택 */}
-            <Select value={selectedAnimalType} onValueChange={setSelectedAnimalType}>
+            {/* 시/군/구 선택 */}
+            <Select value={selectedSigungu} onValueChange={setSelectedSigungu}>
+              <SelectTrigger>
+                <SelectValue placeholder="전체" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* 축종 선택 */}
+            <Select value={selectedSpecies} onValueChange={setSelectedSpecies}>
               <SelectTrigger>
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
@@ -276,40 +289,27 @@ const Animals = () => {
               </SelectContent>
             </Select>
 
-            {/* 나이 선택 */}
-            <Select value={selectedAge} onValueChange={setSelectedAge}>
+            {/* 품종 선택 */}
+            <Select value={selectedBreed} onValueChange={setSelectedBreed}>
               <SelectTrigger>
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="어린">어린</SelectItem>
-                <SelectItem value="성인">성인</SelectItem>
-                <SelectItem value="노령">노령</SelectItem>
               </SelectContent>
             </Select>
+          </div>
 
-            {/* 성별 선택 */}
-            <Select value={selectedGender} onValueChange={setSelectedGender}>
-              <SelectTrigger>
-                <SelectValue placeholder="전체" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="M">수컷</SelectItem>
-                <SelectItem value="F">암컷</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* 필터 초기화 버튼 */}
+          {/* 세 번째 줄: 필터 초기화 버튼 */}
+          <div className="flex justify-end">
             <Button 
               variant="outline"
               onClick={() => {
                 setSearchTerm('');
-                setSelectedRegion('all');
-                setSelectedAnimalType('all');
-                setSelectedAge('all');
-                setSelectedGender('all');
+                setSelectedSido('all');
+                setSelectedSigungu('all');
+                setSelectedSpecies('all');
+                setSelectedBreed('all');
               }}
               className="flex items-center gap-2"
             >
