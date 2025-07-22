@@ -127,16 +127,31 @@ const AdoptionFormPage: React.FC = () => {
   };
 
   const handleResend = async () => {
+    if (!applicationData) return;
+    
     setIsResending(true);
     try {
-      // API 호출 (실제 구현 시)
-      // await fetch(`/api/v1/adoption-applications/${formId}/resend`, { method: 'POST' });
-      
-      toast({
-        title: "재전송 완료",
-        description: "입양 신청서가 재전송되었습니다."
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:8080/api/v1/adoptions/${applicationData.formId}/resend`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
+      
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "재전송 완료",
+          description: result.message || "입양 신청이 재전송되었습니다."
+        });
+        // 데이터 다시 불러오기 (resentAt이 업데이트 됨)
+        await fetchApplicationData();
+      } else {
+        throw new Error('재전송 실패');
+      }
     } catch (error) {
+      console.error('재전송 오류:', error);
       toast({
         title: "오류",
         description: "재전송 중 오류가 발생했습니다.",

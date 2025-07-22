@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import AppHeader from '@/components/AppHeader';
 import Footer from '@/components/Footer';
-import path from "path";
+import { useAuth } from '@/context/AuthContext';
 
 const WithdrawalTerms = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [inputNickname, setInputNickname] = useState('');
   const [confirmText, setConfirmText] = useState('');
   const [currentNickname, setCurrentNickname] = useState<string | null>(null);
@@ -60,14 +61,9 @@ const WithdrawalTerms = () => {
       }
 
       alert('회원탈퇴가 완료되었습니다.');
-      localStorage.clear(); // 로컬스토리지 정리
-      // 쿠키전부삭제
-      document.cookie.split(";").forEach(cookie => {
-        const name = cookie.split("=")[0].trim();
-        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-      });
-
-      navigate('/');
+      
+      // AuthContext의 logout 함수 호출 (localStorage 정리와 홈으로 이동 포함)
+      logout();
     } catch (err) {
       console.error('회원탈퇴 실패', err);
       alert('회원탈퇴에 실패했습니다. 다시 시도해 주세요.');
