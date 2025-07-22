@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, Calendar } from 'lucide-react';
+import { Eye, Calendar, User } from 'lucide-react';
 
 interface BoardPost {
   id: number;
@@ -282,7 +282,7 @@ const MyPostsUpdated = () => {
                 {(activeTab === 'review' ? reviewPosts : snsPosts).map((post: BoardPost) => (
                   <Card 
                     key={post.id}
-                    className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 border-0 shadow-md"
+                    className="cursor-pointer hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02]"
                     onClick={() => {
                       if (activeTab === 'review') {
                         navigate(`/adoption-review/${post.id}`);
@@ -291,47 +291,50 @@ const MyPostsUpdated = () => {
                       }
                     }}
                   >
-                    <CardContent className="p-0">
-                      {/* 이미지 영역 */}
-                      <div className="relative">
-                        <img 
-                          src={post.imageUrl} 
-                          alt={post.boardTitle}
-                          className="w-full h-48 object-cover rounded-t-lg"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
-                          }}
-                        />
-                        <div className="absolute top-2 right-2">
-                          <Badge className={
-                            activeTab === 'review' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-blue-100 text-blue-700'
-                          }>
-                            {activeTab === 'review' ? '입양후기' : 'SNS홍보'}
-                          </Badge>
-                        </div>
+                    <div className="aspect-[4/3] overflow-hidden">
+                      <img 
+                        src={post.imageUrl} 
+                        alt={post.boardTitle}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
+                        }}
+                      />
+                    </div>
+                    
+                    <CardContent className="p-5">
+                      <div className="flex justify-between items-start mb-3">
+                        <Badge className={
+                          activeTab === 'review' 
+                            ? 'bg-green-100 text-green-800 hover:bg-green-100 text-xs flex items-center gap-1' 
+                            : 'bg-blue-100 text-blue-800 hover:bg-blue-100 text-xs flex items-center gap-1'
+                        }>
+                          {activeTab === 'review' ? '입양후기' : 'SNS홍보'}
+                        </Badge>
                       </div>
-
-                      {/* 콘텐츠 영역 */}
-                      <div className="p-4">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
-                          {post.boardTitle}
-                        </h3>
-                        
-                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                          {post.boardContent}
-                        </p>
-                        
-                        <div className="flex items-center justify-between text-sm text-gray-500">
-                          <span className="font-medium">{post.nickname}</span>
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-3 h-3" />
-                              <span>{post.viewCount}</span>
-                            </div>
+                      
+                      <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2 leading-tight">
+                        {post.boardTitle}
+                      </h3>
+                      
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {post.boardContent}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-1">
+                            <User className="w-3 h-3" />
+                            <span>{post.nickname}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="w-3 h-3" />
                             <span>{formatDate(post.createdAt)}</span>
                           </div>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Eye className="w-3 h-3" />
+                          <span>{post.viewCount}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -346,52 +349,53 @@ const MyPostsUpdated = () => {
                 {missingPosts.map((post: MissingPost) => (
                   <Card 
                     key={post.id}
-                    className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 border-0 shadow-md"
+                    className="cursor-pointer hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02]"
                     onClick={() => navigate(`/missing-post/${post.id}`)}
                   >
-                    <CardContent className="p-0">
-                      {/* 이미지 영역 */}
-                      <div className="relative">
-                        <img 
-                          src={post.imageUrl} 
-                          alt={`${post.kindName} ${post.lostType === 'WT' ? '목격' : '실종'}`}
-                          className="w-full h-48 object-cover rounded-t-lg"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
-                          }}
-                        />
-                        <div className="absolute top-2 right-2">
-                          <Badge className={
-                            post.lostType === 'WT' 
-                              ? 'bg-blue-100 text-blue-700' 
-                              : 'bg-red-100 text-red-700'
-                          }>
-                            {post.lostType === 'WT' ? '목격' : '실종'}
-                          </Badge>
-                        </div>
+                    <div className="aspect-[4/3] overflow-hidden">
+                      <img 
+                        src={post.imageUrl} 
+                        alt={`${post.kindName} ${post.lostType === 'WT' ? '목격' : '실종'}`}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
+                        }}
+                      />
+                    </div>
+                    
+                    <CardContent className="p-5">
+                      <div className="flex justify-between items-start mb-3">
+                        <Badge className={
+                          post.lostType === 'WT' 
+                            ? 'bg-orange-100 text-orange-800 hover:bg-orange-100 text-xs flex items-center gap-1' 
+                            : 'bg-red-100 text-red-800 hover:bg-red-100 text-xs flex items-center gap-1'
+                        }>
+                          {post.lostType === 'WT' ? '목격' : '실종'}
+                        </Badge>
                       </div>
-
-                      {/* 콘텐츠 영역 */}
-                      <div className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <h3 className="text-lg font-bold text-gray-800">{post.kindName}</h3>
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <Eye className="w-3 h-3" />
-                            <span>{post.viewCount}</span>
+                      
+                      <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2 leading-tight">
+                        {post.kindName}
+                      </h3>
+                      
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {getGenderText(post.gender)} • {post.age}살 • {post.furColor}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-1">
+                            <User className="w-3 h-3" />
+                            <span>{post.nickname}</span>
                           </div>
-                        </div>
-                        
-                        <div className="space-y-1 text-sm text-gray-600 mb-3">
-                          <p>{getGenderText(post.gender)} • {post.age}살 • {post.furColor}</p>
-                          <p className="truncate">{post.missingLocation}</p>
-                        </div>
-
-                        <div className="flex items-center justify-between text-sm text-gray-500">
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center space-x-1">
                             <Calendar className="w-3 h-3" />
                             <span>{formatMissingDate(post.missingDate)}</span>
                           </div>
-                          <span className="font-medium">{post.nickname}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Eye className="w-3 h-3" />
+                          <span>{post.viewCount}</span>
                         </div>
                       </div>
                     </CardContent>

@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, MapPin, Calendar } from 'lucide-react';
+import { Heart, MapPin, Calendar, User } from 'lucide-react';
 
 interface FavoriteAdoption {
   desertionNo: string;
@@ -204,41 +204,73 @@ const MyFavoriteAdoptionsUpdated = () => {
               {favorites.map((animal) => (
                 <Card 
                   key={animal.desertionNo}
-                  className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 border-0 shadow-md"
+                  className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02] cursor-pointer"
                   onClick={() => handleCardClick(animal)}
                 >
-                  <CardContent className="p-0">
-                    {/* 이미지 영역 */}
-                    <div className="relative">
-                      <img 
-                        src={animal.popfile1} 
-                        alt={animal.kindFullNm}
-                        className="w-full h-48 object-cover rounded-t-lg"
-                        onError={(e) => {
-                          e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
-                        }}
-                      />
-                      {/* 찜한 공고 뱃지 */}
-                      <div className="absolute top-2 left-2">
-                        <Badge className="bg-red-500 text-white gap-1 shadow-sm">
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <img 
+                      src={animal.popfile1} 
+                      alt={animal.kindFullNm}
+                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
+                      }}
+                    />
+                  </div>
+                  <CardContent className="p-5">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-800 mb-1">
+                          {animal.noticeNo}
+                        </h3>
+                        <p className="text-gray-600 text-sm">
+                          {animal.kindFullNm}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge className="bg-red-500 text-white gap-1 shadow-sm text-xs">
                           <Heart className="w-3 h-3 fill-current" />
                           찜한 공고
                         </Badge>
                       </div>
                     </div>
-
-                    {/* 콘텐츠 영역 */}
-                    <div className="p-4">
-                      <h3 className="text-lg font-bold text-gray-800 mb-2">{animal.kindFullNm}</h3>
-                      
-                      {/* 동물 정보 */}
-                      <div className="space-y-1 text-sm mb-3">
-                        <p><span className="text-gray-600">공고번호:</span> {animal.noticeNo}</p>
-                        <p><span className="text-gray-600">품종:</span> {animal.kindFullNm}</p>
-                        <p><span className="text-gray-600">성별:</span> {animal.sexCd === 'F' ? '암컷' : animal.sexCd === 'M' ? '수컷' : '모름'}</p>
-                        <p><span className="text-gray-600">발견일:</span> {animal.happenDt}</p>
-                        <p><span className="text-gray-600">발견장소:</span> {animal.happenPlace}</p>
+                    
+                    <div className="space-y-2 mb-3">
+                      <div className="flex items-center space-x-2 text-gray-600">
+                        <User className="w-4 h-4" />
+                        <span className="text-sm">
+                          {animal.sexCd === 'F' ? '암컷' : animal.sexCd === 'M' ? '수컷' : '모름'}
+                        </span>
                       </div>
+                      
+                      <div className="flex items-center space-x-2 text-gray-600">
+                        <Calendar className="w-4 h-4" />
+                        <span className="text-sm">발견일: {animal.happenDt}</span>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2 text-gray-600">
+                        <MapPin className="w-4 h-4" />
+                        <span className="text-sm">{animal.happenPlace}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-4">
+                      {animal.processState && (
+                        <Badge 
+                          className={`text-xs rounded-full ${
+                            animal.processState === '보호중' 
+                              ? 'text-yellow-800 border-yellow-200' 
+                              : 'text-gray-800 border-gray-200'
+                          }`}
+                          style={{
+                            backgroundColor: animal.processState === '보호중' ? '#FEF9C3' : '#F3F4F6',
+                            color: animal.processState === '보호중' ? '#B79458' : '#1F2937'
+                          }}
+                          variant="outline"
+                        >
+                          {animal.processState}
+                        </Badge>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

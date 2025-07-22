@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, Eye } from 'lucide-react';
+import { Heart, Eye, User } from 'lucide-react';
 
 interface LikedPost {
   id: number;
@@ -280,7 +280,10 @@ const MyLikedPostsUpdated = () => {
                       </h3>
                       
                       <div className="flex items-center justify-between text-sm text-gray-600">
-                        <span className="font-medium">{post.nickname}</span>
+                        <div className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          <span className="font-medium">{post.nickname}</span>
+                        </div>
                         <span>{formatDate(post.createdAt)}</span>
                       </div>
                     </div>
