@@ -123,6 +123,11 @@ const AdoptionFormPage: React.FC = () => {
     const createdAt = new Date(applicationData.formCreatedAt);
     const now = new Date();
     const diffInDays = (now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24);
+    console.log('canResend 체크:', {
+      diffInDays,
+      resentAt: applicationData.resentAt,
+      result: diffInDays >= 2 && applicationData.resentAt === null
+    });
     return diffInDays >= 2 && applicationData.resentAt === null;
   };
 
