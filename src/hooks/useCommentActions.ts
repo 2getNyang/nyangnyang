@@ -151,6 +151,7 @@ export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActio
     submitComment,
     editComment,
     deleteComment,
+    fetchComments,
     isSubmitting
   };
 };

@@ -56,10 +56,17 @@ const MissingPostDetail = () => {
   const [isChatWidgetOpen, setIsChatWidgetOpen] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
 
-  const { submitComment, editComment, deleteComment } = useCommentActions({
+  const { submitComment, editComment, deleteComment, fetchComments } = useCommentActions({
     boardId: id,
     onCommentsUpdate: setComments
   });
+
+  // 초기 댓글 로드
+  useEffect(() => {
+    if (id) {
+      fetchComments();
+    }
+  }, [id]);
 
   // 현재 로그인된 사용자 ID
   const currentUserId = user?.id;

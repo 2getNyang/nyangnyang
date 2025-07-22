@@ -403,8 +403,22 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
 
           {/* 댓글 목록 */}
           <div className="space-y-4">
-            {comments.length > 0 ? (
-              comments.map((comment) => (
+            {(() => {
+              // 댓글을 계층구조로 정리
+              const organizeComments = (comments: any[]) => {
+                const parentComments = comments.filter(comment => comment.parentId === null);
+                const childComments = comments.filter(comment => comment.parentId !== null);
+                
+                return parentComments.map(parent => ({
+                  ...parent,
+                  replies: childComments.filter(child => child.parentId === parent.commentId)
+                }));
+              };
+
+              const organizedComments = organizeComments(comments);
+              
+              return organizedComments.length > 0 ? (
+                organizedComments.map((comment) => (
                 <div key={comment.commentId} className="space-y-3">
                   {/* 주 댓글 */}
                   <div className="bg-white border rounded-lg p-4 shadow-sm">
@@ -598,7 +612,9 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
                   ))}
                 </div>
               ))
-            ) : (
+            ) : null;
+            })()}
+            {comments.length === 0 && (
               <p className="text-center text-muted-foreground py-8">
                 아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!
               </p>
