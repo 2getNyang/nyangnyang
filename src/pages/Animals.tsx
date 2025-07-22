@@ -117,36 +117,24 @@ const Animals = () => {
         params.append('endDate', endDate);
       }
       
-      // 지역 필터
+      // 시도 필터 (이름으로 전송)
       if (selectedSido !== 'all') {
-        const selectedRegion = regions.find(r => r.regionName === selectedSido);
-        if (selectedRegion?.regionCode) {
-          params.append('regionCode', selectedRegion.regionCode);
-        }
+        params.append('RegionName', selectedSido);
       }
       
-      // 시군구 필터
+      // 시군구 필터 (이름으로 전송)
       if (selectedSigungu !== 'all') {
-        const selectedSubRegion = subRegions.find(sr => sr.subRegionName === selectedSigungu);
-        if (selectedSubRegion?.subRegionCode) {
-          params.append('subRegionCode', selectedSubRegion.subRegionCode);
-        }
+        params.append('subRegionName', selectedSigungu);
       }
       
-      // 축종 필터
+      // 축종 필터 (이름으로 전송)
       if (selectedSpecies !== 'all') {
-        const selectedUpKind = upKinds.find(uk => uk.upKindName === selectedSpecies);
-        if (selectedUpKind?.upKindCd) {
-          params.append('upKindCd', selectedUpKind.upKindCd);
-        }
+        params.append('upKindNm', selectedSpecies);
       }
       
-      // 품종 필터
+      // 품종 필터 (이름으로 전송)
       if (selectedBreed !== 'all') {
-        const selectedKind = kinds.find(k => k.kindName === selectedBreed);
-        if (selectedKind?.kindCd) {
-          params.append('kindCd', selectedKind.kindCd);
-        }
+        params.append('KindNm', selectedBreed);
       }
       
       const response = await fetch(`http://localhost:8080/api/v1/animals/search?${params.toString()}`, {
@@ -335,6 +323,16 @@ const Animals = () => {
     fetchUpKinds();
   }, []);
 
+  // 동적 검색 - 필터 변경 시 자동 검색
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setCurrentPage(0);
+      fetchAnimals(0);
+    }, 300); // 300ms 디바운스
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, selectedSido, selectedSigungu, selectedSpecies, selectedBreed, startDate, endDate]);
+
   useEffect(() => {
     if (isLoggedIn && animals.length > 0) {
       animals.forEach(animal => {
@@ -369,11 +367,11 @@ const Animals = () => {
     fetchAnimals(page);
   };
 
-  // 검색 실행
-  const handleSearch = () => {
-    setCurrentPage(0);
-    fetchAnimals(0);
-  };
+  // 검색 실행 (동적 검색으로 인해 사용하지 않음)
+  // const handleSearch = () => {
+  //   setCurrentPage(0);
+  //   fetchAnimals(0);
+  // };
 
   // 필터 초기화
   const handleResetFilters = () => {
@@ -504,7 +502,7 @@ const Animals = () => {
             </Select>
           </div>
 
-          {/* 세 번째 줄: 검색 및 필터 초기화 버튼 */}
+          {/* 세 번째 줄: 필터 초기화 버튼 */}
           <div className="flex justify-end gap-2">
             <Button 
               variant="outline"
@@ -513,13 +511,6 @@ const Animals = () => {
             >
               <X className="w-4 h-4" />
               필터 초기화
-            </Button>
-            <Button 
-              onClick={handleSearch}
-              className="flex items-center gap-2"
-            >
-              <Search className="w-4 h-4" />
-              검색
             </Button>
           </div>
         </div>
