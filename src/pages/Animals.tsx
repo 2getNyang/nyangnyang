@@ -345,19 +345,19 @@ const Animals = () => {
             </div>
             
             {/* 공고 시작일 */}
-            <div>
+            <div className="relative">
+              <label className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-500 z-10">공고 시작일</label>
               <Input
                 type="date"
-                placeholder="공고 시작일"
                 className="text-gray-600"
               />
             </div>
             
             {/* 공고 종료일 */}
-            <div>
+            <div className="relative">
+              <label className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-500 z-10">공고 종료일</label>
               <Input
                 type="date"
-                placeholder="공고 종료일"
                 className="text-gray-600"
               />
             </div>

@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import AppHeader from '@/components/AppHeader';
 import CommentSection from '@/components/CommentSection';
+import ChatWidget from '@/components/ChatWidget';
 
 interface Comment {
   id: number;
@@ -51,6 +52,7 @@ const MissingPostDetail = () => {
   const [postDetail, setPostDetail] = useState<PostDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isChatWidgetOpen, setIsChatWidgetOpen] = useState(false);
 
   // 현재 로그인된 사용자 ID
   const currentUserId = user?.id;
@@ -474,8 +476,8 @@ const MissingPostDetail = () => {
                       });
                       return;
                     }
-                    // 채팅방 목록 페이지로 이동
-                    navigate('/chat/list');
+                    
+                    setIsChatWidgetOpen(true);
                   }}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   size="lg"
@@ -563,6 +565,11 @@ const MissingPostDetail = () => {
           />
         </div>
       </div>
+      
+      <ChatWidget
+        isOpen={isChatWidgetOpen}
+        onClose={() => setIsChatWidgetOpen(false)}
+      />
     </div>
   );
 };

@@ -227,7 +227,7 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
       {/* 뒤로가기 버튼 */}
       <Button
         variant="ghost"
-        onClick={() => navigate(-1)}
+        onClick={() => window.history.back()}
         className="mb-4 hover:bg-gray-100"
       >
         ← 뒤로가기
