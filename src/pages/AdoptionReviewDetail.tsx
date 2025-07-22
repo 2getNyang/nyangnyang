@@ -72,7 +72,8 @@ const AdoptionReviewDetail = () => {
 
   const { submitComment, editComment, deleteComment, fetchComments } = useCommentActions({
     boardId: id,
-    onCommentsUpdate: setComments
+    onCommentsUpdate: setComments,
+    boardType: 'review'
   });
 
   // 초기 댓글 로드

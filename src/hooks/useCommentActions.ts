@@ -14,9 +14,10 @@ interface Comment {
 interface UseCommentActionsProps {
   boardId: string | undefined;
   onCommentsUpdate: (comments: Comment[]) => void;
+  boardType: 'review' | 'sns' | 'lost'; // 게시판 타입 추가
 }
 
-export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActionsProps) => {
+export const useCommentActions = ({ boardId, onCommentsUpdate, boardType }: UseCommentActionsProps) => {
   const { user, isLoggedIn } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -131,15 +132,31 @@ export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActio
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/comments/boards/${boardId}`, {
+      // 게시판 타입에 따른 API 엔드포인트 결정
+      let apiUrl = '';
+      switch (boardType) {
+        case 'review':
+          apiUrl = `http://localhost:8080/api/v1/boards/review/${boardId}`;
+          break;
+        case 'sns':
+          apiUrl = `http://localhost:8080/api/v1/boards/sns/${boardId}`;
+          break;
+        case 'lost':
+          apiUrl = `http://localhost:8080/api/v1/boards/lost/${boardId}`;
+          break;
+        default:
+          apiUrl = `http://localhost:8080/api/v1/comments/boards/${boardId}`;
+      }
+
+      const response = await fetch(apiUrl, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': token ? `Bearer ${token}` : ''
         }
       });
 
       if (response.ok) {
-        const data = await response.json();
-        const comments = Array.isArray(data) ? data : data.data || [];
+        const result = await response.json();
+        const comments = result.data?.comments || result.comments || [];
         onCommentsUpdate(comments);
       }
     } catch (error) {
