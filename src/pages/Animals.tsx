@@ -469,85 +469,79 @@ const Animals = () => {
             </Popover>
           </div>
 
-          {/* 두 번째 줄: 4개 드롭다운과 필터 초기화 버튼 */}
-          <div className="flex gap-4 items-center">
+          {/* 두 번째 줄: 4개 드롭다운 */}
+          <div className="grid grid-cols-4 gap-4 mb-4">
             {/* 시/도 선택 */}
-            <div className="flex-1">
-              <Select value={selectedSido} onValueChange={handleSidoChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="전체" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {regions.map((region) => (
-                    <SelectItem key={region.regionName} value={region.regionName}>
-                      {region.regionName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={selectedSido} onValueChange={handleSidoChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="시/도" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                {regions.map((region) => (
+                  <SelectItem key={region.regionName} value={region.regionName}>
+                    {region.regionName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {/* 시/군/구 선택 */}
-            <div className="flex-1">
-              <Select 
-                value={selectedSigungu} 
-                onValueChange={setSelectedSigungu}
-                disabled={selectedSido === 'all' || subRegions.length === 0}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="전체" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {subRegions.map((subRegion) => (
-                    <SelectItem key={subRegion.subRegionName} value={subRegion.subRegionName}>
-                      {subRegion.subRegionName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select 
+              value={selectedSigungu} 
+              onValueChange={setSelectedSigungu}
+              disabled={selectedSido === 'all' || subRegions.length === 0}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="시/군/구" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                {subRegions.map((subRegion) => (
+                  <SelectItem key={subRegion.subRegionName} value={subRegion.subRegionName}>
+                    {subRegion.subRegionName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {/* 축종 선택 */}
-            <div className="flex-1">
-              <Select value={selectedSpecies} onValueChange={handleSpeciesChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="전체" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {upKinds.map((upKind) => (
-                    <SelectItem key={upKind.upKindName} value={upKind.upKindName}>
-                      {upKind.upKindName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={selectedSpecies} onValueChange={handleSpeciesChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="축종" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                {upKinds.map((upKind) => (
+                  <SelectItem key={upKind.upKindName} value={upKind.upKindName}>
+                    {upKind.upKindName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {/* 품종 선택 */}
-            <div className="flex-1">
-              <Select 
-                value={selectedBreed} 
-                onValueChange={setSelectedBreed}
-                disabled={selectedSpecies === 'all' || kinds.length === 0}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="전체" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {kinds.map((kind) => (
-                    <SelectItem key={kind.kindName} value={kind.kindName}>
-                      {kind.kindName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select 
+              value={selectedBreed} 
+              onValueChange={setSelectedBreed}
+              disabled={selectedSpecies === 'all' || kinds.length === 0}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="품종" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                {kinds.map((kind) => (
+                  <SelectItem key={kind.kindName} value={kind.kindName}>
+                    {kind.kindName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-            {/* 필터 초기화 버튼 */}
+          {/* 세 번째 줄: 필터 초기화 버튼 */}
+          <div className="flex justify-end">
             <Button 
               variant="outline"
               onClick={handleResetFilters}
