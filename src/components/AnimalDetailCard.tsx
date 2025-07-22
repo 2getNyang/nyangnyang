@@ -9,15 +9,17 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Heart, Calendar, MapPin, Info, MessageSquare, Reply, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useAnimalCommentActions } from '@/hooks/useAnimalCommentActions';
 
-// AnimalDTO 타입 정의
-interface AnimalCommentDTO {
-  id: number;
-  authorName: string;
-  content: string;
+// 댓글 데이터 타입
+interface AnimalComment {
+  commentId: number;
+  commentContent: string;
   createdAt: string;
-  isAuthor: boolean;
-  replies?: AnimalCommentDTO[];
+  nickname: string;
+  userId: number;
+  parentId: number | null;
+  childComments?: AnimalComment[];
 }
 
 interface AnimalDTO {
@@ -39,7 +41,7 @@ interface AnimalDTO {
   popfile1?: string;
   popfile2?: string;
   popfile3?: string;
-  comments: AnimalCommentDTO[];
+  comments: AnimalComment[];
   shelterName: string;
   shelterAddress: string;
   shelterTel: string;
@@ -56,6 +58,15 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
   const [isBookmarked, setIsBookmarked] = useState(animal.bookmarked);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [editingComment, setEditingComment] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [replyContent, setReplyContent] = useState('');
+  const [newCommentContent, setNewCommentContent] = useState('');
+  const [comments, setComments] = useState<AnimalComment[]>(animal.comments);
+
+  const { submitComment, editComment, deleteComment, isSubmitting } = useAnimalCommentActions({
+    desertionNo: animal.desertionNo,
+    onCommentsUpdate: setComments
+  });
 
   // 이미지 배열 생성
   const images = [animal.popfile1, animal.popfile2, animal.popfile3].filter(Boolean);
@@ -142,85 +153,56 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
     return dateStr.replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3');
   };
 
-  const CommentItem: React.FC<{ comment: AnimalCommentDTO; isReply?: boolean }> = ({ comment, isReply = false }) => (
-    <div className={`p-4 ${isReply ? 'ml-8 bg-muted/50' : 'bg-background'} rounded-lg`}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-sm">{comment.authorName}</span>
-          <span className="text-xs text-muted-foreground">{comment.createdAt}</span>
-        </div>
-        {comment.isAuthor && (
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setEditingComment(comment.id)}
-              className="h-6 w-6 p-0"
-            >
-              <Edit className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-destructive"
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          </div>
-        )}
-      </div>
-      
-      {editingComment === comment.id ? (
-        <div className="space-y-2">
-          <Textarea
-            defaultValue={comment.content}
-            className="min-h-[60px]"
-            placeholder="댓글을 수정해주세요"
-          />
-          <div className="flex gap-2">
-            <Button size="sm" onClick={() => setEditingComment(null)}>저장</Button>
-            <Button size="sm" variant="outline" onClick={() => setEditingComment(null)}>취소</Button>
-          </div>
-        </div>
-      ) : (
-        <>
-          <p className="text-sm mb-2">{comment.content}</p>
-          {!isReply && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-              className="h-6 text-xs"
-            >
-              <Reply className="h-3 w-3 mr-1" />
-              답글
-            </Button>
-          )}
-        </>
-      )}
+  // 새 댓글 작성
+  const handleNewCommentSubmit = async () => {
+    if (!isLoggedIn) {
+      toast({
+        title: "로그인 필요",
+        description: "댓글 작성은 로그인 후 이용 가능합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!newCommentContent.trim()) return;
+    
+    await submitComment(newCommentContent);
+    setNewCommentContent('');
+  };
 
-      {replyingTo === comment.id && (
-        <div className="mt-3 space-y-2">
-          <Textarea
-            placeholder="답글을 입력해주세요"
-            className="min-h-[60px]"
-          />
-          <div className="flex gap-2">
-            <Button size="sm">답글 작성</Button>
-            <Button size="sm" variant="outline" onClick={() => setReplyingTo(null)}>취소</Button>
-          </div>
-        </div>
-      )}
+  // 답글 작성
+  const handleReplySubmit = async (parentId: number) => {
+    if (!isLoggedIn) {
+      toast({
+        title: "로그인 필요",
+        description: "댓글 작성은 로그인 후 이용 가능합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!replyContent.trim()) return;
+    
+    await submitComment(replyContent, parentId);
+    setReplyContent('');
+    setReplyingTo(null);
+  };
 
-      {comment.replies && comment.replies.length > 0 && (
-        <div className="mt-3 space-y-2">
-          {comment.replies.map((reply) => (
-            <CommentItem key={reply.id} comment={reply} isReply />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  // 댓글 수정
+  const handleEditSubmit = async (commentId: number) => {
+    if (!editContent.trim()) return;
+    
+    await editComment(commentId, editContent);
+    setEditContent('');
+    setEditingComment(null);
+  };
+
+  // 댓글 삭제
+  const handleDeleteComment = async (commentId: number) => {
+    if (confirm('정말로 댓글을 삭제하시겠습니까?')) {
+      await deleteComment(commentId);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
@@ -391,25 +373,38 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            댓글 ({animal.comments.length})
+            댓글 ({comments.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* 댓글 작성 */}
-          <div className="space-y-2">
-            <Textarea
-              placeholder="댓글을 입력해주세요"
-              className="min-h-[80px]"
-            />
-            <Button>댓글 작성</Button>
-          </div>
+          {isLoggedIn ? (
+            <div className="space-y-2">
+              <Textarea
+                value={newCommentContent}
+                onChange={(e) => setNewCommentContent(e.target.value)}
+                placeholder="댓글을 입력해주세요"
+                className="min-h-[80px]"
+              />
+              <Button 
+                onClick={handleNewCommentSubmit}
+                disabled={isSubmitting || !newCommentContent.trim()}
+              >
+                {isSubmitting ? '작성 중...' : '댓글 작성'}
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-muted-foreground">댓글을 작성하려면 로그인이 필요합니다.</p>
+            </div>
+          )}
 
           <Separator />
 
           {/* 댓글 목록 */}
           <div className="space-y-4">
-            {animal.comments.length > 0 ? (
-              animal.comments.map((comment: any) => (
+            {comments.length > 0 ? (
+              comments.map((comment) => (
                 <div key={comment.commentId} className="space-y-3">
                   {/* 주 댓글 */}
                   <div className="bg-white border rounded-lg p-4 shadow-sm">
@@ -425,6 +420,10 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => {
+                              setEditingComment(comment.commentId);
+                              setEditContent(comment.commentContent);
+                            }}
                             className="text-gray-500 hover:text-gray-700 px-2 py-1 h-7 text-xs"
                           >
                             수정
@@ -432,6 +431,7 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => handleDeleteComment(comment.commentId)}
                             className="text-red-500 hover:text-red-700 px-2 py-1 h-7 text-xs"
                           >
                             삭제
@@ -440,29 +440,91 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
                       )}
                     </div>
                     
-                    <div>
-                      <p className="text-gray-800 leading-relaxed mb-3 text-sm">
-                        {comment.commentContent}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <span className="text-xs text-gray-400">{formatDate(comment.createdAt)}</span>
-                          {!comment.parentId && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 h-6 text-xs"
-                            >
-                              답글달기
-                            </Button>
-                          )}
+                    {editingComment === comment.commentId ? (
+                      <div className="space-y-2">
+                        <Textarea
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          className="min-h-[60px]"
+                          placeholder="댓글을 수정해주세요"
+                        />
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleEditSubmit(comment.commentId)}
+                            disabled={isSubmitting || !editContent.trim()}
+                          >
+                            {isSubmitting ? '저장 중...' : '저장'}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => {
+                              setEditingComment(null);
+                              setEditContent('');
+                            }}
+                          >
+                            취소
+                          </Button>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div>
+                        <p className="text-gray-800 leading-relaxed mb-3 text-sm">
+                          {comment.commentContent}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <span className="text-xs text-gray-400">{formatDate(comment.createdAt)}</span>
+                            {!comment.parentId && isLoggedIn && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setReplyingTo(replyingTo === comment.commentId ? null : comment.commentId)}
+                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 h-6 text-xs"
+                              >
+                                답글달기
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 답글 작성 폼 */}
+                    {replyingTo === comment.commentId && (
+                      <div className="mt-3 space-y-2">
+                        <Textarea
+                          value={replyContent}
+                          onChange={(e) => setReplyContent(e.target.value)}
+                          placeholder="답글을 입력해주세요"
+                          className="min-h-[60px]"
+                        />
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm"
+                            onClick={() => handleReplySubmit(comment.commentId)}
+                            disabled={isSubmitting || !replyContent.trim()}
+                          >
+                            {isSubmitting ? '작성 중...' : '답글 작성'}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => {
+                              setReplyingTo(null);
+                              setReplyContent('');
+                            }}
+                          >
+                            취소
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* 대댓글 */}
-                  {comment.childComments && comment.childComments.map((reply: any) => (
+                  {comment.childComments && comment.childComments.map((reply) => (
                     <div key={reply.commentId} className="ml-6 bg-gray-50 border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-3">
@@ -476,6 +538,10 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => {
+                                setEditingComment(reply.commentId);
+                                setEditContent(reply.commentContent);
+                              }}
                               className="text-gray-500 hover:text-gray-700 px-2 py-1 h-7 text-xs"
                             >
                               수정
@@ -483,6 +549,7 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => handleDeleteComment(reply.commentId)}
                               className="text-red-500 hover:text-red-700 px-2 py-1 h-7 text-xs"
                             >
                               삭제
@@ -491,12 +558,42 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
                         )}
                       </div>
                       
-                      <div>
-                        <p className="text-gray-800 leading-relaxed mb-2 text-sm">
-                          {reply.commentContent}
-                        </p>
-                        <span className="text-xs text-gray-400">{formatDate(reply.createdAt)}</span>
-                      </div>
+                      {editingComment === reply.commentId ? (
+                        <div className="space-y-2">
+                          <Textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            className="min-h-[60px]"
+                            placeholder="댓글을 수정해주세요"
+                          />
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleEditSubmit(reply.commentId)}
+                              disabled={isSubmitting || !editContent.trim()}
+                            >
+                              {isSubmitting ? '저장 중...' : '저장'}
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => {
+                                setEditingComment(null);
+                                setEditContent('');
+                              }}
+                            >
+                              취소
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-gray-800 leading-relaxed mb-2 text-sm">
+                            {reply.commentContent}
+                          </p>
+                          <span className="text-xs text-gray-400">{formatDate(reply.createdAt)}</span>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
