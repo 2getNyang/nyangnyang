@@ -10,9 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Heart, MapPin, Calendar, User, Search, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
 
 interface Animal {
   desertionNo: string;
@@ -85,8 +82,8 @@ const Animals = () => {
   const [selectedSigungu, setSelectedSigungu] = useState('all');
   const [selectedSpecies, setSelectedSpecies] = useState('all');
   const [selectedBreed, setSelectedBreed] = useState('all');
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // select box 데이터 상태
   const [regions, setRegions] = useState<Region[]>([]);
@@ -102,17 +99,6 @@ const Animals = () => {
     try {
       const token = localStorage.getItem('accessToken');
       
-      // 날짜 유효성 검사
-      if (startDate && endDate && startDate > endDate) {
-        toast({
-          title: "날짜 오류",
-          description: "시작일이 종료일보다 이후여야 합니다.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-      
       // 검색 파라미터 구성
       const params = new URLSearchParams();
       
@@ -127,28 +113,28 @@ const Animals = () => {
       
       // 날짜 필터 (둘 다 있거나 둘 다 없어야 함)
       if (startDate && endDate) {
-        params.append('startDate', format(startDate, 'yyyy-MM-dd'));
-        params.append('endDate', format(endDate, 'yyyy-MM-dd'));
+        params.append('startDate', startDate);
+        params.append('endDate', endDate);
       }
       
-      // 시도 필터
+      // 시도 필터 (이름으로 전송)
       if (selectedSido !== 'all') {
-        params.append('regionName', selectedSido);
+        params.append('RegionName', selectedSido);
       }
       
-      // 시군구 필터
+      // 시군구 필터 (이름으로 전송)
       if (selectedSigungu !== 'all') {
         params.append('subRegionName', selectedSigungu);
       }
       
-      // 축종 필터
+      // 축종 필터 (이름으로 전송)
       if (selectedSpecies !== 'all') {
         params.append('upKindNm', selectedSpecies);
       }
       
-      // 품종 필터
+      // 품종 필터 (이름으로 전송)
       if (selectedBreed !== 'all') {
-        params.append('kindNm', selectedBreed);
+        params.append('KindNm', selectedBreed);
       }
       
       const response = await fetch(`http://localhost:8080/api/v1/animals/search?${params.toString()}`, {
@@ -381,6 +367,12 @@ const Animals = () => {
     fetchAnimals(page);
   };
 
+  // 검색 실행 (동적 검색으로 인해 사용하지 않음)
+  // const handleSearch = () => {
+  //   setCurrentPage(0);
+  //   fetchAnimals(0);
+  // };
+
   // 필터 초기화
   const handleResetFilters = () => {
     setSearchTerm('');
@@ -388,8 +380,8 @@ const Animals = () => {
     setSelectedSigungu('all');
     setSelectedSpecies('all');
     setSelectedBreed('all');
-    setStartDate(undefined);
-    setEndDate(undefined);
+    setStartDate('');
+    setEndDate('');
     setSubRegions([]);
     setKinds([]);
     setCurrentPage(0);
@@ -409,147 +401,109 @@ const Animals = () => {
 
         {/* 검색 및 필터링 */}
         <div className="mb-8 bg-white rounded-lg p-6 shadow-sm border">
-          {/* 첫 번째 줄: 검색창 */}
-          <div className="mb-4">
+          {/* 첫 번째 줄: 검색창과 날짜 필터 */}
+          <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* 검색창 */}
+            <div className="md:col-span-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="동물 이름, 품종, 지역으로 검색하세요"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            
+            {/* 공고 시작일 */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <label className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-500 z-10">공고 시작일</label>
               <Input
-                placeholder="동물 이름, 품종, 지역으로 검색하세요"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="text-gray-600"
+              />
+            </div>
+            
+            {/* 공고 종료일 */}
+            <div className="relative">
+              <label className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-500 z-10">공고 종료일</label>
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="text-gray-600"
               />
             </div>
           </div>
 
-          {/* 두 번째 줄: 공고일, 축종, 품종, 시/도, 시/군/구 */}
-          <div className="grid grid-cols-5 gap-4 mb-4">
-            {/* 공고 시작일 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">공고 시작일</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal"
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "yyyy-MM-dd") : "선택해주세요"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    disabled={(date) => date > new Date()}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            
-            {/* 공고 종료일 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">공고 종료일</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal"
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, "yyyy-MM-dd") : "선택해주세요"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    disabled={(date) => startDate ? date < startDate : false}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+          {/* 두 번째 줄: 4개 셀렉트 박스 */}
+          <div className="grid grid-cols-4 gap-4 mb-4">
+            {/* 시/도 선택 */}
+            <Select value={selectedSido} onValueChange={handleSidoChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="전체" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                {regions.map((region) => (
+                  <SelectItem key={region.regionName} value={region.regionName}>
+                    {region.regionName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* 시/군/구 선택 */}
+            <Select value={selectedSigungu} onValueChange={setSelectedSigungu}>
+              <SelectTrigger>
+                <SelectValue placeholder="전체" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                {subRegions.map((subRegion) => (
+                  <SelectItem key={subRegion.subRegionName} value={subRegion.subRegionName}>
+                    {subRegion.subRegionName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {/* 축종 선택 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">축종</label>
-              <Select value={selectedSpecies} onValueChange={handleSpeciesChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="전체" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {upKinds.map((upKind) => (
-                    <SelectItem key={upKind.upKindName} value={upKind.upKindName}>
-                      {upKind.upKindName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={selectedSpecies} onValueChange={handleSpeciesChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="전체" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                {upKinds.map((upKind) => (
+                  <SelectItem key={upKind.upKindName} value={upKind.upKindName}>
+                    {upKind.upKindName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {/* 품종 선택 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">품종</label>
-              <Select value={selectedBreed} onValueChange={setSelectedBreed}>
-                <SelectTrigger>
-                  <SelectValue placeholder="전체" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {kinds.map((kind) => (
-                    <SelectItem key={kind.kindName} value={kind.kindName}>
-                      {kind.kindName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 시/도 선택 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">시/도</label>
-              <Select value={selectedSido} onValueChange={handleSidoChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="전체" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {regions.map((region) => (
-                    <SelectItem key={region.regionName} value={region.regionName}>
-                      {region.regionName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={selectedBreed} onValueChange={setSelectedBreed}>
+              <SelectTrigger>
+                <SelectValue placeholder="전체" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                {kinds.map((kind) => (
+                  <SelectItem key={kind.kindName} value={kind.kindName}>
+                    {kind.kindName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* 세 번째 줄: 시/군/구, 필터 초기화 버튼 */}
-          <div className="flex justify-between items-end gap-4">
-            <div className="flex-1 max-w-xs space-y-2">
-              <label className="text-sm font-medium text-gray-700">시/군/구</label>
-              <Select value={selectedSigungu} onValueChange={setSelectedSigungu}>
-                <SelectTrigger>
-                  <SelectValue placeholder="전체" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {subRegions.map((subRegion) => (
-                    <SelectItem key={subRegion.subRegionName} value={subRegion.subRegionName}>
-                      {subRegion.subRegionName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
+          {/* 세 번째 줄: 필터 초기화 버튼 */}
+          <div className="flex justify-end gap-2">
             <Button 
               variant="outline"
               onClick={handleResetFilters}
@@ -561,147 +515,129 @@ const Animals = () => {
           </div>
         </div>
 
-        {/* 검색 결과 정보 */}
-        {!loading && (
-          <div className="mb-6">
-            <p className="text-gray-600">
-              총 <span className="font-semibold text-blue-600">{totalElements}</span>마리의 동물이 있습니다.
-            </p>
-          </div>
-        )}
+        {/* 검색 결과 카운트 */}
+        <div className="mb-6">
+          <p className="text-gray-600">
+            총 <span className="font-semibold text-blue-600">{totalElements}</span>마리의 동물이 있습니다.
+          </p>
+        </div>
 
-        {/* 로딩 상태 */}
-        {loading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        {/* 동물 카드 리스트 */}
+        {loading ? (
+          <div className="text-center py-16">
+            <p className="text-gray-500 text-lg">데이터를 불러오는 중...</p>
           </div>
-        )}
-
-        {/* 동물 카드 그리드 */}
-        {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {animals.map((animal) => (
-              <Card key={animal.desertionNo} className="group hover:shadow-lg transition-shadow duration-200">
-                <div className="relative">
-                  <img 
-                    src={animal.popfile1 || '/placeholder.svg'}
-                    alt={animal.kindFullNm}
-                    className="w-full h-48 object-cover rounded-t-lg"
-                    onError={(e) => {
-                      e.currentTarget.src = '/placeholder.svg';
-                    }}
-                  />
-                  <button
-                    onClick={() => toggleBookmark(animal.desertionNo)}
-                    className="absolute top-2 right-2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-colors"
-                  >
-                    <Heart 
-                      className={`w-5 h-5 ${
-                        bookmarks[animal.desertionNo] 
-                          ? 'fill-red-500 text-red-500' 
-                          : 'text-gray-400 hover:text-red-500'
-                      }`} 
+        ) : animals.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            {animals.map((animal) => {
+              const processState = getProcessStateBadge(animal.processState);
+              return (
+                <Card key={animal.desertionNo} className="h-full hover:shadow-lg transition-shadow duration-300">
+                  <div className="aspect-[4/3] overflow-hidden rounded-t-lg relative">
+                    <img 
+                      src={animal.popfile1 || 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop'}
+                      alt={animal.kindFullNm}
+                      className="w-full h-full object-cover"
                     />
-                  </button>
-                  <div className="absolute top-2 left-2">
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                      {getProcessStateBadge(animal.processState).text}
-                    </Badge>
-                  </div>
-                </div>
-                
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg text-gray-800 truncate">
-                      {animal.kindFullNm}
-                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                      onClick={() => toggleBookmark(animal.desertionNo)}
+                    >
+                      <Heart 
+                        className={`w-4 h-4 ${
+                          bookmarks[animal.desertionNo] 
+                            ? 'fill-red-500 text-red-500' 
+                            : 'text-gray-400'
+                        }`} 
+                      />
+                    </Button>
                   </div>
                   
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <User className="w-4 h-4" />
-                      <span>{getSexDisplay(animal.sexCd)}</span>
+                  <CardContent className="p-4">
+                    <div className="mb-3">
+                      <h3 className="font-bold text-gray-800 mb-1">{animal.noticeNo}</h3>
+                      <p className="text-sm text-gray-600 mb-1">{animal.kindFullNm}</p>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <User className="w-3 h-3" />
+                        <span>{getSexDisplay(animal.sexCd)}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      <span className="truncate">{animal.regionName} {animal.subRegionName}</span>
+                    
+                    <div className="space-y-2 text-sm text-gray-600 mb-3">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-3 h-3" />
+                        <span>발견일: {formatDate(animal.happenDt)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-3 h-3" />
+                        <span>{animal.happenPlace}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>발견: {formatDate(animal.happenDt)}</span>
-                    </div>
-                  </div>
-                </CardContent>
-                
-                <CardFooter className="p-4 pt-0">
-                  <Link 
-                    to={`/animal/${animal.desertionNo}`}
-                    className="w-full"
-                  >
-                    <Button className="w-full">자세히 보기</Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        )}
 
-        {/* 검색 결과가 없을 때 */}
-        {!loading && animals.length === 0 && (
-          <div className="text-center py-20">
-            <div className="text-gray-400 mb-4">
-              <Search className="w-16 h-16 mx-auto mb-4" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              검색 결과가 없습니다
-            </h3>
-            <p className="text-gray-500 mb-6">
-              다른 검색 조건으로 다시 시도해보세요
-            </p>
-            <Button onClick={handleResetFilters} variant="outline">
-              필터 초기화
-            </Button>
+                    <div className="flex gap-2 mb-3">
+                      <Badge 
+                        className="text-xs"
+                        style={{
+                          backgroundColor: animal.processState === '보호중' ? '#FEF9C3' : '#F3F4F6',
+                          color: animal.processState === '보호중' ? '#B79458' : '#1F2937',
+                          border: 'none'
+                        }}
+                      >
+                        {processState.text}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                  
+                  <CardFooter className="p-4 pt-0">
+                    <Link to={`/animal/${animal.desertionNo}`} className="w-full">
+                      <Button className="w-full">상세보기</Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <p className="text-gray-500 text-lg mb-4">동물 목록이 없습니다.</p>
           </div>
         )}
 
         {/* 페이지네이션 */}
-        {!loading && totalPages > 1 && (
-          <div className="flex justify-center">
-            <div className="flex gap-2">
-              {currentPage > 0 && (
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 0}
+            >
+              이전
+            </Button>
+            
+            {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
+              const pageNum = currentPage < 5 ? i : currentPage - 5 + i;
+              if (pageNum >= totalPages) return null;
+              return (
                 <Button
-                  variant="outline"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  className="px-4 py-2"
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "default" : "outline"}
+                  onClick={() => handlePageChange(pageNum)}
+                  className="w-10"
                 >
-                  이전
+                  {pageNum + 1}
                 </Button>
-              )}
-              
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum = Math.max(0, Math.min(totalPages - 5, currentPage - 2)) + i;
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={currentPage === pageNum ? "default" : "outline"}
-                    onClick={() => handlePageChange(pageNum)}
-                    className="px-4 py-2"
-                  >
-                    {pageNum + 1}
-                  </Button>
-                );
-              })}
-              
-              {currentPage < totalPages - 1 && (
-                <Button
-                  variant="outline"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  className="px-4 py-2"
-                >
-                  다음
-                </Button>
-              )}
-            </div>
+              );
+            })}
+            
+            <Button
+              variant="outline"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages - 1}
+            >
+              다음
+            </Button>
           </div>
         )}
       </div>
