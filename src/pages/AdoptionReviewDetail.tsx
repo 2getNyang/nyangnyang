@@ -10,11 +10,12 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import AppHeader from '@/components/AppHeader';
 import CommentSection from '@/components/CommentSection';
+import { useCommentActions } from '@/hooks/useCommentActions';
 
 interface Comment {
   id: number;
-  commnetContent: string;
-  commentContent?: string;
+  commentContent: string;
+  commnetContent?: string;
   createdAt: string;
   commentNickname: string;
   commentUserId: number;
@@ -67,6 +68,12 @@ const AdoptionReviewDetail = () => {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+
+  const { submitComment, editComment, deleteComment } = useCommentActions({
+    boardId: id,
+    onCommentsUpdate: setComments
+  });
 
   // 날짜 포맷 함수
   const formatDate = (dateString: string) => {
@@ -97,6 +104,7 @@ const AdoptionReviewDetail = () => {
         
         if (result.code === 200) {
           setPostDetail(result.data);
+          setComments(result.data.comments || []);
           setLiked(result.data.isLiked);
           setLikeCount(result.data.likeItCount);
           console.log('✅ 게시글 데이터 로드 완료');
@@ -456,147 +464,22 @@ const AdoptionReviewDetail = () => {
                   <Heart className={`w-5 h-5 mr-2 ${liked ? 'fill-current' : ''}`} />
                   좋아요 {likeCount}
                 </Button>
-                <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  댓글 {postDetail.comments.length}
-                </Button>
+                 <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
+                   <MessageCircle className="w-5 h-5 mr-2" />
+                   댓글 {comments.length}
+                 </Button>
               </div>
             </div>
           </div>
 
           {/* 댓글 섹션 */}
           <CommentSection 
-            comments={postDetail.comments}
+            comments={comments}
             isLoggedIn={isLoggedIn}
             currentUserId={user?.id}
-            onSubmitComment={async (content, parentId) => {
-              if (!isLoggedIn || !user) {
-                toast({
-                  title: "로그인 필요",
-                  description: "댓글 작성을 위해 로그인이 필요합니다.",
-                  variant: "destructive"
-                });
-                return;
-              }
-              
-              try {
-                const token = localStorage.getItem('accessToken');
-                const response = await fetch(`http://localhost:8080/api/v1/comments/boards/${id}`, {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    userId: user.id,
-                    boardId: parseInt(id!),
-                    commentContent: content,
-                    parentId: parentId
-                  }),
-                });
-                
-                const result = await response.json();
-                if (result.code === 200) {
-                  toast({
-                    title: "댓글 등록 완료",
-                    description: "댓글이 성공적으로 등록되었습니다.",
-                  });
-                  window.location.reload();
-                } else {
-                  throw new Error(result.message || '댓글 등록에 실패했습니다.');
-                }
-              } catch (error) {
-                console.error('댓글 등록 실패:', error);
-                toast({
-                  title: "댓글 등록 실패",
-                  description: "댓글 등록 중 오류가 발생했습니다.",
-                  variant: "destructive"
-                });
-              }
-            }}
-            onEditComment={async (commentId, content) => {
-              if (!isLoggedIn || !user) {
-                toast({
-                  title: "로그인 필요",
-                  description: "댓글 수정을 위해 로그인이 필요합니다.",
-                  variant: "destructive"
-                });
-                return;
-              }
-              
-              try {
-                const token = localStorage.getItem('accessToken');
-                const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
-                  method: 'PUT',
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    userId: user.id,
-                    boardId: parseInt(id!),
-                    commentContent: content,
-                    parentId: null
-                  }),
-                });
-                
-                const result = await response.json();
-                if (result.code === 200) {
-                  toast({
-                    title: "댓글 수정 완료",
-                    description: "댓글이 성공적으로 수정되었습니다.",
-                  });
-                  window.location.reload();
-                } else {
-                  throw new Error(result.message || '댓글 수정에 실패했습니다.');
-                }
-              } catch (error) {
-                console.error('댓글 수정 실패:', error);
-                toast({
-                  title: "댓글 수정 실패",
-                  description: "댓글 수정 중 오류가 발생했습니다.",
-                  variant: "destructive"
-                });
-              }
-            }}
-            onDeleteComment={async (commentId) => {
-              if (!isLoggedIn || !user) {
-                toast({
-                  title: "로그인 필요",
-                  description: "댓글 삭제를 위해 로그인이 필요합니다.",
-                  variant: "destructive"
-                });
-                return;
-              }
-              
-              try {
-                const token = localStorage.getItem('accessToken');
-                const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
-                  method: 'DELETE',
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                  },
-                });
-                
-                const result = await response.json();
-                if (result.code === 200) {
-                  toast({
-                    title: "댓글 삭제 완료",
-                    description: "댓글이 성공적으로 삭제되었습니다.",
-                  });
-                  window.location.reload();
-                } else {
-                  throw new Error(result.message || '댓글 삭제에 실패했습니다.');
-                }
-              } catch (error) {
-                console.error('댓글 삭제 실패:', error);
-                toast({
-                  title: "댓글 삭제 실패",
-                  description: "댓글 삭제 중 오류가 발생했습니다.",
-                  variant: "destructive"
-                });
-              }
-            }}
+            onSubmitComment={submitComment}
+            onEditComment={editComment}
+            onDeleteComment={deleteComment}
           />
         </div>
       </div>

@@ -9,6 +9,7 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import AppHeader from '@/components/AppHeader';
 import CommentSection from '@/components/CommentSection';
+import { useCommentActions } from '@/hooks/useCommentActions';
 
 declare global {
   interface Window {
@@ -64,6 +65,12 @@ const SNSPostDetail = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+
+  const { submitComment, editComment, deleteComment } = useCommentActions({
+    boardId: id,
+    onCommentsUpdate: setComments
+  });
 
   useEffect(() => {
     const fetchPostDetail = async () => {
@@ -84,6 +91,7 @@ const SNSPostDetail = () => {
         const data: APIResponse = await response.json();
         console.log('SNS 게시글 상세 응답:', data);
         setPostDetail(data.data);
+        setComments(data.data.comments || []);
         
         // 좋아요 수와 상태 초기화
         if (data.data.likeCount !== null) {
@@ -429,10 +437,10 @@ const SNSPostDetail = () => {
                 <Heart className={`w-5 h-5 mr-2 ${isLiked ? 'fill-current' : ''}`} />
                 좋아요 {likeCount}
               </Button>
-              <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
-                <MessageCircle className="w-5 h-5 mr-2" />
-                댓글 {postDetail.comments?.length || 0}
-              </Button>
+               <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
+                 <MessageCircle className="w-5 h-5 mr-2" />
+                 댓글 {comments.length}
+               </Button>
             </div>
               <div className="flex items-center space-x-2 text-sm text-gray-500">
                 <Eye className="w-4 h-4" />

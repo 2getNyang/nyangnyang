@@ -21,7 +21,7 @@ interface AppHeaderProps {
 const AppHeader = ({ onLoginClick }: AppHeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isLoggedIn, logout } = useAuth();
-  const { notifications, hasUnreadNotifications } = useNotification();
+  const { notifications, hasUnreadNotifications, markAsRead, markAllAsRead } = useNotification();
   
   // 로그인 상태 콘솔 출력
   console.log('헤더 상태 - 로그인 여부:', isLoggedIn, '사용자:', user);
@@ -64,17 +64,44 @@ const AppHeader = ({ onLoginClick }: AppHeaderProps) => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80">
                     <div className="p-2">
-                      <p className="font-semibold text-sm mb-2">알림</p>
-                       {notifications.length > 0 ? (
-                         notifications.map((notification) => (
-                           <div key={notification.notyId} className="p-2 hover:bg-gray-50 rounded text-xs border-b last:border-b-0">
-                             <p className="text-gray-600 text-xs">{notification.notyContent}</p>
-                             <p className="text-gray-400 text-xs mt-1">{new Date(notification.notyCreatedAt).toLocaleString()}</p>
-                           </div>
-                         ))
-                       ) : (
-                         <p className="text-gray-500 text-xs p-2">새 알림이 없습니다.</p>
-                       )}
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="font-semibold text-sm">알림</p>
+                        {notifications.some(n => !n.isRead) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={markAllAsRead}
+                            className="text-xs text-blue-600 hover:text-blue-700"
+                          >
+                            전체 읽음
+                          </Button>
+                        )}
+                      </div>
+                      {notifications.filter(n => !n.isRead).length > 0 ? (
+                        notifications.filter(n => !n.isRead).map((notification) => (
+                          <div key={notification.notyId} className="relative p-2 hover:bg-gray-50 rounded text-xs border-b last:border-b-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-gray-600 text-xs">{notification.notyContent}</p>
+                                <p className="text-gray-400 text-xs mt-1">{new Date(notification.notyCreatedAt).toLocaleString()}</p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markAsRead(notification.notyId);
+                                }}
+                                className="flex-shrink-0 p-1 h-auto min-w-[24px] text-gray-400 hover:text-gray-600 hover:bg-gray-200"
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-500 text-xs p-2">새 알림이 없습니다.</p>
+                      )}
                     </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
