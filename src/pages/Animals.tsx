@@ -82,6 +82,8 @@ const Animals = () => {
   const [selectedSigungu, setSelectedSigungu] = useState('all');
   const [selectedSpecies, setSelectedSpecies] = useState('all');
   const [selectedBreed, setSelectedBreed] = useState('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // select box 데이터 상태
   const [regions, setRegions] = useState<Region[]>([]);
@@ -91,12 +93,63 @@ const Animals = () => {
 
   const animalsPerPage = 12;
 
-  // API 호출
+  // 통합 검색 API 호출
   const fetchAnimals = async (page: number = 0) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/animals?page=${page}&size=${animalsPerPage}`, {
+      
+      // 검색 파라미터 구성
+      const params = new URLSearchParams();
+      
+      // 페이지네이션
+      params.append('page', page.toString());
+      params.append('size', animalsPerPage.toString());
+      
+      // 검색어
+      if (searchTerm.trim()) {
+        params.append('keyword', searchTerm.trim());
+      }
+      
+      // 날짜 필터 (둘 다 있거나 둘 다 없어야 함)
+      if (startDate && endDate) {
+        params.append('startDate', startDate);
+        params.append('endDate', endDate);
+      }
+      
+      // 지역 필터
+      if (selectedSido !== 'all') {
+        const selectedRegion = regions.find(r => r.regionName === selectedSido);
+        if (selectedRegion?.regionCode) {
+          params.append('regionCode', selectedRegion.regionCode);
+        }
+      }
+      
+      // 시군구 필터
+      if (selectedSigungu !== 'all') {
+        const selectedSubRegion = subRegions.find(sr => sr.subRegionName === selectedSigungu);
+        if (selectedSubRegion?.subRegionCode) {
+          params.append('subRegionCode', selectedSubRegion.subRegionCode);
+        }
+      }
+      
+      // 축종 필터
+      if (selectedSpecies !== 'all') {
+        const selectedUpKind = upKinds.find(uk => uk.upKindName === selectedSpecies);
+        if (selectedUpKind?.upKindCd) {
+          params.append('upKindCd', selectedUpKind.upKindCd);
+        }
+      }
+      
+      // 품종 필터
+      if (selectedBreed !== 'all') {
+        const selectedKind = kinds.find(k => k.kindName === selectedBreed);
+        if (selectedKind?.kindCd) {
+          params.append('kindCd', selectedKind.kindCd);
+        }
+      }
+      
+      const response = await fetch(`http://localhost:8080/api/v1/animals/search?${params.toString()}`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
         }
@@ -316,6 +369,27 @@ const Animals = () => {
     fetchAnimals(page);
   };
 
+  // 검색 실행
+  const handleSearch = () => {
+    setCurrentPage(0);
+    fetchAnimals(0);
+  };
+
+  // 필터 초기화
+  const handleResetFilters = () => {
+    setSearchTerm('');
+    setSelectedSido('all');
+    setSelectedSigungu('all');
+    setSelectedSpecies('all');
+    setSelectedBreed('all');
+    setStartDate('');
+    setEndDate('');
+    setSubRegions([]);
+    setKinds([]);
+    setCurrentPage(0);
+    fetchAnimals(0);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeaderWithModal />
@@ -349,6 +423,8 @@ const Animals = () => {
               <label className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-500 z-10">공고 시작일</label>
               <Input
                 type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
                 className="text-gray-600"
               />
             </div>
@@ -358,6 +434,8 @@ const Animals = () => {
               <label className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-500 z-10">공고 종료일</label>
               <Input
                 type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
                 className="text-gray-600"
               />
             </div>
@@ -426,23 +504,22 @@ const Animals = () => {
             </Select>
           </div>
 
-          {/* 세 번째 줄: 필터 초기화 버튼 */}
-          <div className="flex justify-end">
+          {/* 세 번째 줄: 검색 및 필터 초기화 버튼 */}
+          <div className="flex justify-end gap-2">
             <Button 
               variant="outline"
-              onClick={() => {
-                setSearchTerm('');
-                setSelectedSido('all');
-                setSelectedSigungu('all');
-                setSelectedSpecies('all');
-                setSelectedBreed('all');
-                setSubRegions([]);
-                setKinds([]);
-              }}
+              onClick={handleResetFilters}
               className="flex items-center gap-2"
             >
               <X className="w-4 h-4" />
               필터 초기화
+            </Button>
+            <Button 
+              onClick={handleSearch}
+              className="flex items-center gap-2"
+            >
+              <Search className="w-4 h-4" />
+              검색
             </Button>
           </div>
         </div>
