@@ -256,8 +256,17 @@ const MissingPostDetail = () => {
       
       if (roomId) {
         console.log('채팅방 생성 성공, roomId:', roomId);
-        // 채팅 위젯에 해당 채팅방을 직접 열도록 설정
-        await handleChatWidgetOpen(roomId.toString());
+        // 채팅 위젯 열기 및 해당 채팅방으로 직접 이동
+        setIsChatWidgetOpen(true);
+        // 약간의 지연 후 해당 채팅방 열기
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('openChatWidget', { 
+            detail: { 
+              roomId: roomId.toString(),
+              opponentNickname: postDetail?.nickname || '상대방' 
+            } 
+          }));
+        }, 100);
       } else {
         console.log('채팅방 생성 실패:', result);
         toast({
@@ -276,19 +285,6 @@ const MissingPostDetail = () => {
     }
   };
 
-  // 채팅 위젯에서 특정 채팅방 열기
-  const handleChatWidgetOpen = async (roomId: string) => {
-    setIsChatWidgetOpen(true);
-    // 위젯이 열린 후 해당 채팅방을 직접 선택하도록 설정
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('openChatRoom', { 
-        detail: { 
-          roomId: roomId,
-          opponentNickname: postDetail?.nickname || '상대방' 
-        } 
-      }));
-    }, 100);
-  };
 
   // 삭제 처리 함수
   const handleDelete = async () => {

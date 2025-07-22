@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 
 interface Comment {

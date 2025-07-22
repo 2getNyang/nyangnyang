@@ -98,8 +98,20 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen, isLoggedIn]);
 
-  // 외부에서 특정 채팅방 열기 이벤트 리스너
+  // 외부에서 채팅 위젯 열기 이벤트 리스너 
   useEffect(() => {
+    const handleOpenChatWidget = (event: CustomEvent) => {
+      console.log('채팅 위젯 열기 이벤트:', event.detail);
+      
+      if (event.detail.roomId && event.detail.opponentNickname) {
+        // 특정 채팅방으로 바로 이동
+        handleChatRoomClick(event.detail.roomId, event.detail.opponentNickname);
+      } else {
+        // 채팅 목록으로 이동
+        setCurrentView('list');
+      }
+    };
+
     const handleOpenChatRoom = (event: CustomEvent) => {
       const { roomId, opponentNickname } = event.detail;
       if (isOpen && roomId) {
@@ -107,8 +119,10 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
       }
     };
 
+    window.addEventListener('openChatWidget', handleOpenChatWidget as EventListener);
     window.addEventListener('openChatRoom', handleOpenChatRoom as EventListener);
     return () => {
+      window.removeEventListener('openChatWidget', handleOpenChatWidget as EventListener);
       window.removeEventListener('openChatRoom', handleOpenChatRoom as EventListener);
     };
   }, [isOpen]);
@@ -169,7 +183,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
         setMessages(formattedMessages);
       }
 
+      setCurrentView('chat');
       setCurrentRoomId(roomId);
+      setCurrentOpponentNickname(opponentNickname);
       setupWebSocket(roomId);
       
     } catch (error) {
@@ -411,10 +427,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
                      {chatRooms.map((room) => (
                        <div
                          key={room.roomId}
-                         onClick={() => {
-                           setCurrentView('chat');
-                           handleChatRoomClick(room.roomId, room.opponentNickname);
-                         }}
+                         onClick={() => handleChatRoomClick(room.roomId, room.opponentNickname)}
                          className="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
                       >
                         <div className="flex justify-between items-start">
