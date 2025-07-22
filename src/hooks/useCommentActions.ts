@@ -23,19 +23,10 @@ export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActio
 
   const submitComment = async (content: string, parentId?: number | null) => {
     if (!isLoggedIn || !user || !boardId) {
-      toast({
-        title: "로그인이 필요합니다",
-        description: "댓글을 작성하려면 로그인해주세요.",
-        variant: "destructive",
-      });
       return;
     }
 
     if (!content.trim()) {
-      toast({
-        title: "댓글 내용을 입력해주세요",
-        variant: "destructive",
-      });
       return;
     }
 
@@ -57,9 +48,6 @@ export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActio
       });
 
       if (response.ok) {
-        toast({
-          title: "댓글이 등록되었습니다",
-        });
         // 댓글 목록 다시 가져오기
         await fetchComments();
       } else {
@@ -67,10 +55,6 @@ export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActio
       }
     } catch (error) {
       console.error('댓글 등록 실패:', error);
-      toast({
-        title: "댓글 등록에 실패했습니다",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -78,18 +62,10 @@ export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActio
 
   const editComment = async (commentId: number, content: string) => {
     if (!isLoggedIn || !user || !boardId) {
-      toast({
-        title: "로그인이 필요합니다",
-        variant: "destructive",
-      });
       return;
     }
 
     if (!content.trim()) {
-      toast({
-        title: "댓글 내용을 입력해주세요",
-        variant: "destructive",
-      });
       return;
     }
 
@@ -111,9 +87,6 @@ export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActio
       });
 
       if (response.ok) {
-        toast({
-          title: "댓글이 수정되었습니다",
-        });
         // 댓글 목록 다시 가져오기
         await fetchComments();
       } else {
@@ -121,10 +94,6 @@ export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActio
       }
     } catch (error) {
       console.error('댓글 수정 실패:', error);
-      toast({
-        title: "댓글 수정에 실패했습니다",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -132,10 +101,6 @@ export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActio
 
   const deleteComment = async (commentId: number) => {
     if (!isLoggedIn || !user) {
-      toast({
-        title: "로그인이 필요합니다",
-        variant: "destructive",
-      });
       return;
     }
 
@@ -150,9 +115,6 @@ export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActio
       });
 
       if (response.ok) {
-        toast({
-          title: "댓글이 삭제되었습니다",
-        });
         // 댓글 목록 다시 가져오기
         await fetchComments();
       } else {
@@ -160,10 +122,6 @@ export const useCommentActions = ({ boardId, onCommentsUpdate }: UseCommentActio
       }
     } catch (error) {
       console.error('댓글 삭제 실패:', error);
-      toast({
-        title: "댓글 삭제에 실패했습니다",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }

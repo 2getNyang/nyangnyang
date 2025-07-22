@@ -36,6 +36,10 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [loading, setLoading] = useState(false);
   
+  // 현재 뷰 상태 ('list' | 'chat')
+  const [currentView, setCurrentView] = useState<'list' | 'chat'>('list');
+  const [currentOpponentNickname, setCurrentOpponentNickname] = useState<string | null>(null);
+  
   // 채팅방 상태
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -294,9 +298,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
       stompClientRef.current.deactivate();
     }
     setCurrentRoomId(null);
+    setCurrentOpponentNickname(null);
     setMessages([]);
     setIsConnected(false);
-    fetchChatRooms(); // 목록 새로고침
+    setCurrentView('list');
+    // 목록 새로고침
+    fetchChatRooms();
   };
 
   // 위젯 닫기
@@ -347,7 +354,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
         {/* 헤더 */}
         <div className="flex items-center justify-between p-3 border-b bg-gray-50 rounded-t-lg">
           <div className="flex items-center space-x-2">
-            {currentRoomId && (
+            {currentView === 'chat' && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -358,7 +365,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
               </Button>
             )}
             <h3 className="font-medium text-sm">
-              {currentRoomId ? `${otherUserName}님` : '채팅'}
+              {currentView === 'chat' ? `${otherUserName}님` : '채팅'}
             </h3>
           </div>
           <div className="flex items-center space-x-1">
@@ -383,7 +390,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
 
         {!isMinimized && (
           <div className="h-80 flex flex-col">
-            {!currentRoomId ? (
+            {currentView === 'list' ? (
               // 채팅방 목록
               <div className="flex-1 overflow-y-auto">
                 {loading ? (
@@ -401,11 +408,14 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
                   </div>
                 ) : (
                   <div>
-                    {chatRooms.map((room) => (
-                      <div
-                        key={room.roomId}
-                        onClick={() => handleChatRoomClick(room.roomId, room.opponentNickname)}
-                        className="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                     {chatRooms.map((room) => (
+                       <div
+                         key={room.roomId}
+                         onClick={() => {
+                           setCurrentView('chat');
+                           handleChatRoomClick(room.roomId, room.opponentNickname);
+                         }}
+                         className="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1 min-w-0">
@@ -434,7 +444,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
                   </div>
                 )}
               </div>
-            ) : (
+            ) : currentView === 'chat' && currentRoomId ? (
               // 채팅방
               <>
                 {/* 연결 상태 */}
@@ -532,7 +542,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
                   )}
                 </div>
               </>
-            )}
+            ) : null}
           </div>
         )}
       </div>
