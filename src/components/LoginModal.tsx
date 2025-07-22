@@ -87,7 +87,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           <div className="text-center pt-4">
             <p className="text-sm text-gray-500">
               로그인하시면 <span className="text-golden font-medium">서비스 이용약관</span> 및{' '}
-              <span className="text-golden font-medium">개인정보처리방침</span>에 동의하게 됩니다.
+              <span className="text-golden font-medium">개인정보처리방침</span>에 <br />동의하게 됩니다.
             </p>
           </div>
         </div>

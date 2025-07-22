@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Upload, X, Heart } from 'lucide-react';
+import { Upload, X, Heart, Siren, PawPrint } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 
@@ -242,7 +242,7 @@ const CreateAdoptionReviewPost = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Heart className="w-5 h-5" />
+              <PawPrint className="w-5 h-5" />
               입양 후기 글 작성
             </CardTitle>
           </CardHeader>

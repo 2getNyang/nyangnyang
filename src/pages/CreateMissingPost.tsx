@@ -4,7 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { z } from 'zod';
-import { CalendarIcon, Upload, X } from 'lucide-react';
+import { CalendarIcon, Upload, X, Siren, PawPrint } from 'lucide-react';
 import AppHeader from '@/components/AppHeader';
 import LoginModal from '@/components/LoginModal';
 import { useAuth } from '@/context/AuthContext';
@@ -328,7 +328,10 @@ const CreateMissingPost = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>제보 작성</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+            <Siren className="w-5 h-5" />
+              실종/목격 제보 글 작성
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>

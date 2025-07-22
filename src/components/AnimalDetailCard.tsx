@@ -630,7 +630,7 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
           className="w-full h-12 text-lg font-semibold"
           disabled={animal.processState !== '보호중'}
         >
-          {animal.processState !== '보호중' ? '입양 완료된 동물입니다' : '입양 신청서 작성하기'}
+          {animal.processState !== '보호중' ? '종료된 공고 입니다.' : '입양 신청서 작성하기'}
         </Button>
       </div>
     </div>
