@@ -457,10 +457,29 @@ const MissingPostDetail = () => {
               {/* 채팅하기 버튼 */}
               <div className="mt-4">
                 <Button 
-                  onClick={handleChatClick}
+                  onClick={() => {
+                    if (!currentUserId) {
+                      toast({
+                        title: "로그인 필요",
+                        description: "채팅 기능을 사용하려면 로그인이 필요합니다.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    if (currentUserId === postDetail.userId) {
+                      toast({
+                        title: "알림",
+                        description: "자신과는 채팅할 수 없어요.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    // 채팅방 목록 페이지로 이동
+                    navigate('/chat/list');
+                  }}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   size="lg"
-                  disabled={currentUserId === postDetail.userId}
+                  disabled={currentUserId === postDetail.userId || !currentUserId}
                 >
                   <Send className="mr-2 h-4 w-4" />
                   {currentUserId === postDetail.userId ? '자신과는 채팅할 수 없어요' : `${postDetail.nickname}님과 채팅하기`}

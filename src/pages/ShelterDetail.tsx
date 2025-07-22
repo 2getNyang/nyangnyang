@@ -81,9 +81,13 @@ const ShelterDetail = () => {
         <div className="max-w-4xl mx-auto">
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="relative py-6 bg-gradient-to-r from-yellow-500 to-amber-500 text-white rounded-t-lg">
-              <Link to="/shelters" className="absolute left-4 top-4">
-                <ArrowLeft className="w-8 h-8 text-white hover:text-white/80 transition-colors" />
-              </Link>
+              <Button 
+                variant="ghost" 
+                onClick={() => window.history.back()} 
+                className="absolute left-4 top-4 text-white hover:text-white/80"
+              >
+                <ArrowLeft className="w-8 h-8" />
+              </Button>
               <CardTitle className="text-3xl font-bold text-center pt-2">
                 {shelter.careName}
               </CardTitle>

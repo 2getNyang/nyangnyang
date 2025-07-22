@@ -329,15 +329,36 @@ const Animals = () => {
 
         {/* 검색 및 필터링 */}
         <div className="mb-8 bg-white rounded-lg p-6 shadow-sm border">
-          {/* 첫 번째 줄: 검색창 */}
-          <div className="mb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          {/* 첫 번째 줄: 검색창과 날짜 필터 */}
+          <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* 검색창 */}
+            <div className="md:col-span-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="동물 이름, 품종, 지역으로 검색하세요"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            
+            {/* 공고 시작일 */}
+            <div>
               <Input
-                placeholder="동물 이름, 품종, 지역으로 검색하세요"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                type="date"
+                placeholder="공고 시작일"
+                className="text-gray-600"
+              />
+            </div>
+            
+            {/* 공고 종료일 */}
+            <div>
+              <Input
+                type="date"
+                placeholder="공고 종료일"
+                className="text-gray-600"
               />
             </div>
           </div>
