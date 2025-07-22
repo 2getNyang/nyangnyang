@@ -196,6 +196,15 @@ const MissingPostDetail = () => {
 
   // 채팅하기 버튼 클릭 핸들러
   const handleChatClick = async () => {
+    if (!currentUserId) {
+      toast({
+        title: "로그인 필요",
+        description: "채팅 기능을 사용하려면 로그인이 필요합니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (currentUserId === postDetail.userId) {
       toast({
         title: "알림",
@@ -239,7 +248,8 @@ const MissingPostDetail = () => {
       
       if (roomId) {
         console.log('채팅방 생성 성공, roomId:', roomId);
-        navigate(`/chat/room/${roomId}`);
+        // 채팅 위젯에 해당 채팅방을 직접 열도록 설정
+        await handleChatWidgetOpen(roomId.toString());
       } else {
         console.log('채팅방 생성 실패:', result);
         toast({
@@ -256,6 +266,20 @@ const MissingPostDetail = () => {
         variant: "destructive"
       });
     }
+  };
+
+  // 채팅 위젯에서 특정 채팅방 열기
+  const handleChatWidgetOpen = async (roomId: string) => {
+    setIsChatWidgetOpen(true);
+    // 위젯이 열린 후 해당 채팅방을 직접 선택하도록 설정
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('openChatRoom', { 
+        detail: { 
+          roomId: roomId,
+          opponentNickname: postDetail?.nickname || '상대방' 
+        } 
+      }));
+    }, 100);
   };
 
   // 삭제 처리 함수
@@ -477,7 +501,7 @@ const MissingPostDetail = () => {
                       return;
                     }
                     
-                    setIsChatWidgetOpen(true);
+                    handleChatClick();
                   }}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   size="lg"
@@ -514,52 +538,134 @@ const MissingPostDetail = () => {
           {/* 댓글 섹션 */}
           <CommentSection 
             comments={postDetail.comments}
-            isLoggedIn={!!currentUserId}
+            isLoggedIn={currentUserId !== undefined}
             currentUserId={currentUserId}
             onSubmitComment={async (content, parentId) => {
-              const token = localStorage.getItem('accessToken');
-              const response = await fetch(`http://localhost:8080/api/v1/comments`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  boardId: parseInt(id!),
-                  commentContent: content,
-                  parentId: parentId
-                }),
-              });
-              if (response.ok) {
-                window.location.reload();
+              if (!currentUserId) {
+                toast({
+                  title: "로그인 필요",
+                  description: "댓글 작성을 위해 로그인이 필요합니다.",
+                  variant: "destructive"
+                });
+                return;
+              }
+              
+              try {
+                const token = localStorage.getItem('accessToken');
+                const response = await fetch(`http://localhost:8080/api/v1/comments/boards/${id}`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    userId: currentUserId,
+                    boardId: parseInt(id!),
+                    commentContent: content,
+                    parentId: parentId
+                  }),
+                });
+                
+                const result = await response.json();
+                if (result.code === 200) {
+                  toast({
+                    title: "댓글 등록 완료",
+                    description: "댓글이 성공적으로 등록되었습니다.",
+                  });
+                  window.location.reload();
+                } else {
+                  throw new Error(result.message || '댓글 등록에 실패했습니다.');
+                }
+              } catch (error) {
+                console.error('댓글 등록 실패:', error);
+                toast({
+                  title: "댓글 등록 실패",
+                  description: "댓글 등록 중 오류가 발생했습니다.",
+                  variant: "destructive"
+                });
               }
             }}
             onEditComment={async (commentId, content) => {
-              const token = localStorage.getItem('accessToken');
-              const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
-                method: 'PUT',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  commentContent: content
-                }),
-              });
-              if (response.ok) {
-                window.location.reload();
+              if (!currentUserId) {
+                toast({
+                  title: "로그인 필요",
+                  description: "댓글 수정을 위해 로그인이 필요합니다.",
+                  variant: "destructive"
+                });
+                return;
+              }
+              
+              try {
+                const token = localStorage.getItem('accessToken');
+                const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
+                  method: 'PUT',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    userId: currentUserId,
+                    boardId: parseInt(id!),
+                    commentContent: content,
+                    parentId: null
+                  }),
+                });
+                
+                const result = await response.json();
+                if (result.code === 200) {
+                  toast({
+                    title: "댓글 수정 완료",
+                    description: "댓글이 성공적으로 수정되었습니다.",
+                  });
+                  window.location.reload();
+                } else {
+                  throw new Error(result.message || '댓글 수정에 실패했습니다.');
+                }
+              } catch (error) {
+                console.error('댓글 수정 실패:', error);
+                toast({
+                  title: "댓글 수정 실패",
+                  description: "댓글 수정 중 오류가 발생했습니다.",
+                  variant: "destructive"
+                });
               }
             }}
             onDeleteComment={async (commentId) => {
-              const token = localStorage.getItem('accessToken');
-              const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
-                method: 'DELETE',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                },
-              });
-              if (response.ok) {
-                window.location.reload();
+              if (!currentUserId) {
+                toast({
+                  title: "로그인 필요",
+                  description: "댓글 삭제를 위해 로그인이 필요합니다.",
+                  variant: "destructive"
+                });
+                return;
+              }
+              
+              try {
+                const token = localStorage.getItem('accessToken');
+                const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                  },
+                });
+                
+                const result = await response.json();
+                if (result.code === 200) {
+                  toast({
+                    title: "댓글 삭제 완료",
+                    description: "댓글이 성공적으로 삭제되었습니다.",
+                  });
+                  window.location.reload();
+                } else {
+                  throw new Error(result.message || '댓글 삭제에 실패했습니다.');
+                }
+              } catch (error) {
+                console.error('댓글 삭제 실패:', error);
+                toast({
+                  title: "댓글 삭제 실패",
+                  description: "댓글 삭제 중 오류가 발생했습니다.",
+                  variant: "destructive"
+                });
               }
             }}
           />

@@ -94,6 +94,21 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen, isLoggedIn]);
 
+  // 외부에서 특정 채팅방 열기 이벤트 리스너
+  useEffect(() => {
+    const handleOpenChatRoom = (event: CustomEvent) => {
+      const { roomId, opponentNickname } = event.detail;
+      if (isOpen && roomId) {
+        handleChatRoomClick(roomId, opponentNickname);
+      }
+    };
+
+    window.addEventListener('openChatRoom', handleOpenChatRoom as EventListener);
+    return () => {
+      window.removeEventListener('openChatRoom', handleOpenChatRoom as EventListener);
+    };
+  }, [isOpen]);
+
   // 채팅방 선택
   const handleChatRoomClick = async (roomId: string, opponentNickname: string) => {
     try {
