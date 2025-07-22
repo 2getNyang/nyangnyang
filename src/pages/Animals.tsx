@@ -409,8 +409,9 @@ const Animals = () => {
 
         {/* 검색 및 필터링 */}
         <div className="mb-8 bg-white rounded-lg p-6 shadow-sm border">
-          {/* 첫 번째 줄: 검색창 */}
-          <div className="mb-4">
+          {/* 첫 번째 줄: 검색창과 날짜 선택 */}
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            {/* 검색창 */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -420,65 +421,96 @@ const Animals = () => {
                 className="pl-10"
               />
             </div>
-          </div>
-
-          {/* 두 번째 줄: 공고일, 축종, 품종, 시/도, 시/군/구 */}
-          <div className="grid grid-cols-5 gap-4 mb-4">
+            
             {/* 공고 시작일 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">공고 시작일</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal"
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "yyyy-MM-dd") : "선택해주세요"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    disabled={(date) => date > new Date()}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
+                  {startDate ? format(startDate, "yyyy-MM-dd") : "공고 시작일"}
+                  <Calendar className="ml-auto h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  disabled={(date) => date > new Date()}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
             
             {/* 공고 종료일 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">공고 종료일</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal"
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, "yyyy-MM-dd") : "선택해주세요"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    disabled={(date) => startDate ? date < startDate : false}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
+                  {endDate ? format(endDate, "yyyy-MM-dd") : "공고 종료일"}
+                  <Calendar className="ml-auto h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={endDate}
+                  onSelect={setEndDate}
+                  disabled={(date) => startDate ? date < startDate : false}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* 두 번째 줄: 4개 드롭다운과 필터 초기화 버튼 */}
+          <div className="flex gap-4 items-center">
+            {/* 시/도 선택 */}
+            <div className="flex-1">
+              <Select value={selectedSido} onValueChange={handleSidoChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="전체" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  {regions.map((region) => (
+                    <SelectItem key={region.regionName} value={region.regionName}>
+                      {region.regionName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 시/군/구 선택 */}
+            <div className="flex-1">
+              <Select 
+                value={selectedSigungu} 
+                onValueChange={setSelectedSigungu}
+                disabled={selectedSido === 'all' || subRegions.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="전체" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  {subRegions.map((subRegion) => (
+                    <SelectItem key={subRegion.subRegionName} value={subRegion.subRegionName}>
+                      {subRegion.subRegionName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* 축종 선택 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">축종</label>
+            <div className="flex-1">
               <Select value={selectedSpecies} onValueChange={handleSpeciesChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="전체" />
@@ -495,9 +527,12 @@ const Animals = () => {
             </div>
 
             {/* 품종 선택 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">품종</label>
-              <Select value={selectedBreed} onValueChange={setSelectedBreed}>
+            <div className="flex-1">
+              <Select 
+                value={selectedBreed} 
+                onValueChange={setSelectedBreed}
+                disabled={selectedSpecies === 'all' || kinds.length === 0}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="전체" />
                 </SelectTrigger>
@@ -512,44 +547,7 @@ const Animals = () => {
               </Select>
             </div>
 
-            {/* 시/도 선택 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">시/도</label>
-              <Select value={selectedSido} onValueChange={handleSidoChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="전체" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {regions.map((region) => (
-                    <SelectItem key={region.regionName} value={region.regionName}>
-                      {region.regionName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* 세 번째 줄: 시/군/구, 필터 초기화 버튼 */}
-          <div className="flex justify-between items-end gap-4">
-            <div className="flex-1 max-w-xs space-y-2">
-              <label className="text-sm font-medium text-gray-700">시/군/구</label>
-              <Select value={selectedSigungu} onValueChange={setSelectedSigungu}>
-                <SelectTrigger>
-                  <SelectValue placeholder="전체" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {subRegions.map((subRegion) => (
-                    <SelectItem key={subRegion.subRegionName} value={subRegion.subRegionName}>
-                      {subRegion.subRegionName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
+            {/* 필터 초기화 버튼 */}
             <Button 
               variant="outline"
               onClick={handleResetFilters}
