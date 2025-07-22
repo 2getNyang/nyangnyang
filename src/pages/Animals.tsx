@@ -410,9 +410,9 @@ const Animals = () => {
         {/* 검색 및 필터링 */}
         <div className="mb-8 bg-white rounded-lg p-6 shadow-sm border">
           {/* 첫 번째 줄: 검색창과 날짜 선택 */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            {/* 검색창 */}
-            <div className="relative">
+          <div className="grid grid-cols-4 gap-4 mb-4">
+            {/* 검색창 - 2개 셀렉트박스 크기 */}
+            <div className="col-span-2 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="동물 이름, 품종, 지역으로 검색하세요"
@@ -422,7 +422,7 @@ const Animals = () => {
               />
             </div>
             
-            {/* 공고 시작일 */}
+            {/* 공고 시작일 - 1개 셀렉트박스 크기 */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -445,7 +445,7 @@ const Animals = () => {
               </PopoverContent>
             </Popover>
             
-            {/* 공고 종료일 */}
+            {/* 공고 종료일 - 1개 셀렉트박스 크기 */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
