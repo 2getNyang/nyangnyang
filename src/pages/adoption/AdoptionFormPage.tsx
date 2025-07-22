@@ -150,8 +150,13 @@ const AdoptionFormPage: React.FC = () => {
           title: "재전송 완료",
           description: result.message || "입양 신청이 재전송되었습니다."
         });
-        // 데이터 다시 불러오기 (resentAt이 업데이트 됨)
-        await fetchApplicationData();
+        
+        // resentAt을 현재 시간으로 업데이트하여 버튼 비활성화
+        setApplicationData(prev => prev ? {
+          ...prev,
+          resentAt: new Date().toISOString()
+        } : null);
+        
       } else {
         throw new Error('재전송 실패');
       }
