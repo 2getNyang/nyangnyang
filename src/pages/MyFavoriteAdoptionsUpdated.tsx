@@ -207,7 +207,7 @@ const MyFavoriteAdoptionsUpdated = () => {
                   className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02] cursor-pointer"
                   onClick={() => handleCardClick(animal)}
                 >
-                  <div className="aspect-[4/3] overflow-hidden">
+                  <div className="aspect-[4/3] overflow-hidden relative">
                     <img 
                       src={animal.popfile1} 
                       alt={animal.kindFullNm}
@@ -216,6 +216,13 @@ const MyFavoriteAdoptionsUpdated = () => {
                         e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
                       }}
                     />
+                    {/* 찜한 공고 뱃지 - 썸네일 위 왼쪽 상단 */}
+                    <div className="absolute top-2 left-2">
+                      <Badge className="bg-red-500 text-white gap-1 shadow-sm text-xs">
+                        <Heart className="w-3 h-3 fill-current" />
+                        찜한 공고
+                      </Badge>
+                    </div>
                   </div>
                   <CardContent className="p-5">
                     <div className="flex justify-between items-start mb-3">
@@ -226,12 +233,6 @@ const MyFavoriteAdoptionsUpdated = () => {
                         <p className="text-gray-600 text-sm">
                           {animal.kindFullNm}
                         </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge className="bg-red-500 text-white gap-1 shadow-sm text-xs">
-                          <Heart className="w-3 h-3 fill-current" />
-                          찜한 공고
-                        </Badge>
                       </div>
                     </div>
                     
