@@ -341,7 +341,13 @@ const MissingPostDetail = () => {
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <Button
           variant="ghost"
-          onClick={() => navigate('/board?category=missing')}
+          onClick={() => {
+            if (postDetail?.categoryId === 4) {
+              navigate('/board?tab=lost');
+            } else {
+              navigate('/board');
+            }
+          }}
           className="mb-6 hover:bg-gray-100"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

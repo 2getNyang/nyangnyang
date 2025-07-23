@@ -180,7 +180,11 @@ const SNSPostDetail = () => {
   }, [postDetail]);
 
   const handleBack = () => {
-    navigate('/board?category=sns');
+    if (postDetail?.category === 3) {
+      navigate('/board?tab=sns');
+    } else {
+      navigate('/board');
+    }
   };
 
   const handleLikeClick = async () => {
