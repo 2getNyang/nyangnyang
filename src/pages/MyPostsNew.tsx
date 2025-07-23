@@ -81,13 +81,13 @@ const MyPostsNew = () => {
       
       switch (activeTab) {
         case 'review':
-          endpoint = `http://localhost:8080/api/v1/my/boards/reveiw?page=${currentPage}&size=12`;
+          endpoint = `/api/v1/my/boards/reveiw?page=${currentPage}&size=12`;
           break;
         case 'sns':
-          endpoint = `http://localhost:8080/api/v1/my/boards/sns?page=${currentPage}&size=12`;
+          endpoint = `/api/v1/my/boards/sns?page=${currentPage}&size=12`;
           break;
         case 'missing':
-          endpoint = `http://localhost:8080/api/v1/my/boards/lost?page=${currentPage}&size=12`;
+          endpoint = `/api/v1/my/boards/lost?page=${currentPage}&size=12`;
           break;
       }
 
@@ -138,13 +138,13 @@ const MyPostsNew = () => {
       let redirectUrl = '';
       
       if (type === 'review') {
-        url = `http://localhost:8080/api/v1/boards/review/${postId}`;
+        url = `/api/v1/boards/review/${postId}`;
         redirectUrl = `/adoption-review/${postId}`;
       } else if (type === 'sns') {
-        url = `http://localhost:8080/api/v1/boards/sns/${postId}`;
+        url = `/api/v1/boards/sns/${postId}`;
         redirectUrl = `/sns-post/${postId}`;
       } else if (type === 'missing') {
-        url = `http://localhost:8080/api/v1/boards/lost/${postId}`;
+        url = `/api/v1/boards/lost/${postId}`;
         redirectUrl = `/missing-post/${postId}`;
       }
       

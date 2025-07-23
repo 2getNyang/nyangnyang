@@ -105,7 +105,7 @@ const AdoptionReviewDetail = () => {
       try {
         setLoading(true);
         console.log(`🔍 입양후기 게시글 상세 조회 시작 - ID: ${id}`);
-        const response = await fetch(`http://localhost:8080/api/v1/boards/review/${id}`);
+        const response = await fetch(`/api/v1/boards/review/${id}`);
         const result = await response.json();
         
         console.log('📋 게시글 상세 조회 응답:', result);
@@ -140,7 +140,7 @@ const AdoptionReviewDetail = () => {
   const fetchLikeCount = async () => {
     try {
       console.log(`❤️ 좋아요 수 조회 시작 - boardId: ${id}`);
-      const response = await fetch(`http://localhost:8080/api/v1/like/${id}`);
+      const response = await fetch(`/api/v1/like/${id}`);
       const result = await response.json();
       
       console.log('📊 좋아요 수 조회 응답:', result);
@@ -161,7 +161,7 @@ const AdoptionReviewDetail = () => {
     try {
       console.log(`💖 좋아요 상태 확인 시작 - boardId: ${id}`);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/like/${id}/me`, {
+      const response = await fetch(`/api/v1/like/${id}/me`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -192,7 +192,7 @@ const AdoptionReviewDetail = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const url = `http://localhost:8080/api/v1/like/${id}`;
+      const url = `/api/v1/like/${id}`;
       const method = liked ? 'DELETE' : 'POST';
       
       console.log(`${liked ? '💔' : '❤️'} 좋아요 ${liked ? '삭제' : '추가'} 시작`);
@@ -238,7 +238,7 @@ const AdoptionReviewDetail = () => {
 
     try {
       const accessToken = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/boards/review/${id}`, {
+      const response = await fetch(`/api/v1/boards/review/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${accessToken}`,

@@ -61,7 +61,7 @@ const ChatRoom = () => {
         const token = localStorage.getItem('accessToken');
         
         // 채팅방 메시지 가져오기
-        const response = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}/messages`, {
+        const response = await fetch(`/api/v1/chat/room/${roomId}/messages`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ const ChatRoom = () => {
             const otherUserId = otherMessage?.senderId;
             if (otherUserId) {
               try {
-                const userResponse = await fetch(`http://localhost:8080/api/v1/user/${otherUserId}`);
+                const userResponse = await fetch(`/api/v1/user/${otherUserId}`);
                 const userResult = await userResponse.json();
                 if (userResult.code === 200 && userResult.data?.nickname) {
                   otherUserNickname = userResult.data.nickname;
@@ -152,7 +152,7 @@ const ChatRoom = () => {
   useEffect(() => {
     if (!roomId || !isAuthorized) return;
 
-    const socket = new SockJS('http://localhost:8080/ws-stomp');
+    const socket = new SockJS('/ws-stomp');
     const client = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {

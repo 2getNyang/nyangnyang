@@ -151,7 +151,7 @@ const Animals = () => {
         params.append('kindNm', selectedBreed);
       }
       
-      const response = await fetch(`http://localhost:8080/api/v1/animals/search?${params.toString()}`, {
+      const response = await fetch(`/api/v1/animals/search?${params.toString()}`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
         }
@@ -190,7 +190,7 @@ const Animals = () => {
     if (!token) return;
     
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/bookmark/${desertionNo}`, {
+      const response = await fetch(`/api/v1/bookmark/${desertionNo}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -226,7 +226,7 @@ const Animals = () => {
     const method = isCurrentlyBookmarked ? 'DELETE' : 'POST';
     
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/bookmark/${desertionNo}`, {
+      const response = await fetch(`/api/v1/bookmark/${desertionNo}`, {
         method,
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -258,7 +258,7 @@ const Animals = () => {
   // 시/도 정보 가져오기
   const fetchRegions = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/v1/regions');
+      const response = await fetch('/api/v1/regions');
       if (response.ok) {
         const data: Region[] = await response.json();
         setRegions(data);
@@ -271,7 +271,7 @@ const Animals = () => {
   // 시/군/구 정보 가져오기
   const fetchSubRegions = async (regionName: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/regions/${encodeURIComponent(regionName)}`);
+      const response = await fetch(`/api/v1/regions/${encodeURIComponent(regionName)}`);
       if (response.ok) {
         const data: SubRegion[] = await response.json();
         setSubRegions(data);
@@ -285,7 +285,7 @@ const Animals = () => {
   // 축종 정보 가져오기
   const fetchUpKinds = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/v1/upKinds');
+      const response = await fetch('/api/v1/upKinds');
       if (response.ok) {
         const data: UpKind[] = await response.json();
         setUpKinds(data);
@@ -298,7 +298,7 @@ const Animals = () => {
   // 품종 정보 가져오기
   const fetchKinds = async (kindName: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/upKinds/${encodeURIComponent(kindName)}`);
+      const response = await fetch(`/api/v1/upKinds/${encodeURIComponent(kindName)}`);
       if (response.ok) {
         const data: Kind[] = await response.json();
         setKinds(data);

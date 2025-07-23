@@ -128,7 +128,7 @@ const EditMissingPost = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`http://localhost:8080/api/v1/boards/lost/${id}/form`, {
+        const response = await fetch(`/api/v1/boards/lost/${id}/form`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -157,7 +157,7 @@ const EditMissingPost = () => {
           form.setValue('content', postData.content);
 
           // 초기 폼 데이터도 함께 가져오기
-          const formInfoResponse = await fetch('http://localhost:8080/api/v1/boards/lost/form-info');
+          const formInfoResponse = await fetch('/api/v1/boards/lost/form-info');
           if (formInfoResponse.ok) {
             const formInfoResult = await formInfoResponse.json();
             setFormData(formInfoResult.data);
@@ -193,7 +193,7 @@ const EditMissingPost = () => {
     if (selectedUpKindCd) {
       const fetchBreeds = async () => {
         try {
-          const response = await fetch(`http://localhost:8080/api/v1/boards/lost/upkind/${selectedUpKindCd}/kinds`);
+          const response = await fetch(`/api/v1/boards/lost/upkind/${selectedUpKindCd}/kinds`);
           if (response.ok) {
             const breeds = await response.json();
             setBreeds(breeds);
@@ -212,7 +212,7 @@ const EditMissingPost = () => {
     if (selectedRegionCode) {
       const fetchSubRegions = async () => {
         try {
-          const response = await fetch(`http://localhost:8080/api/v1/boards/lost/regions/${selectedRegionCode}/sub-regions`);
+          const response = await fetch(`/api/v1/boards/lost/regions/${selectedRegionCode}/sub-regions`);
           if (response.ok) {
             const subRegions = await response.json();
             setSubRegions(subRegions);
@@ -357,7 +357,7 @@ const EditMissingPost = () => {
       }
 
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/boards/lost/${id}`, {
+      const response = await fetch(`/api/v1/boards/lost/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

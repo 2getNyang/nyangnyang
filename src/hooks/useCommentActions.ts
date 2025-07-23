@@ -33,7 +33,7 @@ export const useCommentActions = ({ boardId, onCommentsUpdate, boardType }: UseC
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/comments/boards/${boardId}`, {
+      const response = await fetch(`/api/v1/comments/boards/${boardId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ export const useCommentActions = ({ boardId, onCommentsUpdate, boardType }: UseC
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
+      const response = await fetch(`/api/v1/comments/${commentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ export const useCommentActions = ({ boardId, onCommentsUpdate, boardType }: UseC
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
+      const response = await fetch(`/api/v1/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -136,16 +136,16 @@ export const useCommentActions = ({ boardId, onCommentsUpdate, boardType }: UseC
       let apiUrl = '';
       switch (boardType) {
         case 'review':
-          apiUrl = `http://localhost:8080/api/v1/boards/review/${boardId}`;
+          apiUrl = `/api/v1/boards/review/${boardId}`;
           break;
         case 'sns':
-          apiUrl = `http://localhost:8080/api/v1/boards/sns/${boardId}`;
+          apiUrl = `/api/v1/boards/sns/${boardId}`;
           break;
         case 'lost':
-          apiUrl = `http://localhost:8080/api/v1/boards/lost/${boardId}`;
+          apiUrl = `/api/v1/boards/lost/${boardId}`;
           break;
         default:
-          apiUrl = `http://localhost:8080/api/v1/comments/boards/${boardId}`;
+          apiUrl = `/api/v1/comments/boards/${boardId}`;
       }
 
       const response = await fetch(apiUrl, {

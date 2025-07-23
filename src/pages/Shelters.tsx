@@ -71,7 +71,7 @@ const Shelters = () => {
       
       // 검색 조건이 있으면 필터 API 사용
       if (search || (province && province !== 'all') || (city && city !== 'all')) {
-        url = `http://localhost:8080/api/v1/shelters/filter?page=${page}&size=${itemsPerPage}`;
+        url = `/api/v1/shelters/filter?page=${page}&size=${itemsPerPage}`;
         
         if (province && province !== 'all') {
           url += `&regionName=${encodeURIComponent(province)}`;
@@ -84,7 +84,7 @@ const Shelters = () => {
         }
       } else {
         // 기본 전체 조회 API
-        url = `http://localhost:8080/api/v1/shelters?page=${page}&size=${itemsPerPage}`;
+        url = `/api/v1/shelters?page=${page}&size=${itemsPerPage}`;
       }
 
       const response = await fetch(url);
@@ -124,7 +124,7 @@ const Shelters = () => {
   // 시/도 API 호출
   const fetchProvinces = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/v1/regions');
+      const response = await fetch('/api/v1/regions');
       const data: RegionData[] = await response.json();
       setProvinces(data);
     } catch (error) {
@@ -135,7 +135,7 @@ const Shelters = () => {
   // 시/군/구 API 호출
   const fetchSubRegions = async (regionName: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/regions/${encodeURIComponent(regionName)}`);
+      const response = await fetch(`/api/v1/regions/${encodeURIComponent(regionName)}`);
       const data: SubRegionData[] = await response.json();
       setSubRegions(data);
     } catch (error) {

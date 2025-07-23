@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     console.log('로그아웃 시작');
     try {
       // 서버로 로그아웃 요청
-      await fetch('http://localhost:8080/logout', {
+      await fetch('/logout', {
         method: 'POST',
         credentials: 'include',
       });
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         headers['Authorization'] = `Bearer ${accessToken}`;
       }
       
-      const response = await fetch('http://localhost:8080/api/v1/user/me', {
+      const response = await fetch('/api/v1/user/me', {
         method: 'GET',
         headers,
         credentials: 'include',

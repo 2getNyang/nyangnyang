@@ -62,7 +62,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
       
-      const response = await fetch('http://localhost:8080/api/v1/chat/rooms', {
+      const response = await fetch('/api/v1/chat/rooms', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -131,7 +131,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
   const handleChatRoomClick = async (roomId: string, opponentNickname: string) => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}/messages`, {
+      const response = await fetch(`/api/v1/chat/room/${roomId}/messages`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -204,7 +204,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isOpen, onClose }) => {
       stompClientRef.current.deactivate();
     }
 
-    const socket = new SockJS('http://localhost:8080/ws-stomp');
+    const socket = new SockJS('/ws-stomp');
     const client = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {
