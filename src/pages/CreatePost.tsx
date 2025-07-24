@@ -142,15 +142,14 @@ const CreatePost = () => {
 
       if (response.ok) {
         const result = await response.json();
-        const postId = result.data?.id || result.data?.boardId || result.id || result.boardId;
         
         toast({
           title: "게시글 작성 완료",
           description: "입양 후기가 성공적으로 작성되었습니다.",
         });
         
-        if (postId) {
-          navigate(`/adoption-review/${postId}`);
+        if (result.data) {
+          navigate(`/adoption-review/${result.data}`);
         } else {
           navigate('/board');
         }

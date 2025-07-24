@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
-import AppHeader from '@/components/AppHeader';
+import AppHeaderWithModal from '@/components/AppHeaderWithModal';
 import Footer from '@/components/Footer';
 
 const EditProfile = () => {
@@ -136,7 +136,7 @@ const EditProfile = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <AppHeader onLoginClick={() => {}} />
+        <AppHeaderWithModal />
         <div className="flex items-center justify-center h-[calc(100vh-200px)]">
           <p className="text-gray-500">사용자 정보를 불러오는 중...</p>
         </div>
@@ -147,7 +147,7 @@ const EditProfile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader onLoginClick={() => {}} />
+      <AppHeaderWithModal />
       
       <div className="container mx-auto px-4 py-8">
         {/* 뒤로가기 & 헤더 */}

@@ -8,7 +8,7 @@ import {
   ClipboardList 
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import AppHeader from '@/components/AppHeader';
+import AppHeaderWithModal from '@/components/AppHeaderWithModal';
 import Footer from '@/components/Footer';
 
 const MyPage = () => {
@@ -85,9 +85,7 @@ const MyPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader 
-        onLoginClick={() => {}}
-      />
+      <AppHeaderWithModal />
       
       <div className="container mx-auto px-4 py-8">
         {/* 페이지 헤더 */}

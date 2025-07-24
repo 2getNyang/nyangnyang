@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AppHeader from '@/components/AppHeader';
+import AppHeaderWithModal from '@/components/AppHeaderWithModal';
 import MyBoardTabs from '@/components/board/MyBoardTabs';
 import BoardPagination from '@/components/board/BoardPagination';
 import Footer from '@/components/Footer';
@@ -35,9 +35,7 @@ const MyPosts = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader 
-        onLoginClick={() => {}}
-      />
+      <AppHeaderWithModal />
       
       <div className="container mx-auto px-4 py-8">
         {/* 페이지 헤더 */}
