@@ -110,7 +110,7 @@ const Board = () => {
       }
       
       const response = await fetch(
-        `http://localhost:8080/api/v1/boards/${searchEndpoint}/elasticsearch?keyword=${encodeURIComponent(searchTerm)}&page=0&size=12`
+        `http://localhost:8080/api/v1/board/${searchEndpoint}/elasticsearch?keyword=${encodeURIComponent(searchTerm)}&page=0&size=12`
       );
       const result = await response.json();
       

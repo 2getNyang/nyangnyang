@@ -145,7 +145,7 @@ const MyPostsNew = () => {
         redirectUrl = `/sns-post/${postId}`;
       } else if (type === 'missing') {
         url = `http://localhost:8080/api/v1/boards/lost/${postId}`;
-        redirectUrl = `/missing-post/${postId}`;
+        redirectUrl = `/missing-animal/${postId}`;
       }
       
       // 게시글 존재 여부 확인

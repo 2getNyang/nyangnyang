@@ -47,7 +47,7 @@ const MyLikedPosts = () => {
     } else if (post.category === 'adoption') {
       navigate(`/adoption-review/${post.id}`);
     } else if (post.category === 'missing') {
-      navigate(`/missing-post/${post.id}`);
+      navigate(`/missing-animal/${post.id}`);
     }
   };
 
