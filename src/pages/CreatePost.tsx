@@ -100,7 +100,7 @@ const CreatePost = () => {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) {
       toast({
@@ -111,37 +111,64 @@ const CreatePost = () => {
       return;
     }
 
-    // 게시글 저장 로직 - 이미지 배열 처리
-    const imageUrls = images.map(image => URL.createObjectURL(image));
-    const newPost = {
-      id: Date.now().toString(),
-      title,
-      content,
-      imageUrl: imageUrls[0] || '', // 첫 번째 이미지를 대표 이미지로
-      images: imageUrls, // 모든 이미지를 배열로 저장
-      author: '사용자', // 실제로는 로그인된 사용자 정보
-      date: new Date().toISOString().split('T')[0],
-      category,
-      views: 0
-    };
-    
-    console.log('새 게시글:', newPost);
+    try {
+      const formData = new FormData();
+      
+      // DTO 데이터 준비
+      const dto = {
+        boardTitle: title,
+        boardContent: content,
+        categoryId: 1, // 입양 후기는 categoryId 1
+        applicationId: selectedAdoptionId || null
+      };
 
-    toast({
-      title: "게시글 작성 완료",
-      description: "게시글이 성공적으로 작성되었습니다.",
-    });
-    
-    // API 연동 시 실제 생성된 게시글의 ID를 받아와야 함
-    // 임시로 카테고리별 게시판으로 이동
-    if (category === 'adoption') {
-      navigate('/board');
-    } else if (category === 'sns') {
-      navigate('/board?tab=sns');
-    } else if (category === 'missing') {
-      navigate('/board?tab=lost');
-    } else {
-      navigate('/board');
+      // DTO를 JSON Blob으로 변환하여 FormData에 추가
+      const dtoBlob = new Blob([JSON.stringify(dto)], { type: 'application/json' });
+      formData.append('dto', dtoBlob);
+
+      // 이미지 파일들 추가
+      images.forEach((image) => {
+        formData.append('images', image);
+      });
+
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('http://localhost:8080/api/v1/boards/review', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const postId = result.data?.id || result.data?.boardId || result.id || result.boardId;
+        
+        toast({
+          title: "게시글 작성 완료",
+          description: "입양 후기가 성공적으로 작성되었습니다.",
+        });
+        
+        if (postId) {
+          navigate(`/adoption-review/${postId}`);
+        } else {
+          navigate('/board');
+        }
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "작성 실패",
+          description: errorData.message || "게시글 작성에 실패했습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+      toast({
+        title: "네트워크 오류",
+        description: "게시글 작성 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
     }
   };
 

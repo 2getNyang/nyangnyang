@@ -70,18 +70,11 @@ const AdoptionReviewDetail = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
 
-  const { submitComment, editComment, deleteComment, fetchComments } = useCommentActions({
+  const { submitComment, editComment, deleteComment } = useCommentActions({
     boardId: id,
     onCommentsUpdate: setComments,
     boardType: 'review'
   });
-
-  // 초기 댓글 로드
-  useEffect(() => {
-    if (id) {
-      fetchComments();
-    }
-  }, [id]);
 
   // 날짜 포맷 함수
   const formatDate = (dateString: string) => {

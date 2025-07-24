@@ -67,18 +67,11 @@ const SNSPostDetail = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
 
-  const { submitComment, editComment, deleteComment, fetchComments } = useCommentActions({
+  const { submitComment, editComment, deleteComment } = useCommentActions({
     boardId: id,
     onCommentsUpdate: setComments,
     boardType: 'sns'
   });
-
-  // 초기 댓글 로드
-  useEffect(() => {
-    if (id) {
-      fetchComments();
-    }
-  }, [id]);
 
   useEffect(() => {
     const fetchPostDetail = async () => {
