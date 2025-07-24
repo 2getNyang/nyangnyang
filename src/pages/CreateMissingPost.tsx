@@ -282,11 +282,19 @@ const CreateMissingPost = () => {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        const postId = result.data?.boardId || result.data?.id || result.boardId || result.id;
+        
         toast({
           title: "게시글 작성 완료",
           description: "실종/목격 제보가 성공적으로 작성되었습니다.",
         });
-        navigate('/board');
+        
+        if (postId) {
+          navigate(`/missing-animal/${postId}`);
+        } else {
+          navigate('/board?tab=lost');
+        }
       } else {
         const errorData = await response.json();
         toast({

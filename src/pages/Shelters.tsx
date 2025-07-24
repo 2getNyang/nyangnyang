@@ -105,8 +105,15 @@ const Shelters = () => {
     fetchShelters();
   }, []);
 
-  // 검색/필터 변경 시 (초기 로드 제외)
+  // 검색/필터 변경 시 자동 검색 (초기 로드는 제외하기 위해 별도 flag 사용)
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  
   useEffect(() => {
+    if (isInitialLoad) {
+      setIsInitialLoad(false);
+      return;
+    }
+    
     const timeoutId = setTimeout(() => {
       setCurrentPage(0);
       fetchShelters(0, searchTerm, selectedProvince, selectedCity);

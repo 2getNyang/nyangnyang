@@ -338,8 +338,15 @@ const Animals = () => {
     fetchAnimals();
   }, []);
 
-  // 동적 검색 - 필터 변경 시 자동 검색 (초기 로드 제외)
+  // 동적 검색 - 필터 변경 시 자동 검색 (초기 로드는 제외하기 위해 별도 flag 사용)
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  
   useEffect(() => {
+    if (isInitialLoad) {
+      setIsInitialLoad(false);
+      return;
+    }
+    
     const timeoutId = setTimeout(() => {
       setCurrentPage(0);
       fetchAnimals(0);

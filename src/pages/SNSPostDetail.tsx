@@ -7,7 +7,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
-import AppHeader from '@/components/AppHeader';
+import AppHeaderWithModal from '@/components/AppHeaderWithModal';
 import CommentSection from '@/components/CommentSection';
 import { useCommentActions } from '@/hooks/useCommentActions';
 
@@ -305,7 +305,7 @@ const SNSPostDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader onLoginClick={() => {}} />
+      <AppHeaderWithModal />
 
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <Button

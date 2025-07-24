@@ -115,11 +115,19 @@ const CreateSNSPost = () => {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        const postId = result.data?.id || result.id;
+        
         toast({
           title: "SNS 홍보 게시글 작성 완료",
           description: "게시글이 성공적으로 작성되었습니다.",
         });
-        navigate('/board');
+        
+        if (postId) {
+          navigate(`/sns-post/${postId}`);
+        } else {
+          navigate('/board?tab=sns');
+        }
       } else {
         const errorData = await response.json().catch(() => ({}));
         toast({

@@ -132,7 +132,17 @@ const CreatePost = () => {
       description: "게시글이 성공적으로 작성되었습니다.",
     });
     
-    navigate('/board');
+    // API 연동 시 실제 생성된 게시글의 ID를 받아와야 함
+    // 임시로 카테고리별 게시판으로 이동
+    if (category === 'adoption') {
+      navigate('/board');
+    } else if (category === 'sns') {
+      navigate('/board?tab=sns');
+    } else if (category === 'missing') {
+      navigate('/board?tab=lost');
+    } else {
+      navigate('/board');
+    }
   };
 
   const categoryLabels = {
