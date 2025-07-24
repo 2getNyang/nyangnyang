@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Calendar, MapPin, User } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import AppHeader from '@/components/AppHeader';
+import AppHeaderWithModal from '@/components/AppHeaderWithModal';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 
@@ -138,7 +138,7 @@ const MyAdoptionApplications = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <AppHeader onLoginClick={() => {}} />
+        <AppHeaderWithModal />
         <main className="pt-20 pb-8">
           <div className="container mx-auto px-4">
             <div className="text-center py-16">
@@ -154,7 +154,7 @@ const MyAdoptionApplications = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader onLoginClick={() => {}} />
+      <AppHeaderWithModal />
       <main className="pt-20 pb-8">
         <div className="container mx-auto px-4">
           <div className="mb-8">

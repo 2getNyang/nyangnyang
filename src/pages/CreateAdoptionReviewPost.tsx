@@ -193,11 +193,12 @@ const CreateAdoptionReviewPost = () => {
       });
 
       if (response.ok) {
+        const result = await response.json();
         toast({
           title: "입양 후기 게시글 작성 완료",
           description: "게시글이 성공적으로 작성되었습니다.",
         });
-        navigate('/board');
+        navigate(`/adoption-review/${result.data}`);
       } else {
         const errorData = await response.json().catch(() => ({}));
         toast({

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import AppHeader from '@/components/AppHeader';
+import AppHeaderWithModal from '@/components/AppHeaderWithModal';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -163,7 +163,7 @@ const MyFavoriteAdoptionsUpdated = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <AppHeader onLoginClick={() => {}} />
+        <AppHeaderWithModal />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-16">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
@@ -177,7 +177,7 @@ const MyFavoriteAdoptionsUpdated = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader onLoginClick={() => {}} />
+      <AppHeaderWithModal />
       
       <div className="container mx-auto px-4 py-8">
         {/* 페이지 헤더 */}

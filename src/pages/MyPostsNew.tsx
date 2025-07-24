@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AppHeader from '@/components/AppHeader';
+import AppHeaderWithModal from '@/components/AppHeaderWithModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -274,7 +274,7 @@ const MyPostsNew = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <AppHeader onLoginClick={() => {}} />
+        <AppHeaderWithModal />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-16">
             <p className="text-gray-500">게시글을 불러오는 중...</p>
@@ -287,7 +287,7 @@ const MyPostsNew = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader onLoginClick={() => {}} />
+      <AppHeaderWithModal />
       
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
