@@ -290,7 +290,7 @@ const CreateMissingPost = () => {
         });
         
         if (result.data) {
-          navigate(`/missing-animal/${result.data}`);
+          navigate(`/missing-post/${result.data}`);
         } else {
           navigate('/board?tab=lost');
         }
