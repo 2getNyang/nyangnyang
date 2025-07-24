@@ -34,6 +34,8 @@ interface PostDetail {
   subRegionName: string;
   missingDate: string;
   missingLocation: string;
+  distinctFeatures: string;
+  boardContent: string;
   phone: string;
   likeCount: number;
   comments: Comment[];
@@ -469,6 +471,22 @@ const MissingPostDetail = () => {
                 </div>
               </div>
             </div>
+
+            {/* 특징 */}
+            {postDetail.distinctFeatures && (
+              <div className="mb-8 bg-gray-50 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">특징</h3>
+                <p className="text-gray-700 leading-relaxed">{postDetail.distinctFeatures}</p>
+              </div>
+            )}
+
+            {/* 본문 */}
+            {postDetail.boardContent && (
+              <div className="mb-8 bg-gray-50 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">본문</h3>
+                <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">{postDetail.boardContent}</div>
+              </div>
+            )}
 
             {/* 연락처 */}
             <div className="mb-8 bg-primary/10 border border-primary/20 rounded-2xl p-6">
