@@ -16,7 +16,7 @@ const Board = () => {
   const fetchBoardData = async (category: BoardCategory) => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/v1/boards/${category}`);
+      const response = await fetch(`http://localhost:8080/api/v1/boards/${category}`);
       const result = await response.json();
       console.log('API response:', result); // API 응답 전체 구조 확인
       
@@ -110,7 +110,7 @@ const Board = () => {
       }
       
       const response = await fetch(
-        `/api/v1/boards/${searchEndpoint}/elasticsearch?keyword=${encodeURIComponent(searchTerm)}&page=0&size=12`
+        `http://localhost:8080/api/v1/boards/${searchEndpoint}/elasticsearch?keyword=${encodeURIComponent(searchTerm)}&page=0&size=12`
       );
       const result = await response.json();
       

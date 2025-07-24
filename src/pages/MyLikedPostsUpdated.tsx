@@ -41,7 +41,7 @@ const MyLikedPostsUpdated = () => {
       const token = localStorage.getItem('accessToken');
       console.log('🔑 토큰 확인 (좋아요 글):', token ? '토큰 존재' : '토큰 없음');
       
-      const endpoint = `/api/v1/my/likes?page=${currentPage}&size=${itemsPerPage}`;
+      const endpoint = `http://localhost:8080/api/v1/my/likes?page=${currentPage}&size=${itemsPerPage}`;
       console.log('📡 API 호출 (좋아요 글):', endpoint);
       
       const response = await fetch(endpoint, {
@@ -94,13 +94,13 @@ const MyLikedPostsUpdated = () => {
       
       switch (post.categoryName) {
         case '입양후기':
-          endpoint = `/api/v1/boards/review/${post.id}`;
+          endpoint = `http://localhost:8080/api/v1/boards/review/${post.id}`;
           break;
         case 'SNS홍보':
-          endpoint = `/api/v1/boards/sns/${post.id}`;
+          endpoint = `http://localhost:8080/api/v1/boards/sns/${post.id}`;
           break;
         case '실종/목격':
-          endpoint = `/api/v1/boards/lost/${post.id}`;
+          endpoint = `http://localhost:8080/api/v1/boards/lost/${post.id}`;
           break;
         default:
           console.error('알 수 없는 카테고리:', post.categoryName);

@@ -60,7 +60,7 @@ const CreateAdoptionReviewPost = () => {
     const fetchFormData = async () => {
       try {
         const accessToken = localStorage.getItem('accessToken');
-        const response = await fetch('/api/v1/boards/review/form', {
+        const response = await fetch('http://localhost:8080/api/v1/boards/review/form', {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
           },
@@ -183,7 +183,7 @@ const CreateAdoptionReviewPost = () => {
       }
 
       const accessToken = localStorage.getItem('accessToken');
-      const response = await fetch('/api/v1/boards/review', {
+      const response = await fetch('http://localhost:8080/api/v1/boards/review', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,

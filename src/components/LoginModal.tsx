@@ -14,13 +14,13 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     
     switch (provider) {
       case 'kakao':
-        authUrl = 'http://2gaenyang.site/oauth2/authorization/kakao';
+        authUrl = 'http://localhost:8080/oauth2/authorization/kakao';
         break;
       case 'naver':
-        authUrl = 'http://2gaenyang.site/oauth2/authorization/naver';
+        authUrl = 'http://localhost:8080/oauth2/authorization/naver';
         break;
       case 'google':
-        authUrl = 'http://2gaenyang.site/oauth2/authorization/google';
+        authUrl = 'http://localhost:8080/oauth2/authorization/google';
         break;
       default:
         console.error('지원하지 않는 소셜 로그인 제공자:', provider);

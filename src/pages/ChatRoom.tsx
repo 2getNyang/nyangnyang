@@ -61,7 +61,7 @@ const ChatRoom = () => {
         const token = localStorage.getItem('accessToken');
         
         // 채팅방 메시지 가져오기
-        const response = await fetch(`/api/v1/chat/room/${roomId}/messages`, {
+        const response = await fetch(`http://localhost:8080/api/v1/chat/room/${roomId}/messages`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ const ChatRoom = () => {
             const otherUserId = otherMessage?.senderId;
             if (otherUserId) {
               try {
-                const userResponse = await fetch(`/api/v1/user/${otherUserId}`);
+                const userResponse = await fetch(`http://localhost:8080/api/v1/user/${otherUserId}`);
                 const userResult = await userResponse.json();
                 if (userResult.code === 200 && userResult.data?.nickname) {
                   otherUserNickname = userResult.data.nickname;
@@ -176,11 +176,11 @@ const ChatRoom = () => {
           // 상대방이 보낸 메시지인 경우 읽음 처리
           if (receivedMessage.senderId !== currentUserId) {
             console.log('📖 상대방 메시지 수신, 읽음 처리 요청:', roomId);
-            console.log('📖 읽음 처리 목적지:', `/pub/api/v1/chat/read/${roomId}`);
+            console.log('📖 읽음 처리 목적지:', `/pubhttp://localhost:8080/api/v1/chat/read/${roomId}`);
             console.log('📖 현재 사용자 ID:', currentUserId);
             
             client.publish({
-              destination: `/pub/api/v1/chat/read/${roomId}`,
+              destination: `/pubhttp://localhost:8080/api/v1/chat/read/${roomId}`,
               headers: {
                 userId: currentUserId
               },
@@ -268,7 +268,7 @@ const ChatRoom = () => {
 
     // WebSocket으로 메시지 전송
     stompClientRef.current.publish({
-      destination: '/pub/api/v1/chat/message',
+      destination: '/pubhttp://localhost:8080/api/v1/chat/message',
       body: JSON.stringify(message)
     });
 

@@ -33,7 +33,7 @@ const EditProfile = () => {
   const fetchUserInfo = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/v1/user/info', {
+      const response = await fetch('http://localhost:8080/api/v1/user/info', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -81,7 +81,7 @@ const EditProfile = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/v1/user/info', {
+      const response = await fetch('http://localhost:8080/api/v1/user/info', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

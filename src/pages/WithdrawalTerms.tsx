@@ -47,7 +47,7 @@ const WithdrawalTerms = () => {
     try {
       const token = localStorage.getItem('accessToken');
 
-      const res = await fetch('/api/auth/withdraw', {
+      const res = await fetch('http://localhost:8080/api/auth/withdraw', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

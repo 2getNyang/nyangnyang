@@ -32,7 +32,7 @@ export const useAnimalCommentActions = ({ desertionNo, onCommentsUpdate }: UseAn
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/v1/comments/adoption/${desertionNo}`, {
+      const response = await fetch(`http://localhost:8080/api/v1/comments/adoption/${desertionNo}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ export const useAnimalCommentActions = ({ desertionNo, onCommentsUpdate }: UseAn
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/v1/comments/${commentId}`, {
+      const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ export const useAnimalCommentActions = ({ desertionNo, onCommentsUpdate }: UseAn
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/v1/comments/${commentId}`, {
+      const response = await fetch(`http://localhost:8080/api/v1/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -130,7 +130,7 @@ export const useAnimalCommentActions = ({ desertionNo, onCommentsUpdate }: UseAn
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/v1/animals/${desertionNo}`, {
+      const response = await fetch(`http://localhost:8080/api/v1/animals/${desertionNo}`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
         }

@@ -48,7 +48,7 @@ const AnimalDetail: React.FC = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`/api/v1/animals/${id}`, {
+        const response = await fetch(`http://localhost:8080/api/v1/animals/${id}`, {
           headers: {
             'Authorization': token ? `Bearer ${token}` : '',
           }

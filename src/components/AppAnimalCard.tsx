@@ -85,7 +85,7 @@ const AppAnimalCard = ({ animal }: AppAnimalCardProps) => {
       
       try {
         const accessToken = localStorage.getItem('accessToken');
-        const response = await fetch(`/api/v1/bookmark/${animal.desertionNo}`, {
+        const response = await fetch(`http://localhost:8080/api/v1/bookmark/${animal.desertionNo}`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
           },
@@ -122,7 +122,7 @@ const AppAnimalCard = ({ animal }: AppAnimalCardProps) => {
       const accessToken = localStorage.getItem('accessToken');
       const method = isBookmarked ? 'DELETE' : 'POST';
       
-      const response = await fetch(`/api/v1/bookmark/${animal.desertionNo}`, {
+      const response = await fetch(`http://localhost:8080/api/v1/bookmark/${animal.desertionNo}`, {
         method,
         headers: {
           'Authorization': `Bearer ${accessToken}`,

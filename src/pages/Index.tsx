@@ -28,7 +28,7 @@ const Index = () => {
       try {
         console.log('🔄 추천 동물 데이터 가져오기 시작...');
         
-        const response = await fetch('/api/v1/recommendations');
+        const response = await fetch('http://localhost:8080/api/v1/recommendations');
         console.log('🐕 추천 동물 API 응답 상태:', response.status);
         
         if (!response.ok) {

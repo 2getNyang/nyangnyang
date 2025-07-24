@@ -53,9 +53,9 @@ const EditAdoptionReviewPost = () => {
 
   const fetchEditForm = async () => {
     try {
-      console.log('수정 폼 데이터 요청:', `/api/v1/boards/review/${id}/form`);
+      console.log('수정 폼 데이터 요청:', `http://localhost:8080/api/v1/boards/review/${id}/form`);
       
-      const response = await fetch(`/api/v1/boards/review/${id}/form`, {
+      const response = await fetch(`http://localhost:8080/api/v1/boards/review/${id}/form`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         }
@@ -151,7 +151,7 @@ const EditAdoptionReviewPost = () => {
         existingImagesCount: existingImages.length
       });
 
-      const response = await fetch(`/api/v1/boards/review/${id}`, {
+      const response = await fetch(`http://localhost:8080/api/v1/boards/review/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`

@@ -52,7 +52,7 @@ const TestPage7 = () => {
       console.log('postDetail.userId:', testPost.userId);
       
       const response = await fetch(
-        `/api/v1/chat/room?user1Id=${currentUserId}&user2Id=${testPost.userId}`,
+        `http://localhost:8080/api/v1/chat/room?user1Id=${currentUserId}&user2Id=${testPost.userId}`,
         {
           method: 'POST',
           headers: {

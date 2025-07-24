@@ -105,7 +105,7 @@ const CreateSNSPost = () => {
       }
 
       const accessToken = localStorage.getItem('accessToken');
-      const response = await fetch('/api/v1/boards/sns', {
+      const response = await fetch('http://localhost:8080/api/v1/boards/sns', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
