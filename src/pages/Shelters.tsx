@@ -101,10 +101,11 @@ const Shelters = () => {
 
   // 초기 로드
   useEffect(() => {
+    fetchProvinces();
     fetchShelters();
   }, []);
 
-  // 검색/필터 변경 시
+  // 검색/필터 변경 시 (초기 로드 제외)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setCurrentPage(0);
@@ -155,10 +156,6 @@ const Shelters = () => {
     }
   };
 
-  // 초기 시/도 데이터 로드
-  useEffect(() => {
-    fetchProvinces();
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">

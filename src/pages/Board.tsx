@@ -1,17 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import AppHeader from '@/components/AppHeader';
+import AppHeaderWithModal from '@/components/AppHeaderWithModal';
 import BoardTabs from '@/components/board/BoardTabs';
 import BoardPagination from '@/components/board/BoardPagination';
-import LoginModal from '@/components/LoginModal';
+
 import { useBoardFilter } from '@/hooks/useBoardFilter';
 import { boardList, BoardCategory } from '@/types/boardList';
 import { Post } from '@/types/board';
 
 const Board = () => {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [userName, setUserName] = useState('김철수');
   const [boardData, setBoardData] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -90,9 +87,6 @@ const Board = () => {
     fetchBoardData(apiCategory);
   }, [activeTab]);
 
-  const handleLoginClick = () => {
-    setIsLoginModalOpen(true);
-  };
 
   // 검색 기능
   const handleSearch = async () => {
@@ -151,9 +145,7 @@ const Board = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader 
-        onLoginClick={handleLoginClick}
-      />
+      <AppHeaderWithModal />
       
       <div className="container mx-auto px-4 py-8">
         <BoardTabs
@@ -172,11 +164,6 @@ const Board = () => {
           onPageChange={setCurrentPage}
         />
       </div>
-      
-      <LoginModal 
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-      />
     </div>
   );
 };

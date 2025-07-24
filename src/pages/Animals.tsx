@@ -331,13 +331,14 @@ const Animals = () => {
     }
   };
 
+  // 초기 데이터 로드
   useEffect(() => {
-    fetchAnimals();
     fetchRegions();
     fetchUpKinds();
+    fetchAnimals();
   }, []);
 
-  // 동적 검색 - 필터 변경 시 자동 검색
+  // 동적 검색 - 필터 변경 시 자동 검색 (초기 로드 제외)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setCurrentPage(0);

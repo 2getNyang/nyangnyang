@@ -105,6 +105,19 @@ const EditProfile = () => {
           nickname: result.data.nickname || '',
           email: result.data.email || ''
         });
+
+        // AuthContext의 사용자 정보도 업데이트
+        if (user) {
+          const updatedUser = {
+            ...user,
+            nickname: result.data.nickname,
+            email: result.data.email
+          };
+          // localStorage의 user 정보도 업데이트
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          // AuthContext 재확인 호출하여 헤더 업데이트
+          window.location.reload();
+        }
       } else {
         throw new Error('수정 실패');
       }
