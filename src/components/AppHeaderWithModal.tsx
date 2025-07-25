@@ -94,28 +94,57 @@ const AppHeaderWithModal = () => {
                                  // 디버깅을 위한 콘솔 출력
                                  console.log('알림 isRead 상태:', notification.notyId, notification.isRead);
                                 
-                                return (
-                                  <div key={notification.notyId} className="relative p-2 hover:bg-gray-50 rounded text-xs border-b last:border-b-0">
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-gray-600 text-xs">{notification.notyContent}</p>
-                                        <p className="text-gray-400 text-xs mt-1">{new Date(notification.notyCreatedAt).toLocaleString()}</p>
-                                      </div>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          console.log('X 버튼 클릭됨 - 알림 ID:', notification.notyId);
-                                          markAsRead(notification.notyId);
-                                        }}
-                                        className="flex-shrink-0 p-1 h-auto min-w-[24px] text-gray-400 hover:text-gray-600 hover:bg-gray-200"
-                                      >
-                                        <X className="w-3 h-3" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                );
+                                 const handleNotificationClick = () => {
+                                   if (notification.notyType === 'CHAT_REPLY') {
+                                     // notyLink에서 roomId 추출 (/chat/room/1 -> 1)
+                                     const roomId = notification.notyLink.split('/')[3];
+                                     if (roomId) {
+                                       // ChatWidget 열기
+                                       setIsChatWidgetOpen(true);
+                                       // 특정 채팅방으로 이동하는 커스텀 이벤트 발생
+                                       setTimeout(() => {
+                                         // 상대방 닉네임을 알림 내용에서 추출 (💬 다음의 첫 번째 단어)
+                                         const contentWithoutEmoji = notification.notyContent.replace('💬 ', '');
+                                         const opponentNickname = contentWithoutEmoji.split(' ')[0] || '상대방';
+                                         
+                                         window.dispatchEvent(new CustomEvent('openChatRoom', { 
+                                           detail: { roomId, opponentNickname }
+                                         }));
+                                       }, 100);
+                                     }
+                                   }
+                                   // 알림을 읽음 처리
+                                   markAsRead(notification.notyId);
+                                 };
+
+                                 return (
+                                   <div 
+                                     key={notification.notyId} 
+                                     className={`relative p-2 rounded text-xs border-b last:border-b-0 ${
+                                       notification.notyType === 'CHAT_REPLY' ? 'cursor-pointer hover:bg-blue-50' : 'hover:bg-gray-50'
+                                     }`}
+                                     onClick={handleNotificationClick}
+                                   >
+                                     <div className="flex items-start justify-between gap-2">
+                                       <div className="flex-1 min-w-0">
+                                         <p className="text-gray-600 text-xs">{notification.notyContent}</p>
+                                         <p className="text-gray-400 text-xs mt-1">{new Date(notification.notyCreatedAt).toLocaleString()}</p>
+                                       </div>
+                                       <Button
+                                         variant="ghost"
+                                         size="sm"
+                                         onClick={(e) => {
+                                           e.stopPropagation();
+                                           console.log('X 버튼 클릭됨 - 알림 ID:', notification.notyId);
+                                           markAsRead(notification.notyId);
+                                         }}
+                                         className="flex-shrink-0 p-1 h-auto min-w-[24px] text-gray-400 hover:text-gray-600 hover:bg-gray-200"
+                                       >
+                                         <X className="w-3 h-3" />
+                                       </Button>
+                                     </div>
+                                   </div>
+                                 );
                               })
                            ) : (
                             <p className="text-gray-500 text-xs p-2">새 알림이 없습니다.</p>
