@@ -41,7 +41,11 @@ const AppHeaderWithModal = () => {
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-3">
               <div className="w-10 h-10 golden rounded-full flex items-center justify-center">
-                <Heart className="w-6 h-6 text-white" fill="white" />
+                <img
+                    src="https://backend-nyang.s3.ap-northeast-2.amazonaws.com/2gaenynag/logo_circle.png"
+                    alt="함께하개냥 로고"
+                    className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-800 font-cute">함께하개냥</h1>

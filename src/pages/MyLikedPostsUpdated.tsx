@@ -122,7 +122,7 @@ const MyLikedPostsUpdated = () => {
             navigate(`/sns-post/${post.id}`);
             break;
           case '실종/목격':
-            navigate(`/missing-animal/${post.id}`);
+            navigate(`/missing-post/${post.id}`);
             break;
         }
       } else {
