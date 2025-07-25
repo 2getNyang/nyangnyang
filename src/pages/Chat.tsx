@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import Footer from '@/components/Footer';
 
 interface Message {
   id: string;
@@ -239,6 +240,8 @@ const Chat = () => {
           </Button>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };

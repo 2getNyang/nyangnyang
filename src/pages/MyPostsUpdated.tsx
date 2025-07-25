@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, Calendar, User } from 'lucide-react';
+import { Eye, Calendar, User, MapPin } from 'lucide-react';
 
 interface BoardPost {
   id: number;
@@ -345,11 +345,11 @@ const MyPostsUpdated = () => {
 
             {/* 실종/목격 게시글 */}
             {activeTab === 'missing' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {missingPosts.map((post: MissingPost) => (
                   <Card 
                     key={post.id}
-                    className="cursor-pointer hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02]"
+                    className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white rounded-2xl overflow-hidden hover:scale-[1.02] cursor-pointer"
                     onClick={() => navigate(`/missing-post/${post.id}`)}
                   >
                     <div className="aspect-[4/3] overflow-hidden">
@@ -367,36 +367,41 @@ const MyPostsUpdated = () => {
                       <div className="flex justify-between items-start mb-3">
                         <Badge className={
                           post.lostType === 'WT' 
-                            ? 'bg-orange-100 text-orange-800 hover:bg-orange-100 text-xs flex items-center gap-1' 
-                            : 'bg-red-100 text-red-800 hover:bg-red-100 text-xs flex items-center gap-1'
+                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-100 text-xs' 
+                            : 'bg-red-100 text-red-800 hover:bg-red-100 text-xs'
                         }>
                           {post.lostType === 'WT' ? '목격' : '실종'}
                         </Badge>
-                      </div>
-                      
-                      <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2 leading-tight">
-                        {post.kindName}
-                      </h3>
-                      
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                        {getGenderText(post.gender)} • {post.age}살 • {post.furColor}
-                      </p>
-                      
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center space-x-1">
-                            <User className="w-3 h-3" />
-                            <span>{post.nickname}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="w-3 h-3" />
-                            <span>{formatMissingDate(post.missingDate)}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center space-x-1 text-xs text-gray-500">
                           <Eye className="w-3 h-3" />
                           <span>{post.viewCount}</span>
                         </div>
+                      </div>
+                      
+                      {/* 품종을 제목 자리에 bold로 표시 */}
+                      <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1 leading-tight">
+                        {post.kindName || '품종 미상'}
+                      </h3>
+                      
+                      {/* 성별, 나이, 털색을 다음 줄에 표시 */}
+                      <div className="text-sm text-gray-600 mb-3 flex flex-wrap gap-1">
+                        <span>{getGenderText(post.gender)}</span>
+                        <span className="text-gray-400">|</span>
+                        <span>{post.age}살</span>
+                        <span className="text-gray-400">|</span>
+                        <span>{post.furColor}</span>
+                      </div>
+                      
+                      {/* 실종 장소 */}
+                      <div className="flex items-center space-x-1 text-sm text-gray-600 mb-2">
+                        <MapPin className="w-3 h-3" />
+                        <span className="line-clamp-1">{post.missingLocation}</span>
+                      </div>
+                      
+                      {/* 실종일 */}
+                      <div className="flex items-center space-x-1 text-sm text-gray-500">
+                        <Calendar className="w-3 h-3" />
+                        <span>실종일: {formatMissingDate(post.missingDate)}</span>
                       </div>
                     </CardContent>
                   </Card>

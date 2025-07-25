@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AppHeaderWithModal from '@/components/AppHeaderWithModal';
+import Footer from '@/components/Footer';
 import BoardTabs from '@/components/board/BoardTabs';
 import BoardPagination from '@/components/board/BoardPagination';
 
@@ -205,6 +206,8 @@ const Board = () => {
           onPageChange={handlePageChange}
         />
       </div>
+      
+      <Footer />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import AnimalDetailCard from '@/components/AnimalDetailCard';
+import Footer from '@/components/Footer';
 import AppHeaderWithModal from '@/components/AppHeaderWithModal';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -107,6 +108,8 @@ const AnimalDetail: React.FC = () => {
       <main className="pt-20">
         <AnimalDetailCard animal={animal} />
       </main>
+      
+      <Footer />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Send, Phone, Video, MoreVertical } from 'lucide-react';
+import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -447,6 +448,8 @@ const ChatRoom = () => {
           </p>
         )}
       </div>
+      
+      <Footer />
     </div>
   );
 };

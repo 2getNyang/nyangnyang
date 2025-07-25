@@ -370,9 +370,9 @@ const Animals = () => {
 
   const getProcessStateBadge = (processState: string) => {
     if (processState === '보호중') {
-      return { text: '보호중', className: '' };
+      return { text: '보호중', bgColor: '#FEF9C3', textColor: '#B79458' };
     }
-    return { text: processState, className: '' };
+    return { text: processState, bgColor: '#F3F4F6', textColor: '#1F2937' };
   };
 
   const getSexDisplay = (sexCd: string) => {
@@ -604,7 +604,13 @@ const Animals = () => {
                     />
                   </button>
                   <div className="absolute top-2 left-2">
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                    <Badge 
+                      variant="secondary" 
+                      style={{ 
+                        backgroundColor: getProcessStateBadge(animal.processState).bgColor,
+                        color: getProcessStateBadge(animal.processState).textColor
+                      }}
+                    >
                       {getProcessStateBadge(animal.processState).text}
                     </Badge>
                   </div>

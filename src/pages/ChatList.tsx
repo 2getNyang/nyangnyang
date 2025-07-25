@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle, ArrowLeft } from 'lucide-react';
+import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 
@@ -214,6 +215,8 @@ const ChatList = () => {
           </div>
         ))}
       </div>
+      
+      <Footer />
     </div>
   );
 };

@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AppHeaderWithModal from '@/components/AppHeaderWithModal';
+import Footer from '@/components/Footer';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -331,6 +332,8 @@ const Shelters = () => {
           </div>
         )}
       </div>
+      
+      <Footer />
     </div>
   );
 };
