@@ -52,7 +52,7 @@ const EditSNSPost = () => {
       setIsDataLoading(true);
       try {
         const accessToken = localStorage.getItem('accessToken');
-        const response = await fetch(`http://localhost:8080/api/v1/boards/sns/${boardId}/form`, {
+        const response = await fetch(`/api/v1/boards/sns/${boardId}/form`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
           },
@@ -174,7 +174,7 @@ const EditSNSPost = () => {
       }
 
       const accessToken = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/boards/sns/${boardId}`, {
+      const response = await fetch(`/api/v1/boards/sns/${boardId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${accessToken}`,

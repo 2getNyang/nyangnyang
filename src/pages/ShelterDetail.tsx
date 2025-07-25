@@ -33,7 +33,7 @@ const ShelterDetail = () => {
   const fetchShelterDetail = async (careRegNumber: string) => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/api/v1/shelters/${careRegNumber}`);
+      const response = await fetch(`/api/v1/shelters/${careRegNumber}`);
       const data = await response.json();
       setShelter(data);
     } catch (error) {

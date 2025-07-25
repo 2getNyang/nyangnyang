@@ -72,8 +72,8 @@ const MissingPostDetail = () => {
       try {
         setLoading(true);
         console.log('useParams id:', id);
-        console.log('API URL:', `http://localhost:8080/api/v1/boards/lost/${id}`);
-        const response = await fetch(`http://localhost:8080/api/v1/boards/lost/${id}`);
+        console.log('API URL:', `/api/v1/boards/lost/${id}`);
+        const response = await fetch(`/api/v1/boards/lost/${id}`);
         const result = await response.json();
         
         if (result.code === 200) {
@@ -104,7 +104,7 @@ const MissingPostDetail = () => {
   const fetchLikeStatus = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/like/${id}/me`, {
+      const response = await fetch(`/api/v1/like/${id}/me`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -133,7 +133,7 @@ const MissingPostDetail = () => {
       const token = localStorage.getItem('accessToken');
       const method = liked ? 'DELETE' : 'POST';
       
-      const response = await fetch(`http://localhost:8080/api/v1/like/${id}`, {
+      const response = await fetch(`/api/v1/like/${id}`, {
         method,
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -229,10 +229,10 @@ const MissingPostDetail = () => {
       console.log('=== 채팅방 생성 시도 ===');
       console.log('currentUserId:', currentUserId);
       console.log('postDetail.userId:', postDetail.userId);
-      console.log('요청 URL:', `http://localhost:8080/api/v1/chat/room?user1Id=${currentUserId}&user2Id=${postDetail.userId}`);
+      console.log('요청 URL:', `/api/v1/chat/room?user1Id=${currentUserId}&user2Id=${postDetail.userId}`);
       
       const response = await fetch(
-        `http://localhost:8080/api/v1/chat/room?user1Id=${currentUserId}&user2Id=${postDetail.userId}`,
+        `/api/v1/chat/room?user1Id=${currentUserId}&user2Id=${postDetail.userId}`,
         {
           method: 'POST',
           headers: {
@@ -297,7 +297,7 @@ const MissingPostDetail = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/boards/lost/${id}`, {
+      const response = await fetch(`/api/v1/boards/lost/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -460,25 +460,24 @@ const MissingPostDetail = () => {
                   <span className="text-gray-800">{postDetail.furColor}</span>
                 </div>
                 <div className="flex items-center space-x-2">
+                  <span className="font-medium text-gray-600">특징:</span>
+                  <span className="text-gray-800">{postDetail.distinctFeatures}</span>
+                </div>
+                <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-gray-600" />
                   <span className="font-medium text-gray-600">{postDetail.lostType === '실종' ? '실종일:' : '목격일:'}</span>
                   <span className="text-gray-800">{postDetail.missingDate}</span>
                 </div>
+
                 <div className="flex items-center space-x-2 md:col-span-2">
                   <MapPin className="w-4 h-4 text-gray-600" />
                   <span className="font-medium text-gray-600">{postDetail.lostType === '실종' ? '실종장소:' : '목격장소:'}</span>
                   <span className="text-gray-800">{postDetail.regionName} {postDetail.subRegionName} {postDetail.missingLocation}</span>
                 </div>
+
               </div>
             </div>
 
-            {/* 특징 */}
-            {postDetail.distinctFeatures && (
-              <div className="mb-8 bg-gray-50 rounded-2xl p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">특징</h3>
-                <p className="text-gray-700 leading-relaxed">{postDetail.distinctFeatures}</p>
-              </div>
-            )}
 
             {/* 본문 */}
             {postDetail.boardContent && (

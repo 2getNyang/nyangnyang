@@ -49,7 +49,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
       const token = localStorage.getItem('accessToken');
       if (!token) return;
 
-      const response = await fetch('http://localhost:8080/api/v1/notifications/unread', {
+      const response = await fetch('/api/v1/notifications/unread', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -73,7 +73,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
       const token = localStorage.getItem('accessToken');
       if (!token) return;
 
-      const response = await fetch(`http://localhost:8080/api/v1/notifications/${notyId}/read`, {
+      const response = await fetch(`/api/v1/notifications/${notyId}/read`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -95,7 +95,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
       const token = localStorage.getItem('accessToken');
       if (!token) return;
 
-      const response = await fetch('http://localhost:8080/api/v1/notifications/read-all', {
+      const response = await fetch('/api/v1/notifications/read-all', {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,

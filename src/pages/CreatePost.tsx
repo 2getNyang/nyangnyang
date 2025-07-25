@@ -132,7 +132,7 @@ const CreatePost = () => {
       });
 
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:8080/api/v1/boards/review', {
+      const response = await fetch('/api/v1/boards/review', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

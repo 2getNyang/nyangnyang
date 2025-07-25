@@ -39,7 +39,7 @@ const MyAdoptionApplications = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/my/adoption?page=${currentPage}&size=${itemsPerPage}`, {
+      const response = await fetch(`/api/v1/my/adoption?page=${currentPage}&size=${itemsPerPage}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

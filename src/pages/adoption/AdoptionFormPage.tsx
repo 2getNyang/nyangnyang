@@ -74,7 +74,7 @@ const AdoptionFormPage: React.FC = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/my/adoption/${formId}`, {
+      const response = await fetch(`/api/v1/my/adoption/${formId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -137,7 +137,7 @@ const AdoptionFormPage: React.FC = () => {
     setIsResending(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/adoptions/${applicationData.formId}/resend`, {
+      const response = await fetch(`/api/v1/adoptions/${applicationData.formId}/resend`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -260,7 +260,7 @@ const AdoptionFormPage: React.FC = () => {
         noticeNo
       };
 
-      const response = await fetch(`http://localhost:8080/api/v1/adoptions/${desertionNo}`, {
+      const response = await fetch(`/api/v1/adoptions/${desertionNo}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -77,9 +77,9 @@ const SNSPostDetail = () => {
     const fetchPostDetail = async () => {
       try {
         setLoading(true);
-        console.log('SNS 게시글 상세 요청:', `http://localhost:8080/api/v1/boards/sns/${id}`);
+        console.log('SNS 게시글 상세 요청:', `/api/v1/boards/sns/${id}`);
         
-        const response = await fetch(`http://localhost:8080/api/v1/boards/sns/${id}`, {
+        const response = await fetch(`/api/v1/boards/sns/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
           }
@@ -114,7 +114,7 @@ const SNSPostDetail = () => {
       
       try {
         // 좋아요 수 조회
-        const likeCountResponse = await fetch(`http://localhost:8080/api/v1/like/${id}`, {
+        const likeCountResponse = await fetch(`/api/v1/like/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
           }
@@ -126,7 +126,7 @@ const SNSPostDetail = () => {
         }
 
         // 좋아요 상태 조회
-        const likeStatusResponse = await fetch(`http://localhost:8080/api/v1/like/${id}/me`, {
+        const likeStatusResponse = await fetch(`/api/v1/like/${id}/me`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
           }
@@ -192,7 +192,7 @@ const SNSPostDetail = () => {
 
     try {
       const method = isLiked ? 'DELETE' : 'POST';
-      const response = await fetch(`http://localhost:8080/api/v1/like/${id}`, {
+      const response = await fetch(`/api/v1/like/${id}`, {
         method,
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -230,7 +230,7 @@ const SNSPostDetail = () => {
 
     try {
       const accessToken = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/boards/sns/${id}`, {
+      const response = await fetch(`/api/v1/boards/sns/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${accessToken}`,

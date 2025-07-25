@@ -60,13 +60,13 @@ const MyPostsUpdated = () => {
       
       switch (activeTab) {
         case 'review':
-          url = `http://localhost:8080/api/v1/my/boards/review?page=${currentPage}&size=${itemsPerPage}`;
+          url = `/api/v1/my/boards/review?page=${currentPage}&size=${itemsPerPage}`;
           break;
         case 'sns':
-          url = `http://localhost:8080/api/v1/my/boards/sns?page=${currentPage}&size=${itemsPerPage}`;
+          url = `/api/v1/my/boards/sns?page=${currentPage}&size=${itemsPerPage}`;
           break;
         case 'missing':
-          url = `http://localhost:8080/api/v1/my/boards/lost?page=${currentPage}&size=${itemsPerPage}`;
+          url = `/api/v1/my/boards/lost?page=${currentPage}&size=${itemsPerPage}`;
           break;
       }
 

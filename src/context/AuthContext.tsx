@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         headers['Authorization'] = `Bearer ${accessToken}`;
       }
       
-      const response = await fetch('http://localhost:8080/api/v1/user/me', {
+      const response = await fetch('/api/v1/user/me', {
         method: 'GET',
         headers,
         credentials: 'include',
