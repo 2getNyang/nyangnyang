@@ -27,17 +27,10 @@ export const useBoardFilter = ({ posts, postsPerPage }: UseBoardFilterProps) => 
     }
   }, []);
 
-  const filteredPosts = useMemo(() => {
-    return posts.filter(post => {
-      const matchesCategory = post.category === activeTab;
-      const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }, [posts, activeTab, searchTerm]);
 
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const totalPages = Math.ceil(posts.length / postsPerPage);
   const startIndex = (currentPage - 1) * postsPerPage;
-  const currentPosts = filteredPosts.slice(startIndex, startIndex + postsPerPage);
+  const currentPosts = posts.slice(startIndex, startIndex + postsPerPage);
 
   // Reset to first page when tab or search changes
   const handleTabChange = (tab: BoardCategory) => {

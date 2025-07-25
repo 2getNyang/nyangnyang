@@ -90,7 +90,6 @@ const Board = () => {
 
   // 검색 기능
   const handleSearch = async () => {
-    if (!searchTerm.trim()) return;
     
     setLoading(true);
     try {
@@ -108,9 +107,11 @@ const Board = () => {
         default:
           searchEndpoint = activeTab;
       }
+
+      if (!searchTerm.trim()) {fetchBoardData(searchEndpoint as BoardCategory); return;};
       
       const response = await fetch(
-        `/api/v1/board/${searchEndpoint}/elasticsearch?keyword=${encodeURIComponent(searchTerm)}&page=0&size=12`
+        `/api/v1/boards/${searchEndpoint}/elasticsearch?keyword=${encodeURIComponent(searchTerm)}&page=0&size=12`
       );
       const result = await response.json();
       

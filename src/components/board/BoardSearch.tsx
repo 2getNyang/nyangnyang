@@ -12,11 +12,6 @@ interface BoardSearchProps {
 }
 
 const BoardSearch = ({ searchTerm, onSearchChange, onSearch, currentCategory }: BoardSearchProps) => {
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      onSearch();
-    }
-  };
 
   return (
     <div className="flex gap-3">
@@ -26,7 +21,7 @@ const BoardSearch = ({ searchTerm, onSearchChange, onSearch, currentCategory }: 
           placeholder="게시글을 검색해보세요..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyUp={(e) => onSearch()}
           className="pl-10 pr-4 py-3 w-full rounded-xl border-gray-200 text-base"
         />
       </div>
