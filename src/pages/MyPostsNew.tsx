@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, ChevronLeft, ChevronRight, MapPin, Calendar } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -412,59 +412,61 @@ const MyPostsNew = () => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {missingPosts.map((post) => (
                   <Card 
                     key={post.id} 
-                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    className="group cursor-pointer hover:shadow-lg transition-all duration-300 border border-gray-200 bg-white rounded-lg overflow-hidden hover:scale-[1.02]"
                     onClick={() => handlePostClick(post.id, 'missing')}
                   >
-                    <div className="aspect-video relative overflow-hidden">
+                    <div className="aspect-square overflow-hidden relative">
                       <img 
                         src={post.imageUrl} 
                         alt={`${post.kindName} ${post.lostType === 'MS' ? '실종' : '목격'}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400&h=300&fit=crop';
+                        }}
                       />
                     </div>
+                    
                     <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <Badge 
-                          variant={post.lostType === 'MS' ? 'destructive' : 'default'}
-                          className="text-xs"
+                      <div className="flex justify-between items-start mb-3">
+                        <div 
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            post.lostType === 'WT' 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}
                         >
-                          {post.lostType === 'MS' ? '실종' : '목격'}
-                        </Badge>
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <Eye className="w-4 h-4" />
+                          {post.lostType === 'WT' ? '목격' : '실종'}
+                        </div>
+                        <div className="flex items-center text-xs text-gray-500">
+                          <Eye className="w-3 h-3 mr-1" />
                           <span>{post.viewCount}</span>
                         </div>
                       </div>
                       
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">품종:</span>
-                          <span className="font-medium">{post.kindName}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">성별:</span>
-                          <span className="font-medium">{getGenderText(post.gender)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">나이:</span>
-                          <span className="font-medium">{post.age}살</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">털색:</span>
-                          <span className="font-medium">{post.furColor}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">장소:</span>
-                          <span className="font-medium text-right flex-1 ml-2 break-words">{post.missingLocation}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">실종일:</span>
-                          <span className="font-medium">{post.missingDate}</span>
-                        </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1">
+                        {post.kindName || '품종 미상'}
+                      </h3>
+                      
+                      <div className="text-sm text-gray-600 mb-3">
+                        <span>{getGenderText(post.gender)}</span>
+                        <span className="mx-1 text-gray-400">|</span>
+                        <span>{post.age}살</span>
+                        <span className="mx-1 text-gray-400">|</span>
+                        <span>{post.furColor}</span>
+                      </div>
+                      
+                      <div className="flex items-center text-sm text-gray-600 mb-2">
+                        <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                        <span className="line-clamp-1">{post.missingLocation}</span>
+                      </div>
+                      
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Calendar className="w-4 h-4 mr-1 flex-shrink-0" />
+                        <span>실종일: {post.missingDate}</span>
                       </div>
                     </CardContent>
                   </Card>
