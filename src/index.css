@@ -42,6 +42,16 @@ All colors MUST be HSL.
     --golden: 50 100% 58%;
     --golden-light: 50 100% 95%;
     --golden-dark: 45 95% 45%;
+    
+    /* Calendar specific colors */
+    --calendar-bg: 0 0% 100%;
+    --calendar-shadow: 0 0% 0%;
+    --calendar-border: 214.3 31.8% 91.4%;
+    --calendar-selected: 50 100% 58%;
+    --calendar-selected-foreground: 222.2 47.4% 11.2%;
+    --calendar-today: 50 100% 95%;
+    --calendar-today-foreground: 222.2 47.4% 11.2%;
+    --calendar-hover: 210 40% 96.1%;
   }
 
   .dark {
