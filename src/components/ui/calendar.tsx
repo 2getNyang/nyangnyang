@@ -23,11 +23,11 @@ function Calendar({
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
-        caption: "flex justify-center pt-2 pb-4 relative items-center",
-        caption_label: "text-base font-semibold text-foreground",
-        caption_dropdowns: "flex justify-center gap-2 animate-slide-down",
-        dropdown_month: "relative inline-flex items-center justify-center rounded-lg border border-input bg-background px-4 py-2.5 text-sm font-medium ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50 hover:bg-accent hover:text-accent-foreground transition-all duration-200 shadow-sm",
-        dropdown_year: "relative inline-flex items-center justify-center rounded-lg border border-input bg-background px-4 py-2.5 text-sm font-medium ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50 hover:bg-accent hover:text-accent-foreground transition-all duration-200 shadow-sm",
+        caption: "flex justify-center pt-3 pb-6 relative items-center",
+        caption_label: "text-lg font-semibold text-foreground",
+        caption_dropdowns: "flex justify-center gap-3 animate-slide-down",
+        dropdown_month: "relative inline-flex items-center justify-center rounded-xl border-2 border-primary/20 bg-gradient-to-b from-background to-primary/5 px-6 py-3 text-sm font-semibold text-foreground ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50 hover:border-primary hover:bg-primary/10 hover:shadow-lg transition-all duration-300 min-w-[120px] shadow-md hover:scale-105",
+        dropdown_year: "relative inline-flex items-center justify-center rounded-xl border-2 border-primary/20 bg-gradient-to-b from-background to-primary/5 px-6 py-3 text-sm font-semibold text-foreground ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50 hover:border-primary hover:bg-primary/10 hover:shadow-lg transition-all duration-300 min-w-[100px] shadow-md hover:scale-105",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
