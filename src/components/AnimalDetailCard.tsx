@@ -118,7 +118,7 @@ const AnimalDetailCard: React.FC<AnimalDetailCardProps> = ({ animal }) => {
     const method = isBookmarked ? 'DELETE' : 'POST';
     
     try {
-      const response = await fetch(`/api/v1/bookmark/${animal.desertionNo}`, {
+      const response = await fetch(`http://localhost:8080/api/v1/bookmark/${animal.desertionNo}`, {
         method,
         headers: {
           'Authorization': `Bearer ${token}`,

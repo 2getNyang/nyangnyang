@@ -94,7 +94,7 @@ const CreateMissingPost = () => {
 
     const fetchFormData = async () => {
       try {
-        const response = await fetch('/api/v1/boards/lost/form-info');
+        const response = await fetch('http://localhost:8080/api/v1/boards/lost/form-info');
         if (response.ok) {
           const result = await response.json();
           setFormData(result.data);
@@ -125,7 +125,7 @@ const CreateMissingPost = () => {
     if (selectedUpKindCd) {
       const fetchBreeds = async () => {
         try {
-          const response = await fetch(`/api/v1/boards/lost/upkind/${selectedUpKindCd}/kinds`);
+          const response = await fetch(`http://localhost:8080/api/v1/boards/lost/upkind/${selectedUpKindCd}/kinds`);
           if (response.ok) {
             const breeds = await response.json();
             setBreeds(breeds);
@@ -145,7 +145,7 @@ const CreateMissingPost = () => {
     if (selectedRegionCode) {
       const fetchSubRegions = async () => {
         try {
-          const response = await fetch(`/api/v1/boards/lost/regions/${selectedRegionCode}/sub-regions`);
+          const response = await fetch(`http://localhost:8080/api/v1/boards/lost/regions/${selectedRegionCode}/sub-regions`);
           if (response.ok) {
             const subRegions = await response.json();
             setSubRegions(subRegions);
@@ -273,7 +273,7 @@ const CreateMissingPost = () => {
       });
 
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/v1/boards/lost', {
+      const response = await fetch('http://localhost:8080/api/v1/boards/lost', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

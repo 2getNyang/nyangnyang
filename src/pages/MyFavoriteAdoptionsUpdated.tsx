@@ -43,7 +43,7 @@ const MyFavoriteAdoptionsUpdated = () => {
       const token = localStorage.getItem('accessToken');
       console.log('🔑 토큰 확인 (찜한 공고):', token ? '토큰 존재' : '토큰 없음');
       
-      const endpoint = `/api/v1/my/bookmarks?page=${currentPage}&size=${itemsPerPage}`;
+      const endpoint = `http://localhost:8080/api/v1/my/bookmarks?page=${currentPage}&size=${itemsPerPage}`;
       console.log('📡 API 호출 (찜한 공고):', endpoint);
       
       const response = await fetch(endpoint, {
@@ -74,7 +74,7 @@ const MyFavoriteAdoptionsUpdated = () => {
     try {
       // 해당 공고가 여전히 존재하는지 확인
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/v1/animals/${animal.desertionNo}`, {
+      const response = await fetch(`http://localhost:8080/api/v1/animals/${animal.desertionNo}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
